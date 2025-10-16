@@ -6,13 +6,14 @@
 
 
 
-[![Python](https://img.shields.io/badge/Python-3.8+-blue.svg)](https://www.python.org/)[![Python](https://img.shields.io/badge/Python-3.8+-blue.svg)](https://www.python.org/)
+[![Python](https://img.shields.io/badge/Python-3.8+-blue.svg)](https://www.python.org/)
 
-[![TensorFlow](https://img.shields.io/badge/TensorFlow-2.x-orange.svg)](https://www.tensorflow.org/)[![TensorFlow](https://img.shields.io/badge/TensorFlow-2.x-orange.svg)](https://www.tensorflow.org/)
+[![TensorFlow](https://img.shields.io/badge/TensorFlow-2.x-orange.svg)](https://www.tensorflow.org/)
 
-[![Vue](https://img.shields.io/badge/Vue-3.x-green.svg)](https://vuejs.org/)[![Vue](https://img.shields.io/badge/Vue-3.x-green.svg)](https://vuejs.org/)
+[![Vue](https://img.shields.io/badge/Vue-3.x-green.svg)](https://vuejs.org/)
 
 [![License](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+
 
 ## 📋 项目概述
 
@@ -731,3 +732,4 @@ Made with ❤️ for Emotion Recognition## 📞 需要帮助?
 ---
 
 **祝你使用愉快! 🚀**
+
