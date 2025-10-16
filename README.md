@@ -1,4 +1,4 @@
-# 人脸情绪识别系统# 人脸情绪识别系统# 人脸情绪识别系统 (Facial Emotion Recognition System)
+# 人脸情绪识别系统 (Facial Emotion Recognition System)
 
 
 
@@ -1139,3 +1139,4 @@ Made with ❤️ for Emotion Recognition## 📞 需要帮助?
 ---
 
 **祝你使用愉快! 🚀**
+
