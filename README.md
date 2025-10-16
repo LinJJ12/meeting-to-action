@@ -2,7 +2,7 @@
 
 
 
-[![Python](https://img.shields.io/badge/Python-3.8+-blue.svg)](https://www.python.org/)> 基于RAF-DB数据集训练的完整Web应用系统，支持7种基本情绪识别<div align="center">
+[![Python](https://img.shields.io/badge/Python-3.8+-blue.svg)](https://www.python.org/) 基于RAF-DB数据集训练的完整Web应用系统，支持7种基本情绪识别
 
 [![TensorFlow](https://img.shields.io/badge/TensorFlow-2.x-orange.svg)](https://www.tensorflow.org/)
 
@@ -1134,5 +1134,6 @@ Made with ❤️ for Emotion Recognition## 📞 需要帮助?
 ---
 
 **祝你使用愉快! 🚀**
+
 
 
