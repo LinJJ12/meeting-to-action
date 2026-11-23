@@ -1,3 +1,4 @@
+import "dotenv/config";
 import { readFile, writeFile } from "node:fs/promises";
 import { resolve, basename } from "node:path";
 import { normalizeTranscript } from "./core/normalize.js";
