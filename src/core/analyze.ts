@@ -7,7 +7,7 @@ import {
 import { buildAnalysisMessages } from "./prompt.js";
 import type { AnalysisProvider } from "../providers/types.js";
 
-const DraftSchema = MeetingAnalysisSchema.omit({ meetingId: true, generatedAt: true });
+const DraftSchema = MeetingAnalysisSchema.omit({ schemaVersion: true, meetingId: true, generatedAt: true });
 
 function collectEvidence(analysis: MeetingAnalysis): EvidenceRef[][] {
   return [
@@ -59,6 +59,7 @@ export async function analyzeMeeting(
 
   const draft = DraftSchema.parse(json);
   const analysis = MeetingAnalysisSchema.parse({
+    schemaVersion: "1.0",
     ...draft,
     meetingId: input.meeting.id,
     generatedAt: new Date().toISOString(),
