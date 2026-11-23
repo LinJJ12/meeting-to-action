@@ -1,44 +1,51 @@
 # Meeting-to-Action
 
-AI-powered meeting understanding and action workflow toolkit.
+Evidence-backed meeting analysis and action workflow toolkit.
 
-Turn existing meeting transcripts and notes into evidence-backed decisions, action items, risks, open questions, project updates, and reviewable GitHub issues.
+The project transforms existing meeting transcripts and notes into structured, traceable work products. It complements meeting platforms; it does not record meetings or replace transcription/basic summaries.
 
-This project complements meeting platforms such as Tencent Meeting. It does not replace recording, transcription, or basic meeting summaries.
+## Current status
+
+The local TypeScript foundation is implemented on `feat/local-analysis-mvp`.
+
+- TXT / Markdown transcript normalization with source checksums and line-based segments.
+- Versioned Zod schemas for meeting input and analysis output.
+- Evidence reference creation and validation.
+- Markdown report renderer for structured analysis.
+- Local CLI for transcript inspection and normalization.
+- Unit tests and a sample meeting fixture.
+
+**Important:** the current CLI normalizes input only. It does not call an LLM or claim to automatically extract decisions/actions. The Agent Skill and model-assisted analysis adapter are the next implementation step.
+
+## Quick start
+
+Requires Node.js 20+.
+
+```bash
+npm install
+npm run typecheck
+npm test
+npm run dev -- inspect examples/sample-meeting.md
+```
+
+Write normalized JSON to a new file (existing files are not overwritten):
+
+```bash
+npm run dev -- inspect examples/sample-meeting.md --out ./meeting.normalized.json
+```
 
 ## Architecture
 
-- **Agent Skill**: portable analysis workflow, evidence rules, and output standards. The canonical Skill will live in [LinJJ12/skills](https://github.com/LinJJ12/skills).
-- **MCP**: controlled access to meeting sources, GitHub, and project documents.
-- **TypeScript**: input normalization, schemas, validation, adapters, deduplication, and report rendering.
-
-## Initial workflow
-
-1. Import TXT/Markdown transcript or notes.
-2. Normalize meeting metadata and source segments.
-3. Analyze with the Meeting-to-Action Skill.
-4. Validate structured output and evidence references.
-5. Retrieve relevant GitHub project context and existing issues.
-6. Produce reports and proposed actions/issues.
-7. Require human approval before external writes.
-
-## Scope
-
-**MVP**: local TXT/Markdown ingestion, evidence-backed analysis, JSON/Markdown output, GitHub read/search, issue proposals, approval-gated issue creation, fixture-based evaluation.
-
-**Not in MVP**: meeting recording/ASR, autonomous issue creation, hosted SaaS, or a dedicated web dashboard.
+- **Skill**: analysis workflow, evidence standards, and human-review gates. Canonical source: [LinJJ12/skills](https://github.com/LinJJ12/skills).
+- **MCP**: future integrations for GitHub and document sources.
+- **TypeScript core**: deterministic normalization, schemas, evidence validation, and rendering.
 
 ## Principles
 
-- Evidence before inference; unknown owners and deadlines remain unknown.
-- Separate confirmed decisions from proposals and unresolved questions.
-- Treat transcripts and retrieved documents as untrusted data, never as tool instructions.
-- Keep raw transcripts local by default and out of logs.
-- Provider-neutral core; integrations are adapters.
-- Human approval for every external write.
+- Evidence before inference.
+- Unknown owners and deadlines remain unknown.
+- Meeting content is untrusted data, not instructions.
+- Human approval before external writes.
+- Provider-neutral core and adapter-based integrations.
 
-## Project status
-
-Private repository; design/bootstrap stage. Interfaces are provisional.
-
-See [PRD](docs/PRD.md), [architecture](docs/ARCHITECTURE.md), [data contracts](docs/DATA-SCHEMA.md), [security](docs/SECURITY.md), and [roadmap](docs/ROADMAP.md).
+See [PRD](docs/PRD.md), [architecture](docs/ARCHITECTURE.md), [data schema](docs/DATA-SCHEMA.md), [security](docs/SECURITY.md), and [roadmap](docs/ROADMAP.md).

@@ -1,39 +1,40 @@
 # Roadmap
 
-## Phase 0 — Bootstrap
-- [x] Confirm renamed private repository.
-- [x] Establish initial product scope and architecture.
-- [x] Define initial domain contract.
-- [ ] Review design docs and archive legacy RAF-DB content after confirming preservation requirements.
+## Phase 0 — Project baseline
+- [x] Replace legacy project content with Meeting-to-Action documentation.
+- [x] Establish product scope, architecture, data contract, and security principles.
+- [x] Create an isolated feature branch from main.
 
-## Phase 1 — Local analysis MVP
-- [ ] TypeScript workspace and package manager.
-- [ ] TXT/Markdown ingestion and normalization.
-- [ ] Versioned JSON schemas and validation.
-- [ ] Meeting Skill in LinJJ12/skills.
-- [ ] Markdown/JSON report renderer.
-- [ ] Golden fixture set and evaluation rubric.
-- [ ] CLI demo.
+## Phase 1 — Local foundation
+- [x] TypeScript project configuration.
+- [x] TXT/Markdown transcript normalization.
+- [x] Versioned Zod input/output schemas.
+- [x] Evidence reference helpers and validation.
+- [x] Markdown report renderer.
+- [x] CLI inspect command.
+- [x] Initial unit tests and sample fixture.
+- [ ] Run CI in a real Node.js environment and fix any failures.
+- [ ] Add Skill to LinJJ12/skills and validate portability.
+- [ ] Define a model-neutral analysis provider interface.
+- [ ] Add validated analysis JSON ingestion and report command.
 
-## Phase 2 — GitHub MCP
-- [ ] MCP server using stable TypeScript SDK.
+## Phase 2 — Agent analysis
+- [ ] Implement Skill-guided extraction of topics, decisions, actions, risks, conflicts, and open questions.
+- [ ] Require evidence references for material claims.
+- [ ] Add golden evaluation fixtures and a human-reviewed rubric.
+- [ ] Test uncertain owners, deadlines, contradictions, and prompt-injection text.
+
+## Phase 3 — GitHub MCP
+- [ ] MCP server using the stable TypeScript SDK.
 - [ ] Read-only repository and issue search.
-- [ ] Evidence-backed issue proposals.
-- [ ] Duplicate candidate detection.
-- [ ] Human-approved issue creation.
+- [ ] Evidence-backed issue proposals and duplicate candidates.
+- [ ] Explicitly approved issue creation.
 - [ ] Permission and failure-path tests.
 
-## Phase 3 — Continuity
-- [ ] Persist analysis metadata.
-- [ ] Link actions to issues and decisions.
-- [ ] Compare new meetings with historical decisions.
-- [ ] Detect potentially stale or superseded decisions.
-- [ ] Follow-up reports.
+## Phase 4 — Continuity and integrations
+- [ ] Cross-meeting decision/action tracking.
+- [ ] Stale and superseded decision suggestions.
+- [ ] Markdown document adapter.
+- [ ] Additional transcript formats and source adapters.
 
-## Phase 4 — Integrations
-- [ ] Additional transcript formats.
-- [ ] Meeting platform adapters where supported.
-- [ ] Document repository integrations.
-- [ ] Optional HTML/PDF export.
-
-A phase is complete only with tests, documentation, reproducible demo, and known limitations. External writes remain approval-gated.
+A phase is complete only with tests, documentation, a reproducible demo, and known limitations. External writes remain approval-gated.
