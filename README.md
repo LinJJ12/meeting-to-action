@@ -32,17 +32,15 @@ Inspect a transcript without calling a model:
 npm run dev -- inspect examples/sample-meeting.md
 ```
 
-Run model-assisted analysis:
+Run model-assisted analysis (the CLI loads a local `.env` file when present):
 
 ```bash
-# Linux / macOS
-export OPENAI_API_KEY="your-api-key"
-export OPENAI_MODEL="your-model"
-# Optional: use a compatible endpoint
-export OPENAI_BASE_URL="https://api.openai.com/v1"
-
+cp .env.example .env
+# Edit .env and set OPENAI_API_KEY and OPENAI_MODEL
 npm run dev -- analyze examples/sample-meeting.md --out report.md
 ```
+
+Alternatively, set the variables directly in your shell or CI secret store.
 
 PowerShell:
 
