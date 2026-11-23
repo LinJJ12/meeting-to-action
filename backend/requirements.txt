@@ -1,8 +1,0 @@
-Flask==2.3.0
-flask-cors==4.0.0
-Pillow==10.0.0
-python-dotenv==1.0.0
-
-# Optional: if database is needed
-# Flask-SQLAlchemy==3.0.5
-# pymysql==1.1.0
