@@ -1,0 +1,1 @@
+# Sprint Planning\n\nDate: 2026-11-20\n\nAlice: We agreed to move import to the next sprint because the API contract is unstable.\n\nBob: I can update the API contract by Friday.\n\nCarol: We should add retries, but have not decided the retry limit.\n
