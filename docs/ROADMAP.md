@@ -52,3 +52,15 @@ A phase is complete only with tests, documentation, a reproducible demo, and kno
 See [the product architecture and acceptance plan](AGENT-TOOLKIT.md). Agent JSON ingestion/report is implemented locally with regression coverage. Skill source is now maintained in this repository; actual Codex/Cursor installation testing and runtime publication are pending; local MCP implementation and SDK subprocess checks are complete. CI is not required to run these checks locally, and must not be triggered while the user is avoiding Actions usage.
 
 Installer and client acceptance details: [CLIENT-SETUP.md](CLIENT-SETUP.md). Codex CLI discovery passed on 2026-11-24; Cursor UI remains pending.
+
+## Local plugin distribution milestone
+
+- [x] Portable plugin manifest and MCP configuration.
+- [x] Build Skill and standalone MCP bundle into one local marketplace.
+- [x] Test the package in a relocated directory without node_modules.
+- [x] Register and install the plugin locally; confirm enabled state, namespaced Skill and five MCP tools in a fresh Codex process.
+- [ ] User confirms desktop plugin UI after restart and a new local chat.
+- [ ] Model-driven end-to-end meeting quality check.
+- [ ] Public distribution and Cursor plugin verification.
+
+See [PLUGIN-INSTALL.md](PLUGIN-INSTALL.md). No public publication or Actions run is part of this milestone.

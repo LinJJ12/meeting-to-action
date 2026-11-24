@@ -131,3 +131,7 @@ npm run setup:client -- --client codex --project /absolute/path/to/project
 ```
 
 The default is read-only preview. Existing different configs/Skill files are preserved and reported as conflicts. See [installation behavior and client acceptance](docs/CLIENT-SETUP.md). Codex CLI discovery of the Skill and five MCP tools has been verified; Cursor UI and model-level invocation remain pending.
+
+## Local desktop plugin
+
+A complete Skill + bundled MCP plugin can now be built with `npm run plugin:build`. It has been registered and installed on this machine; a fresh Codex process confirms it is enabled and discovers its Skill and all five tools. Restart the desktop app and create a new local chat to pick up the installation. See [step-by-step plugin installation and use](docs/PLUGIN-INSTALL.md). This is local distribution, not public marketplace publication.

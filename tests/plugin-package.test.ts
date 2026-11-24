@@ -1,0 +1,29 @@
+import {it,expect} from "vitest";
+import {mkdtemp,readFile,readdir,rm} from "node:fs/promises";
+import {join} from "node:path";
+import {tmpdir} from "node:os";
+import {Client} from "@modelcontextprotocol/sdk/client/index.js";
+import {StdioClientTransport} from "@modelcontextprotocol/sdk/client/stdio.js";
+import {buildPlugin} from "../scripts/build-plugin.mjs";
+it("ships a relocatable plugin with its Skill and a standalone MCP bundle",async()=>{
+ const root=await mkdtemp(join(tmpdir(),"meeting-plugin space-"));
+ const client=new Client({name:"plugin-package-test",version:"1.0.0"});let connected=false;
+ try{
+  const output=await buildPlugin(root);
+  const manifest=JSON.parse(await readFile(join(output.plugin,"plugin.json"),"utf8"));
+  expect(manifest.name).toBe("meeting-to-action");
+  const config=JSON.parse(await readFile(join(output.plugin,"mcp.json"),"utf8"));
+  const server=config.mcpServers["meeting-to-action"];
+  expect(server.type).toBe("stdio");expect(server.args[0]).toBe("${PLUGIN_ROOT}/server/mcp.mjs");
+  expect(await readFile(join(output.plugin,"skills","meeting-to-action","SKILL.md"),"utf8")).toContain("name: meeting-to-action");
+  expect(await readFile(join(output.plugin,"THIRD-PARTY-NOTICES.txt"),"utf8")).toContain("@modelcontextprotocol/sdk");
+  expect(await readdir(output.plugin)).not.toContain("node_modules");
+  const transport=new StdioClientTransport({command:process.execPath,args:[server.args[0].replace("${PLUGIN_ROOT}",output.plugin)],cwd:root,stderr:"pipe"});
+  let stderr="";transport.stderr?.on("data",c=>{stderr+=String(c);});
+  await client.connect(transport);connected=true;
+  expect((await client.listTools()).tools).toHaveLength(5);
+  const result=await client.callTool({name:"prepare_meeting",arguments:{content:"Team: review.",fileName:"x.txt"}});
+  expect(result.isError).not.toBe(true);expect(JSON.stringify(result)).toContain("Team: review.");
+  await client.close();connected=false;expect(stderr).toBe("");
+ }finally{if(connected)await client.close();await rm(root,{recursive:true,force:true});}
+},20_000);

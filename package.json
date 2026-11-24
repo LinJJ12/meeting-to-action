@@ -12,7 +12,9 @@
     "mcp": "node dist/mcp/server.js",
     "mcp:dev": "tsx src/mcp/server.ts",
     "mcp:smoke": "npm run build && node scripts/smoke-mcp.mjs",
-    "setup:client": "node dist/setup.js"
+    "setup:client": "node dist/setup.js",
+    "plugin:build": "node scripts/build-plugin.mjs",
+    "plugin:check-installed": "node scripts/check-installed-plugin.mjs"
   },
   "engines": {
     "node": ">=20"
@@ -24,6 +26,7 @@
   },
   "devDependencies": {
     "@types/node": "^22.19.0",
+    "esbuild": "^0.28.2",
     "tsx": "^4.20.6",
     "typescript": "^5.9.3",
     "vitest": "^4.0.8"
