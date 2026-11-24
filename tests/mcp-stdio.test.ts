@@ -22,19 +22,20 @@ it("negotiates stdio, lists tools, processes content and recovers from rejected 
  expect(stderr).toBe("");
 },15_000);
 
-import {spawn} from "node:child_process";
 import {MAX_REQUEST_BYTES} from "../src/mcp/tools.js";
-it("closes oversized transport input with redacted diagnostics",async()=>{
- const child=spawn(process.execPath,["--import","tsx",resolve("src/mcp/server.ts")],{stdio:["pipe","pipe","pipe"]});
- let stderr="",stdout="";
- child.stderr.on("data",c=>{stderr+=String(c);});child.stdout.on("data",c=>{stdout+=String(c);});
- child.stdin.on("error",()=>{});
- const closed=new Promise<void>((resolve,reject)=>{child.once("close",()=>resolve());child.once("error",reject);});
- const timeout=setTimeout(()=>child.kill(),5000);
+import {startStdioServer} from "./stdio-harness.js";
+it("rejects oversized transport input with a JSON-RPC error and keeps serving",async()=>{
+ const server=startStdioServer();
  try{
-  child.stdin.end("PRIVATE_TRANSCRIPT"+"x".repeat(MAX_REQUEST_BYTES));
-  await closed;
-  expect(stderr).toContain("MCP_PROTOCOL_ERROR");
-  expect(stderr).not.toContain("PRIVATE_TRANSCRIPT");expect(stdout).toBe("");
- }finally{clearTimeout(timeout);if(child.exitCode===null)child.kill();}
-},10_000);
+  server.write("PRIVATE_TRANSCRIPT"+"x".repeat(MAX_REQUEST_BYTES)+"\n");
+  const errorFrame=await server.nextFrame(frame=>frame?.error?.code===-32600,25_000);
+  expect(errorFrame.id).toBeNull();
+  expect(errorFrame.error.message).toMatch(/^INPUT_SIZE_LIMIT: request line exceeds 4 MiB \(bytes=\d+\)$/);
+  expect(server.stdout()).not.toContain("PRIVATE_TRANSCRIPT");
+  expect(server.stderr()).not.toContain("PRIVATE_TRANSCRIPT");
+  server.write(JSON.stringify({jsonrpc:"2.0",id:2,method:"tools/list"})+"\n");
+  const listFrame=await server.nextFrame(frame=>frame?.id===2);
+  expect(listFrame.result.tools).toHaveLength(5);
+  expect(server.invalidFrames()).toEqual([]);
+ }finally{server.kill();}
+},20_000);

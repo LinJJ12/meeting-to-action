@@ -64,13 +64,13 @@ JSON Schema describes shape only; cross-field identity, duplicate IDs, source re
 
 ## Limits and errors
 
-- Maximum raw transport read buffer and serialized tool arguments: 4 MiB.
+- Maximum size of one request line (UTF-8 bytes, CRLF terminator excluded) and of serialized tool arguments: 4 MiB.
 - Transcript/combined segment text: 2 MiB UTF-8; at most 10,000 segments. Limits are counted in UTF-8 bytes, so oversized ASCII and CJK content is rejected consistently as INPUT_SIZE_LIMIT with the actual bytes and limit.
 - maxChars: integer 1 through 2,097,152. An inconsistent segment line count is rejected by splitting.
-- Oversized transport input closes the connection. Other tool validation failures return `isError: true` with a stable code and do not expose arguments.
+- A request line above 4 MiB receives JSON-RPC error `-32600` with message `INPUT_SIZE_LIMIT: request line exceeds 4 MiB (bytes=N)`; the rest of that line is discarded and the server keeps serving later requests. Transport stdin/stdout failures log `MCP_STDIN_ERROR`/`MCP_STDOUT_ERROR` to stderr and close gracefully. Other tool validation failures return `isError: true` with a stable code and do not expose arguments.
 - Known codes include INPUT_INVALID, INPUT_SIZE_LIMIT, INPUT_SEGMENT_LIMIT, CHUNK_LINE_TOO_LONG, SEGMENT_LINE_COUNT_INVALID, ANALYSIS_MEETING_MISMATCH, ANALYSIS_DUPLICATE_ID, ANALYSIS_EVIDENCE_INVALID and TOOL_UNKNOWN.
 
-No default persistence, arbitrary disk reads/writes, GitHub access, model calls or network listeners. Stdout is protocol-only; stderr contains only a generic protocol error code. Transcript content is returned to the calling host as requested, so host privacy settings still apply. No npm package, historical store, HTTP transport or client plugin is published by this stage.
+No default persistence, arbitrary disk reads/writes, GitHub access, model calls or network listeners. Stdout is protocol-only; stderr contains only generic diagnostic codes (`MCP_PROTOCOL_ERROR`, `MCP_STDIN_ERROR`, `MCP_STDOUT_ERROR`). Transcript content is returned to the calling host as requested, so host privacy settings still apply. No npm package, historical store, HTTP transport or client plugin is published by this stage.
 
 ## Verification status
 
