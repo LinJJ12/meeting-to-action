@@ -16,6 +16,9 @@ it("CLI validates arguments, writes JSON, and never overwrites existing files",(
   expect(readFileSync(out,"utf8")).toBe("keep me");
   expect(run("inspect",input,"--out").status).toBe(2);
   expect(run("inspect",join(dir,"missing.md")).status).toBe(1);
+  const version=run("--version");
+  expect(version.status).toBe(0);
+  expect(version.stdout.trim()).toMatch(/^\d+\.\d+\.\d+/);
  }finally{rmSync(dir,{recursive:true,force:true});}
 });
 

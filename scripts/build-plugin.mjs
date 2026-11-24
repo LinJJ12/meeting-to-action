@@ -1,13 +1,19 @@
 import {build} from "esbuild";
-import {mkdir,cp,readFile,writeFile,readdir} from "node:fs/promises";
+import {mkdir,cp,readFile,writeFile,readdir,rm} from "node:fs/promises";
 import {resolve,join,dirname} from "node:path";
 import {fileURLToPath,pathToFileURL} from "node:url";
 const repo=fileURLToPath(new URL("../",import.meta.url));
 const json=async path=>JSON.parse((await readFile(path,"utf8")).replace(/^\uFEFF/,""));
 export async function buildPlugin(output=join(repo,"dist","plugin-marketplace")){
  const plugin=join(output,"plugins","meeting-to-action");
+ // 重建前先清空输出目录，避免上一轮残留文件被一起安装（旧产物/已删除的引用会存活）
+ await rm(output,{recursive:true,force:true});
  await mkdir(join(plugin,"server"),{recursive:true});
- for(const file of ["plugin.json","mcp.json"]){await writeFile(join(plugin,file),JSON.stringify(await json(join(repo,"plugin",file)),null,2)+"\n");}
+ await writeFile(join(plugin,"plugin.json"),JSON.stringify(await json(join(repo,"plugin","plugin.json")),null,2)+"\n");
+ // 生成的 mcp.json 把裸 `node` 替换成当前解释器的绝对路径，避免插件运行时依赖 PATH
+ const mcp=await json(join(repo,"plugin","mcp.json"));
+ for(const server of Object.values(mcp.mcpServers??{}))if(server&&server.command==="node")server.command=process.execPath;
+ await writeFile(join(plugin,"mcp.json"),JSON.stringify(mcp,null,2)+"\n");
  await cp(join(repo,"skills","meeting-to-action"),join(plugin,"skills","meeting-to-action"),{recursive:true});
  const result=await build({absWorkingDir:repo,entryPoints:["src/mcp/server.ts"],outfile:join(plugin,"server","mcp.mjs"),bundle:true,platform:"node",format:"esm",target:"node20",tsconfigRaw:{compilerOptions:{target:"ES2022"}},metafile:true,banner:{js:'import {createRequire as __createRequire} from "node:module"; const require = __createRequire(import.meta.url);'},logLevel:"silent"});
  const packages=new Set();

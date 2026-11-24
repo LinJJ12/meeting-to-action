@@ -4,6 +4,7 @@ import {validateMinutes} from "./core/minutes.js";
 import {MeetingInputSchema} from "./domain/schema.js";
 import type {MinutesDocument} from "./domain/minutes.js";
 import { readFile, stat, writeFile } from "node:fs/promises";
+import { readFileSync } from "node:fs";
 import { resolve, basename } from "node:path";
 import { normalizeTranscript } from "./core/normalize.js";
 import { analyzeMeeting } from "./core/analyze.js";
@@ -15,6 +16,7 @@ import { MAX_ANALYSIS_BYTES, MAX_CONTENT_BYTES, MAX_SEGMENTS, assertMeetingInput
 
 const USAGE=[
   "Usage:",
+  "  meeting-to-action --version",
   "  meeting-to-action inspect <transcript.txt|transcript.md> [--out normalized.json]",
   "  meeting-to-action analyze <transcript.txt|transcript.md> [--out report.md]",
   "  meeting-to-action report <normalized.json> --analysis <analysis.json> [--minutes <minutes.json>] [--mode minutes|actions|evidence] [--no-appendix] [--out report.md]",
@@ -43,6 +45,13 @@ function invalidMode(value: string): never {
 }
 
 const [command, input, ...args] = process.argv.slice(2);
+if (command === "--version" || command === "-v") {
+  const pkg = JSON.parse(
+    readFileSync(new URL("../package.json", import.meta.url), "utf8").replace(/^\uFEFF/, ""),
+  ) as { version?: string };
+  console.log(pkg.version ?? "0.0.0");
+  process.exit(0);
+}
 if (!command || !input || !["inspect", "analyze", "report"].includes(command)) usage();
 
 let outputPath: string | undefined;

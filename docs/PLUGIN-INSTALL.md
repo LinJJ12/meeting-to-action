@@ -21,6 +21,11 @@ codex plugin add meeting-to-action@meeting-to-action-local
 
 `plugin:build` 从 `skills/meeting-to-action/`、`src/mcp/` 和 `plugin/` 构建 `dist/plugin-marketplace/`。输出包含市场清单、插件清单、MCP 配置、Skill、独立服务 bundle 和第三方许可证信息；不打包 .env、会议记录或用户配置，不执行安装钩子。
 
+两点需要知道：
+
+- 构建会**先清空**输出目录，上一轮残留的文件不会混进新产物。
+- 生成的 `mcp.json` 里 `command` 被替换成构建时 Node 解释器的绝对路径（不再依赖 PATH）。因此请按「本机构建、本机安装」的方式使用；如果要在另一台机器安装，请在那台机器上重新执行 `npm run plugin:build`。
+
 注册与安装命令会修改当前用户的客户端配置及插件缓存，请在你希望使用插件的账户下执行。若当前 CLI 不支持这些子命令，使用客户端提供的本地插件安装入口，或选择[项目级 Skill + MCP 安装](CLIENT-SETUP.md)。不要将缺少子命令当作构建失败。
 
 ## 确认客户端加载
