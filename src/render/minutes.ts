@@ -1,7 +1,7 @@
 import type {EvidenceRef,MeetingAnalysis,MeetingInput} from "../domain/schema.js";
 import type {MinutesClaim,MinutesDocument,MinutesMeta} from "../domain/minutes.js";
 import {validateMinutes} from "../core/minutes.js";
-import {escapeMarkdownText as text} from "./escape.js";
+import {escapeMarkdownInline as text} from "./escape.js";
 import {renderMarkdown} from "./markdown.js";
 
 export type ReadingMode="minutes"|"actions"|"evidence";
@@ -55,7 +55,7 @@ function renderMinutesText(analysis:MeetingAnalysis,document:MinutesDocument,app
  if(document.highlights.length)blocks.push(renderHighlights(document.highlights));
  blocks.push(renderSections(document));
  blocks.push(renderTaskSection(analysis,document.actionNote));
- const open=renderOpenClaims(document);
+ const open=renderOpenClaims(analysis,document);
  if(open!==undefined)blocks.push(open);
  if(appendix)blocks.push(renderTraceAppendix(analysis,document));
  return blocks.join("\n\n")+"\n";
@@ -84,8 +84,18 @@ function renderSections(document:MinutesDocument):string {
  return lines.join("\n");
 }
 
-function renderOpenClaims(document:MinutesDocument):string|undefined {
- const claims=document.sections.flatMap(section=>section.claims).filter(claim=>claim.kind==="open");
+/**
+ * "Key unresolved items" aggregates only the open claims whose evidence points
+ * at a conflict or a risk — i.e. the items that block or endanger the outcome.
+ * Plain open questions already appear inside their topic section; repeating them
+ * here would turn one unresolved point into two lines of the same document.
+ */
+function renderOpenClaims(analysis:MeetingAnalysis,document:MinutesDocument):string|undefined {
+ const facts=indexAnalysisFacts(analysis);
+ const claims=document.sections.flatMap(section=>section.claims).filter(claim=>claim.kind==="open"&&claim.refs.some(ref=>{
+  const kind=facts.get(ref)?.kind;
+  return kind==="conflict"||kind==="risk";
+ }));
  if(!claims.length)return undefined;
  const lines:string[]=["## 关键未决事项"];
  for(const claim of claims) {

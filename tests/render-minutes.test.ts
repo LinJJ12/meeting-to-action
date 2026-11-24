@@ -67,7 +67,7 @@ const render=(options?:RenderOptions)=>renderMinutesDocument(inputFixture(),anal
 
 it("renders the minutes title, meta line, highlights and topic sections",()=>{
   const md=render();
-  expect(md.startsWith("# 星河手账 11 月第 4 周例会纪要\n\n日期：2026\\-11\\-24 ｜ 参会：林舟、苏禾、陈屿\n")).toBe(true);
+  expect(md.startsWith("# 星河手账 11 月第 4 周例会纪要\n\n日期：2026-11-24 ｜ 参会：林舟、苏禾、陈屿\n")).toBe(true);
   expect(md).toContain("## 会议要点\n- 登录改造回归完成，准备小范围灰度\n- 支付回调监控待补充");
   expect(md).toContain("## 按议题整理\n### 登录改造\n- **进展：**登录改造回归已完成，准备灰度");
   expect(md).toContain("### 发布安排");
@@ -109,7 +109,7 @@ it("adds the meta line only when date or participants are present",()=>{
   const dateOnly:any=structuredClone(minutesFixture());
   dateOnly.meta={date:"2026-12-01"};
   const dateText=renderMinutesDocument(inputFixture(),analysisFixture(),dateOnly);
-  expect(dateText).toContain("日期：2026\\-12\\-01");
+  expect(dateText).toContain("日期：2026-12-01");
   expect(dateText).not.toContain("参会：");
 
   const peopleOnly:any=structuredClone(minutesFixture());
@@ -241,16 +241,16 @@ it("escapes untrusted text so titles, headings and tables cannot be injected",()
   analysis.actionItems[0].dueDate="周五\n或下周";
   analysis.actionItems[0].evidence[0].quote="<script>alert(1)</script>\n下一行";
   const md=renderMinutesDocument(inputFixture(),analysis,minutes);
-  expect(md.split("\n")[0]).toBe("# &lt;script&gt;alert\\(1\\)&lt;/script&gt; \\| 纪要 第二行");
-  expect(md).toContain("- \\[x\\]\\(y\\)");
+  expect(md.split("\n")[0]).toBe("# &lt;script&gt;alert(1)&lt;/script&gt; \\| 纪要 第二行");
+  expect(md).toContain("- \\[x\\](y)");
   expect(md).toContain("\\`code\\` &amp; &lt;b&gt;bold&lt;/b&gt;");
   expect(md).toContain("### 登录\\|附录 伪造标题");
-  expect(md).toContain("&lt;img src=x onerror=alert\\(1\\)&gt;");
+  expect(md).toContain("&lt;img src=x onerror=alert(1)&gt;");
   expect(md).toContain("  - 第一行 第二行&lt;em&gt;");
   expect(md).toContain("| 整理\\|名单&lt;script&gt; | 甲\\|乙 | 周五 或下周 | 进行中 |");
   expect(md).not.toContain("<script");
   expect(md).not.toContain("<img");
-  expect(md).not.toContain("](");
+  expect(md).not.toContain("[x](");
   const tableLines=md.split("\n").filter(line=>line.startsWith("|"));
   expect(tableLines).toHaveLength(10);
   expect(tableLines.every(line=>line.endsWith("|"))).toBe(true);
@@ -304,4 +304,29 @@ it("propagates minutes validation failures before rendering",()=>{
 
 it("renders deterministically",()=>{
   for(const mode of ["minutes","actions","evidence"] as const)expect(render({mode})).toBe(render({mode}));
+});
+
+it("leaves ordinary punctuation unescaped while still neutralizing markdown syntax",()=>{
+  const draft:any=structuredClone(minutesFixture());
+  draft.title="v0.2 评审（2026-11-24）";
+  draft.meta={date:"2026-11-24"};
+  draft.highlights=["**加粗**与 [链接](https://example.com)"];
+  const md=renderMinutesDocument(inputFixture(),analysisFixture(),draft);
+  expect(md).toContain("# v0.2 评审（2026-11-24）");
+  expect(md).toContain("日期：2026-11-24");
+  expect(md).not.toContain("v0\\.2");
+  expect(md).toContain("\\*\\*加粗\\*\\*");
+  expect(md).toContain("\\[链接\\](https://example.com)");
+});
+
+it("keeps plain open questions out of the key-unresolved summary",()=>{
+  const draft:any=structuredClone(minutesFixture());
+  draft.sections.push({id:"sec4",heading:"附注",claims:[
+    {id:"c6",kind:"open",text:"灰度比例数值待定",refs:["q1"]}
+  ]});
+  const md=renderMinutesDocument(inputFixture(),analysisFixture(),draft);
+  const unresolved=(md.split("## 关键未决事项")[1]??"").split("\n## ")[0]??"";
+  expect(unresolved).toContain("灰度比例与监控缺口待确认");
+  expect(unresolved).not.toContain("灰度比例数值待定");
+  expect(md).toContain("- **待确认：**灰度比例数值待定");
 });
