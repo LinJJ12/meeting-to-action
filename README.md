@@ -22,7 +22,7 @@ The local TypeScript foundation is implemented on `feat/local-analysis-mvp`.
 Requires Node.js 20+.
 
 ```bash
-npm install
+npm ci
 npm run typecheck
 npm test
 npm run dev -- inspect examples/sample-meeting.md
@@ -49,3 +49,5 @@ npm run dev -- inspect examples/sample-meeting.md --out ./meeting.normalized.jso
 - Provider-neutral core and adapter-based integrations.
 
 See [PRD](docs/PRD.md), [architecture](docs/ARCHITECTURE.md), [data schema](docs/DATA-SCHEMA.md), [security](docs/SECURITY.md), and [roadmap](docs/ROADMAP.md).
+
+Reports preserve evidence references and escape source Markdown/HTML. See the runtime validation limitations in [data contracts](docs/DATA-SCHEMA.md).
