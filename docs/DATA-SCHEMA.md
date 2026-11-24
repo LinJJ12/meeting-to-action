@@ -106,3 +106,7 @@ Metadata (`speaker`, `timestamp`) and quotes are validated identically in both m
 > History: before this was unified, the `analyze` path used its own close-but-different checker. That checker ignored `speaker`/`timestamp` (fabricated labels passed) while demanding exactly-equal line bounds, so the same analysis could be accepted by `analyze` and rejected by `report`. Both directions are now covered by `tests/evidence-consistency.test.ts`.
 
 `renderMarkdown` validates analysis structure, escapes untrusted Markdown/HTML, and preserves topics and evidence. It does not have the source input and cannot verify evidence against original text. The `report` command verifies meetingId, duplicate item IDs and evidence through `validateAnalysis` before rendering. Summary strings currently have no evidence field and remain unverified narrative.
+
+## Minutes display contract
+
+`minutes-contract@1.0` is a separate, versioned display contract for readable minutes (`src/domain/minutes.ts`; exported JSON Schema at `skills/meeting-to-action/references/minutes.schema.json`). It owns headings, claims, and id references only — never task facts such as assignee, dueDate, or status, which remain authoritative in analysis-schema@1.0. `validateMinutes(input, analysis, minutes)` deterministically enforces meeting id, contract version, known refs, kind/type match, and full action-item coverage, and fails with `MINUTES_*` codes. See [MINUTES-CONTRACT.md](MINUTES-CONTRACT.md) for fields, all seven rules, error codes, and the default product decisions.
