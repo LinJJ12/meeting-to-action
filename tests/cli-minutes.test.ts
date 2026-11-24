@@ -156,4 +156,26 @@ describe("report CLI minutes wiring",()=>{
   expect(result.status).toBe(1);
   expect(existsSync(outPath)).toBe(false);
  });
+
+ it("accepts JSON files exported by Windows tools with a UTF-8 BOM",()=>{
+  const bomInput=join(dir,"normalized-bom.json");
+  const bomAnalysis=join(dir,"analysis-bom.json");
+  const bomMinutes=join(dir,"minutes-bom.json");
+  writeFileSync(bomInput,"\uFEFF"+JSON.stringify(input,null,2));
+  writeFileSync(bomAnalysis,"\uFEFF"+JSON.stringify(analysis,null,2));
+  writeFileSync(bomMinutes,"\uFEFF"+JSON.stringify(minutes,null,2));
+  const outPath=join(dir,"bom-minutes.md");
+  const result=run("report",bomInput,"--analysis",bomAnalysis,"--minutes",bomMinutes,"--out",outPath);
+  expect(result.status).toBe(0);
+  expect(readFileSync(outPath,"utf8")).toBe(expectedMinutes());
+ });
+
+ it("accepts a transcript exported with a UTF-8 BOM",()=>{
+  const bomTranscript=join(dir,"transcript-bom.md");
+  writeFileSync(bomTranscript,"\uFEFF"+"Team: Defer launch.\n");
+  const result=run("inspect",bomTranscript);
+  expect(result.status).toBe(0);
+  expect(result.stdout.startsWith("{\n")).toBe(true);
+  expect(result.stdout).not.toContain("\uFEFF");
+ });
 });

@@ -84,7 +84,7 @@ async function readJsonWithinLimit(path:string,maxBytes:number,label:string):Pro
  assertSize((await stat(path)).size);
  const raw=await readFile(path);
  assertSize(raw.byteLength);
- try{return JSON.parse(raw.toString("utf8"));}catch{throw new Error("INPUT_JSON_INVALID");}
+ try{return JSON.parse(raw.toString("utf8").replace(/^\uFEFF/,""));}catch{throw new Error("INPUT_JSON_INVALID");}
 }
 /** `--minutes` 是可选编辑稿：读取或 JSON 解析失败统一收敛，且不回显宿主路径。 */
 async function readMinutesJson(path:string):Promise<unknown>{
@@ -104,7 +104,8 @@ async function readTranscriptForAnalyze(path:string):Promise<string>{
  const raw=await readFile(path);
  // stat 与读取之间文件可能变化，按实际读到的 Buffer 字节数复核一次。
  assertTranscriptSize(raw.byteLength,path);
- return raw.toString("utf8");
+ // Windows 记事本等工具会写 UTF-8 BOM：剥掉，避免首行说话人被识别错。
+ return raw.toString("utf8").replace(/^\uFEFF/,"");
 }
 
 try {
@@ -121,7 +122,7 @@ try {
     if(outputPath){await writeFile(resolve(outputPath),report,{encoding:"utf8",flag:"wx"});console.log("Wrote "+resolve(outputPath));}
     else process.stdout.write(report);
   }else{
-  const transcript = command === "analyze" ? await readTranscriptForAnalyze(absoluteInput) : await readFile(absoluteInput, "utf8");
+  const transcript = (command === "analyze" ? await readTranscriptForAnalyze(absoluteInput) : await readFile(absoluteInput, "utf8")).replace(/^\uFEFF/,"");
   const meeting = normalizeTranscript(
     transcript,
     basename(absoluteInput),
