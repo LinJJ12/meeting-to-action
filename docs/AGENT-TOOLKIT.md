@@ -18,7 +18,7 @@ Two modes share contracts: Agent mode authors JSON using Codex/Cursor's model; s
 
 ## Current verified baseline
 
-Core PR #3 is merged remotely and integrated locally. By user decision, this repository owns Skill, Core and future MCP together. The canonical Skill is `skills/meeting-to-action/`; no coordination with a separate skills repository is required. No npm MCP package or plugin has been published.
+This repository maintains Skill, Core and implemented local MCP together. The canonical Skill is `skills/meeting-to-action/`; no coordination with a separate skills repository is required. No npm MCP package or plugin has been published.
 
 Runtime modules:
 
@@ -79,7 +79,7 @@ No default persistence/network access or model calls. If later adding path-based
 
 Core owns contract versions and fixtures. Skill declares supported contract version plus a tested Core commit/release. Generate the bundled Skill JSON Schema with `npm run skill:schema`; verify it against Core in local tests before a release. Skill and Core ship from the same repository revision. Breaking contract changes require a new schema version and explicit migration. Skill content must still work without Core installed.
 
-Keep the existing runtime private until package names, bin entrypoints and packaged file contents are verified. Future client MCP configuration should reference a real released package, never a placeholder that users might execute. Pin releases for reproducibility. Do not automate Actions-based packaging while quota is exhausted; use local checks and manual release artifacts.
+Keep the existing runtime private until package names, bin entrypoints and packaged file contents are verified. Future client MCP configuration should reference a real released package, never a placeholder that users might execute. Pin releases for reproducibility. Local plugin packaging is available; see [plugin installation](PLUGIN-INSTALL.md). Public publishing remains a separate release step.
 
 ## Milestones and acceptance
 

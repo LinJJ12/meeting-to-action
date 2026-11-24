@@ -16,6 +16,8 @@ Individual developers, technical leads, and small teams using GitHub Issues and 
 - Reduce duplicate or poorly scoped issues.
 - Preserve decision history and track follow-through.
 
+This document describes product targets, including future GitHub integration. For implemented capabilities see [README](../README.md) and [roadmap](ROADMAP.md).
+
 ## MVP requirements
 
 1. Import TXT and Markdown.

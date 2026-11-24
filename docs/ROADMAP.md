@@ -49,7 +49,7 @@ A phase is complete only with tests, documentation, a reproducible demo, and kno
 
 ## Agent toolkit delivery
 
-See [the product architecture and acceptance plan](AGENT-TOOLKIT.md). Agent JSON ingestion/report is implemented locally with regression coverage. Skill source is now maintained in this repository; actual Codex/Cursor installation testing and runtime publication are pending; local MCP implementation and SDK subprocess checks are complete. CI is not required to run these checks locally, and must not be triggered while the user is avoiding Actions usage.
+See [the product architecture and acceptance plan](AGENT-TOOLKIT.md). Agent JSON ingestion/report is implemented locally with regression coverage. Skill source is maintained in this repository. Local MCP and plugin packaging are implemented; Codex protocol discovery has been checked in a maintainer environment. Desktop model invocation, Cursor UI acceptance and public distribution remain pending. Verification can be run locally.
 
 Installer and client acceptance details: [CLIENT-SETUP.md](CLIENT-SETUP.md). Codex CLI discovery passed on 2026-11-24; Cursor UI remains pending.
 

@@ -40,7 +40,7 @@ Cursor project `.cursor/mcp.json` entry:
 }
 ```
 
-Merge entries with existing configuration rather than replace it. Follow the current [Codex MCP documentation](https://developers.openai.com/codex/mcp) and [Cursor MCP documentation](https://cursor.com/docs/mcp) for your installed client. Record client/version and confirm five discovered tools before claiming client compatibility. User-wide settings have not been changed by this implementation.
+Merge entries with existing configuration rather than replace it. Follow the current [Codex MCP documentation](https://developers.openai.com/codex/mcp) and [Cursor MCP documentation](https://cursor.com/docs/mcp) for your installed client. Record client/version and confirm five discovered tools before claiming client compatibility. These manual examples do not themselves change user-wide settings. Plugin registration is a separate installation method described in [PLUGIN-INSTALL.md](PLUGIN-INSTALL.md).
 
 ## Tools and flow
 
@@ -74,4 +74,4 @@ No default persistence, arbitrary disk reads/writes, GitHub access, model calls 
 
 ## Verification status
 
-Local SDK source/compiled subprocess tests are passing. Actual Codex CLI/App Server Skill and five-tool discovery has also passed; [acceptance details and project setup](CLIENT-SETUP.md) distinguish invocation overrides from trusted project config loading. Cursor UI and model-level behavior remain separate release checks. The server is an implemented local milestone, not a published v0.2 package or a completed client integration release.
+Local SDK source/compiled subprocess tests are passing. Actual Codex CLI/App Server Skill and five-tool discovery has also passed; [acceptance details and project setup](CLIENT-SETUP.md) distinguish invocation overrides from trusted project config loading. Cursor UI and model-level behavior remain separate release checks. The server and local plugin bundle are implemented. Public package distribution and full client/model acceptance remain pending.

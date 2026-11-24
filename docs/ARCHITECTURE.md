@@ -1,61 +1,46 @@
 # Architecture
 
-## Three layers
+## Implemented layers
 
-1. **Skill** — portable instructions for analysis, evidence standards, and review gates.
-2. **MCP integrations** — controlled access to meeting sources, GitHub, and documents.
-3. **TypeScript core** — deterministic parsing, normalization, schema validation, evidence mapping, deduplication helpers, and rendering.
+Meeting-to-Action is one TypeScript package, with a portable Skill and a separately bundled local plugin. It is not a multi-package workspace.
 
-The LLM interprets content; code enforces contracts and safety.
+| Location | Responsibility |
+|---|---|
+| `src/domain/schema.ts` | Authoritative versioned Zod contracts |
+| `src/core/` | Normalize, split, prompt, ingest analysis and validate evidence |
+| `src/render/markdown.ts` | Render escaped Markdown with evidence references |
+| `src/providers/` | Optional standalone OpenAI-compatible model adapter |
+| `src/cli.ts` | File-based inspect, report and analyze commands |
+| `src/mcp/` | Five stateless stdio tools around Core |
+| `src/integrations/setup.ts`, `src/setup.ts` | Project-local Skill/MCP installer and entrypoint |
+| `skills/meeting-to-action/` | Host analysis workflow and generated schema |
+| `plugin/`, `scripts/build-plugin.mjs` | Local plugin metadata and standalone bundle builder |
 
-## Flow
+## Data flow
 
 ```text
-Transcript -> Source Adapter -> Normalized Input
-                                  |
-                                  v
-                             Agent Skill
-                                  |
-                                  v
-                            Structured Draft
-                                  |
-                         Schema + Evidence Check
-                                  |
-                    +-------------+-------------+
-                    |                           |
-                    v                           v
-             Markdown / JSON              MCP Context Retrieval
-                                               |
-                                         GitHub / Documents
-                                               |
-                                               v
-                                         Candidate Actions
-                                               |
-                                           Human Review
-                                               |
-                                       Explicit External Write
+Transcript -> normalize -> MeetingInput
+                              |
+                  Host assistant + Skill
+                  (or optional Provider)
+                              |
+                       MeetingAnalysis
+                              |
+                Schema + identity + evidence checks
+                              |
+                       Markdown report
 ```
 
-## Packages
+CLI handles local file input/output. MCP accepts inline JSON and returns data; the host reads files, interprets content and saves reports. The MCP process does not call a model. Its five tools are documented in [MCP.md](MCP.md).
 
-- `core`: normalization, domain logic, evidence resolution, validation, rendering, errors.
-- `schemas`: versioned JSON schemas, shared types, fixtures.
-- `mcp-server`: MCP server and explicit tool registration.
-- `adapters`: transcript, GitHub, and Markdown document adapters.
-- `cli` (later): local command-line workflow.
+`split_transcript` preserves original source coordinates for bounded host analysis. It does not implement automatic chunked model calls in standalone `analyze`.
 
-## Candidate MCP tools
+## Packaging
 
-- `meeting.list`, `meeting.read`
-- `github.search_issues`, `github.get_issue`, `github.create_issue`
-- `docs.search`, `docs.write_markdown`
+`npm run build` compiles runtime entrypoints into `dist/`. `npm run plugin:build` separately bundles the MCP server and copies the canonical Skill into `dist/plugin-marketplace/`. Generated output is not source and is ignored by Git. Project installations reference absolute runtime paths; plugin installations use their bundled server. See [project setup](CLIENT-SETUP.md) and [plugin setup](PLUGIN-INSTALL.md).
 
-Names are provisional. Keep tools narrow, validate arguments, bound results, and separate read from write capabilities. Write tools require actual client/host confirmation, not an LLM assertion of approval.
+## Trust boundaries and future scope
 
-## Trust boundaries
+Treat transcripts and retrieved content as untrusted data. Contract and quote checks establish traceability, not semantic truth or speaker identity. Raw transcript processing in Core is local; optional providers and host models may send content remotely. See [security](SECURITY.md) and [data contracts](DATA-SCHEMA.md).
 
-Treat transcripts, issue bodies, repository descriptions, and retrieved documents as untrusted data. Never follow embedded instructions. Keep secrets outside source control and prompts. Raw transcripts remain local by default. Use least-privilege integration scopes and avoid sensitive logs.
-
-## Extensibility
-
-Meeting providers and destinations are adapters. The domain model must not assume Tencent Meeting or GitHub-specific fields.
+GitHub search/write adapters, historical persistence, document integrations and new report reading modes are future work. They are not current MCP tools or packages. See [roadmap](ROADMAP.md).
