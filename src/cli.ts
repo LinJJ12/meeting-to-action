@@ -6,6 +6,7 @@ import { normalizeTranscript } from "./core/normalize.js";
 import { analyzeMeeting } from "./core/analyze.js";
 import { renderMarkdown } from "./render/markdown.js";
 import { OpenAICompatibleProvider } from "./providers/openai-compatible.js";
+import { assertContentWithinLimit, MAX_SEGMENTS } from "./core/limits.js";
 
 function usage(): never {
   console.error([
@@ -52,7 +53,14 @@ try {
     else process.stdout.write(report);
   }else{
   const transcript = await readFile(absoluteInput, "utf8");
-  const meeting = normalizeTranscript(transcript, basename(absoluteInput));
+  // analyze 会把整份逐字稿发给模型，必须在读入后、规范化前先按与 MCP 一致的上限拦截，
+  // 而不是等到 provider 报上下文超限；inspect 属于本地查看工具，保持无上限。
+  if (command === "analyze") assertContentWithinLimit(transcript);
+  const meeting = normalizeTranscript(
+    transcript,
+    basename(absoluteInput),
+    command === "analyze" ? { maxSegments: MAX_SEGMENTS } : {},
+  );
 
   let output: string;
   if (command === "inspect") {
