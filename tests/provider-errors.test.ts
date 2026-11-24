@@ -5,6 +5,7 @@ import { OpenAICompatibleProvider, type OpenAICompatibleOptions } from "../src/p
 import { ProviderError } from "../src/providers/types.js";
 
 const servers: Server[] = [];
+const MIB = 1024 * 1024;
 
 async function stubServer(handler: (req: IncomingMessage, res: ServerResponse) => void): Promise<string> {
   const server = createServer(handler);
@@ -22,6 +23,33 @@ afterEach(async () => {
 
 function provider(baseUrl: string, extra: Partial<OpenAICompatibleOptions> = {}) {
   return new OpenAICompatibleProvider({ apiKey: "test-key", model: "test-model", baseUrl, ...extra });
+}
+
+/**
+ * 按块流式写响应体，避免测试自己一次性分配几十 MiB；客户端提前断开时停止写入，
+ * 否则 stub server 在 afterEach 里可能一直等这个连接。
+ */
+function streamBody(res: ServerResponse, totalBytes: number, chunk = "x".repeat(64 * 1024)): void {
+  const piece = Buffer.from(chunk);
+  let sent = 0;
+  let stopped = false;
+  const stop = () => {
+    stopped = true;
+  };
+  res.on("close", stop);
+  res.on("error", stop);
+  const pump = () => {
+    while (!stopped && sent < totalBytes) {
+      const size = Math.min(piece.length, totalBytes - sent);
+      sent += size;
+      if (!res.write(size === piece.length ? piece : piece.subarray(0, size))) {
+        res.once("drain", pump);
+        return;
+      }
+    }
+    if (!stopped) res.end();
+  };
+  pump();
 }
 
 describe("provider 错误处理与响应上限", () => {
@@ -92,5 +120,99 @@ describe("provider 错误处理与响应上限", () => {
     });
 
     await expect(provider(baseUrl).complete([{ role: "user", content: "x" }])).resolves.toBe("{\"ok\":true}");
+  });
+
+  it("4xx 响应体超过 8 MiB 时返回 HTTP 错误，而不是 RESPONSE_TOO_LARGE", async () => {
+    const bodyBytes = 20 * MIB;
+    const baseUrl = await stubServer((_req, res) => {
+      res.writeHead(400, { "content-type": "text/plain", "content-length": String(bodyBytes) });
+      streamBody(res, bodyBytes);
+    });
+
+    const error = await provider(baseUrl)
+      .complete([{ role: "user", content: "x" }])
+      .catch((caught: unknown) => caught);
+
+    expect(error).toBeInstanceOf(ProviderError);
+    expect((error as ProviderError).code).toBe("HTTP_ERROR");
+    const message = String((error as Error).message);
+    expect(message).toContain("400");
+    expect(message).toContain("Bad Request");
+  });
+
+  it("verbose 下 4xx 超大响应体只做有界诊断，错误码仍是 HTTP 错误", async () => {
+    const bodyBytes = 20 * MIB;
+    const baseUrl = await stubServer((_req, res) => {
+      res.writeHead(400, { "content-type": "text/plain", "content-length": String(bodyBytes) });
+      streamBody(res, bodyBytes);
+    });
+
+    const error = await provider(baseUrl, { verboseErrors: true })
+      .complete([{ role: "user", content: "x" }])
+      .catch((caught: unknown) => caught);
+
+    expect((error as ProviderError).code).toBe("HTTP_ERROR");
+    const message = String((error as Error).message);
+    expect(message).toContain("400");
+    expect(message.length).toBeLessThan(700);
+  });
+
+  it("4xx 响应体读取中途断开时仍是 HTTP 错误，而不是 BODY_READ_FAILED", async () => {
+    const baseUrl = await stubServer((_req, res) => {
+      res.writeHead(400, { "content-type": "text/plain", "content-length": "4096" });
+      res.flushHeaders();
+      res.write("PARTIAL_PRIVATE_TRANSCRIPT");
+      // 上游在错误响应体发完前挂断，模拟网关中途掐断连接。
+      setTimeout(() => res.destroy(), 30);
+    });
+
+    const error = await provider(baseUrl, { verboseErrors: true })
+      .complete([{ role: "user", content: "x" }])
+      .catch((caught: unknown) => caught);
+
+    expect(error).toBeInstanceOf(ProviderError);
+    expect((error as ProviderError).code).toBe("HTTP_ERROR");
+    const message = String((error as Error).message);
+    expect(message).toContain("400");
+    expect(message).not.toContain("PARTIAL_PRIVATE_TRANSCRIPT");
+  });
+
+  it("2xx 响应体超过默认 8 MiB 上限时返回 RESPONSE_TOO_LARGE", async () => {
+    const bodyBytes = 9 * MIB;
+    const baseUrl = await stubServer((_req, res) => {
+      // 不声明 content-length，让实现走流式累计上限的分支。
+      res.writeHead(200, { "content-type": "application/json" });
+      streamBody(res, bodyBytes);
+    });
+
+    const error = await provider(baseUrl)
+      .complete([{ role: "user", content: "x" }])
+      .catch((caught: unknown) => caught);
+
+    expect(error).toBeInstanceOf(ProviderError);
+    expect((error as ProviderError).code).toBe("RESPONSE_TOO_LARGE");
+  });
+
+  it("4xx 正常小响应体：默认不泄漏正文，verbose 只给截断摘要", async () => {
+    const baseUrl = await stubServer((_req, res) => {
+      res.writeHead(400, { "content-type": "text/plain" });
+      res.end("PRIVATE_TRANSCRIPT: Alice said the launch is cancelled");
+    });
+
+    const defaultError = await provider(baseUrl)
+      .complete([{ role: "user", content: "x" }])
+      .catch((caught: unknown) => caught);
+    expect((defaultError as ProviderError).code).toBe("HTTP_ERROR");
+    expect(String((defaultError as Error).message)).not.toContain("PRIVATE_TRANSCRIPT");
+    expect(String((defaultError as Error).message)).toContain("400");
+
+    const verboseError = await provider(baseUrl, { verboseErrors: true })
+      .complete([{ role: "user", content: "x" }])
+      .catch((caught: unknown) => caught);
+    expect((verboseError as ProviderError).code).toBe("HTTP_ERROR");
+    const verboseMessage = String((verboseError as Error).message);
+    expect(verboseMessage).toContain("400");
+    expect(verboseMessage).toContain("PRIVATE_TRANSCRIPT");
+    expect(verboseMessage.length).toBeLessThan(700);
   });
 });
