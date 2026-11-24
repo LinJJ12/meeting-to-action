@@ -69,6 +69,14 @@ npm run dev -- report examples/agent-workflow/normalized.json --analysis example
 
 `inspect` 和 `report` 不调用模型。`report` 校验会议 ID、结构、分类内重复 ID 及证据后再渲染。带 `--out` 的 CLI 命令拒绝覆盖已有文件。
 
+需要更紧凑的中文纪要或行动清单时，在已校验的 analysis 之上再提供一份 minutes 编辑稿（`minutes-contract@1.0`，见[会议纪要展示契约](docs/MINUTES-CONTRACT.md)）：
+
+```sh
+npm run dev -- report normalized.json --analysis analysis.json --minutes minutes.json --out minutes.md
+```
+
+`--minutes` 存在时默认渲染 minutes 模式（主稿 + 溯源附录）；`--mode` 可选 `minutes`、`actions`（仅行动清单）、`evidence`（原证据报告）；`--no-appendix` 去掉溯源附录。缺 `--minutes` 时仍输出原来的 evidence 报告，既有脚本行为不变；要求 `minutes`/`actions` 模式却没给编辑稿会以 `MINUTES_MISSING` 失败。MCP 的 `render_report` 接受同样的可选参数（`minutes` 为 JSON 字符串），详见 [MCP 文档](docs/MCP.md)。
+
 ### 可选：独立模型分析
 
 复制 `.env.example` 为 `.env`，填写 `OPENAI_API_KEY` 和 `OPENAI_MODEL`，按需配置 `OPENAI_BASE_URL`，然后执行：
@@ -87,7 +95,7 @@ CLI 会加载本地 `.env`，也可使用 shell 环境变量。此模式会将�
 - 未知负责人/日期保持未知；记录内的指令作为不可信数据处理。
 - 校验通过证明结构与引用符合规则，不能证明解释正确。摘要目前没有逐项证据字段，报告仍需人工审阅。
 - MCP 不调用模型、不读写任意文件、不访问 GitHub，也不自动创建 Issue。宿主模型是否联网及数据如何处理取决于宿主设置。
-- 跨会议持久化、GitHub 集成、公共发布和新的简洁纪要渲染模式仍属后续计划。
+- 跨会议持久化、GitHub 集成与公共发布仍属后续计划；简洁纪要渲染已接入 CLI `report` 与 MCP `render_report`（见[会议纪要展示契约](docs/MINUTES-CONTRACT.md)）。
 
 ## 目录与文档
 

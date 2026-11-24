@@ -2,7 +2,7 @@
 
 独立、带版本号的展示契约：它只描述「怎么读」，不拥有事实。负责人、期限、状态、严重度等事实一律来自 `analysis-schema@1.0` 的 `decisions`、`actionItems`、`risks`、`openQuestions`、`conflicts`。
 
-- 运行时契约：`src/domain/minutes.ts`（Zod，`.strict()`）；校验器：`validateMinutes(input, analysis, minutes)`（`src/core/minutes.ts`）。
+- 运行时契约：`src/domain/minutes.ts`（Zod，`.strict()`）；校验器：`validateMinutes(input, analysis, minutes)`（`src/core/minutes.ts`）；渲染器：`renderMinutesDocument(input, analysis, minutes, {mode?, appendix?})`（`src/render/minutes.ts`）。
 - 导出产物：`skills/meeting-to-action/references/minutes.schema.json`，由 `npm run skill:schema` 生成；`tests/minutes-schema.test.ts` 对拍确保产物与运行时契约一致。
 - 确定性代码只做「结构 + id 映射」校验；议题归并、措辞压缩、标题命名由宿主模型或人工完成。
 - 校验失败抛 `MinutesContractError`，`error.code` 为下文 6 个错误码之一，`error.message` 以错误码开头并附中文细节。
@@ -55,10 +55,42 @@
 | `MINUTES_KIND_MISMATCH` | `kind` 与条目类型不匹配，或 `progress` 的 status 不在允许子集内（规则 4、5） |
 | `MINUTES_ACTION_COVERAGE` | 存在未被任何 claim 引用的 actionItem（规则 6），消息列出缺失 id |
 
+接线层另有两个入口错误码，不属于 `validateMinutes` 的契约错误：`MINUTES_MISSING`（要求 `minutes`/`actions` 模式但未提供 minutes 编辑稿）与 `RENDER_MODE_INVALID`（渲染器收到非法模式值）。CLI 直接以 `<code>: <message>` 写入 stderr 并 exit 1；MCP 把两者映射为 `isError: true` 的稳定码。
+
+## 渲染与接线（阶段 B）
+
+`renderMinutesDocument` 的 `mode` 有三档，`appendix` 默认 `true`：
+
+| mode | 输出 |
+| --- | --- |
+| `minutes` | 主稿（标题、要点、分节 claim、行动清单）+ 溯源附录 |
+| `actions` | 仅行动清单 |
+| `evidence` | 直接委托 `renderMarkdown`，与改造前的报告逐字节一致 |
+
+CLI：
+
+```sh
+meeting-to-action report normalized.json --analysis analysis.json \
+  [--minutes minutes.json] [--mode minutes|actions|evidence] [--no-appendix] [--out report.md]
+```
+
+- 三个新参数只对 `report` 有效，出现在 `inspect`/`analyze` 上按用法错误处理。
+- 默认模式：给了 `--minutes` 是 `minutes`，否则 `evidence`（既有输出不变）。
+- `--mode minutes|actions` 但缺 `--minutes` → `MINUTES_MISSING`；未知 `--mode` 值 → 用法错误 exit 1。
+- `--minutes` 读取或 JSON 解析失败 → `INPUT_JSON_INVALID`（不回显宿主路径）；契约校验失败 → `MINUTES_*` 码。提供 `--minutes` 时即使 `--mode evidence` 也会先校验该编辑稿。
+- `--out` 仍是单文件、`flag: "wx"` 拒绝覆盖。
+
+MCP `render_report`：
+
+- 新增可选参数 `minutes`（JSON 字符串，受 2 MiB 内容上限约束）、`mode`（枚举）与 `appendix`（布尔），对象仍拒绝未知字段。
+- 默认模式规则与 CLI 相同；缺编辑稿却要求 `minutes`/`actions` 返回 `MINUTES_MISSING`；非法 `mode` 在 Schema 层即被拒绝为 `INPUT_INVALID`。
+- 渲染前顺序固定：`validateAnalysis`（既有）→ `validateMinutes`（有 minutes 时）→ 渲染；返回 `{markdown}`。
+- 错误码白名单新增 6 个契约码（含 `MINUTES_KIND_MISMATCH`）、接线层的 `MINUTES_MISSING` 与渲染器的 `RENDER_MODE_INVALID`。
+
 ## 与 analysis-schema@1.0 的关系
 
 - 不新增、不修改 `analysis-schema@1.0` 的字段与版本；minutes 是叠加在事实之上的展示层契约。
-- analysis 是事实唯一来源；minutes 只持有编辑性文字和 id 引用。渲染层（阶段 B）负责把 id 解析回事实并显示中文状态，本阶段不实现渲染、不接 CLI/MCP。
+- analysis 是事实唯一来源；minutes 只持有编辑性文字和 id 引用。渲染层负责把 id 解析回事实并显示中文状态；阶段 B 已把渲染接入 CLI `report` 与 MCP `render_report`（见上节），未提供 minutes 的路径保持原 evidence 输出。
 - 校验器签名 `validateMinutes(input, analysis, minutes)`：`input`（规范化转写）当前保留未使用，供后续 evidence 交叉校验扩展；`analysis` 是事实基准；返回解析后的 `MinutesDocument`。
 
 ## 产品决策默认结论
