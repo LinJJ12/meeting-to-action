@@ -137,7 +137,7 @@ it("explains missing owners and deadlines centrally instead of repeating TBD per
   const base=render();
   expect(base).not.toContain("负责人未在原文确认");
   expect(base).not.toContain("期限未在原文确认");
-  expect(base).toContain("| 补充支付回调监控 | — | — | 提议 |");
+  expect(base).toContain("| 补充支付回调监控 | 未指定 | 未指定 | 提议 |");
 
   const analysis=analysisFixture();
   const strip=(item:any)=>{const {assignee,dueDate,...rest}=item;return rest;};
@@ -202,14 +202,14 @@ it("truncates appendix quotes to 200 characters with an ellipsis",()=>{
 it("marks unreachable references defensively in the appendix",()=>{
   const minutes:any=structuredClone(minutesFixture());
   minutes.sections.push({id:"secx",heading:"附加",claims:[{id:"cx",kind:"open",text:"未知引用",refs:["missingFact"]}]});
-  const appendix=renderTraceAppendix(analysisFixture(),minutes);
+  const appendix=renderTraceAppendix(inputFixture(),analysisFixture(),minutes);
   expect(appendix).toContain("missingFact");
   expect(appendix).toContain("未解析到分析条目");
   expect(appendix).toContain("不可达");
 
   const analysis=analysisFixture();
   const extended=MeetingAnalysisSchema.parse({...analysis,actionItems:[...analysis.actionItems,{id:"a9",title:"待补任务",status:"proposed",evidence:[ev("seg1",1,1)],confidence:"low"}]});
-  const mapped=renderTraceAppendix(extended,minutesFixture());
+  const mapped=renderTraceAppendix(inputFixture(),extended,minutesFixture());
   expect(mapped).toContain("| a9 | 待补任务 | —（未映射） |");
 });
 
@@ -265,7 +265,7 @@ it("renders an actions checklist without topic sections and with one locator per
   expect(md).not.toContain("## 会议要点");
   expect(md).toContain("| 任务 | 负责人 | 期限 | 状态 |");
   expect(md).toContain("| 整理灰度名单 | 苏禾 | 周五 | 进行中 |");
-  expect(md).toContain("| 补充支付回调监控 | — | — | 提议 |");
+  expect(md).toContain("| 补充支付回调监控 | 未指定 | 未指定 | 提议 |");
   const locators=md.split("\n").filter(line=>line.startsWith("- ")&&line.includes("seg"));
   expect(locators).toHaveLength(3);
   expect(locators[0]).toContain("整理灰度名单");
@@ -329,4 +329,36 @@ it("keeps plain open questions out of the key-unresolved summary",()=>{
   expect(unresolved).toContain("灰度比例与监控缺口待确认");
   expect(unresolved).not.toContain("灰度比例数值待定");
   expect(md).toContain("- **待确认：**灰度比例数值待定");
+});
+
+it("labels a decision claim by the referenced decision status instead of always confirming it",()=>{
+  const proposed=analysisFixture();
+  proposed.decisions[0]!.status="proposed";
+  const md=renderMinutesDocument(inputFixture(),proposed,minutesFixture());
+  expect(md).toContain("- **提议：**发布窗口定在下周三");
+  expect(md).not.toContain("- **已确认决定：**发布窗口定在下周三");
+
+  const unclear=analysisFixture();
+  unclear.decisions[0]!.status="unclear";
+  expect(renderMinutesDocument(inputFixture(),unclear,minutesFixture())).toContain("- **待确认：**发布窗口定在下周三");
+});
+
+it("resolves evidence line numbers from the segment text when the ref omits them",()=>{
+  const analysis=analysisFixture();
+  const evidence:any=analysis.actionItems[0]!.evidence[0];
+  delete evidence.lineStart;
+  delete evidence.lineEnd;
+  const md=renderMinutesDocument(inputFixture(),analysis,minutesFixture());
+  expect(md).toContain("s1 / seg2 / 行 2 / 10:02 / “灰度名单我来整理，周五之前给到。”");
+  expect(md).not.toContain("行 —");
+});
+
+it("falls back to the whole segment line range when the ref has neither lines nor a quote",()=>{
+  const analysis=analysisFixture();
+  const evidence:any=analysis.actionItems[0]!.evidence[0];
+  delete evidence.lineStart;
+  delete evidence.lineEnd;
+  delete evidence.quote;
+  const md=renderMinutesDocument(inputFixture(),analysis,minutesFixture());
+  expect(md).toContain("s1 / seg2 / 行 2–3 / 10:02");
 });
