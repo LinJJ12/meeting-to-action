@@ -11,7 +11,7 @@
 - [x] Evidence reference helpers and validation.
 - [x] Markdown report renderer and local inspect CLI.
 - [x] Initial normalization tests and sample fixture.
-- [ ] Run CI in a real Node.js environment and fix any failures.
+- [x] Run typecheck, tests and build locally in Node.js; Actions intentionally not triggered.
 - [x] Bundle the portable Meeting-to-Action Skill in this repository.
 
 ## Phase 2 — Agent analysis
@@ -25,8 +25,13 @@
 - [ ] Add long-transcript chunking, token budgeting, retries, and rate-limit handling.
 - [ ] Add provider-specific structured-output adapters as needed.
 
-## Phase 3 — GitHub MCP
-- [ ] MCP server using the stable TypeScript SDK.
+## Phase 3 — Local MCP and future external integrations
+- [x] Local stdio MCP server using the stable TypeScript SDK.
+- [x] Five meeting tools: prepare, split, schema, validate and render.
+- [x] Input size limits, redacted errors and source-preserving splitting.
+- [x] SDK client integration and compiled subprocess smoke tests.
+- [ ] Verify discovery and usage in actual Codex and Cursor clients.
+- [ ] Publish an installable runtime package after client acceptance.
 - [ ] Read-only repository and issue search.
 - [ ] Evidence-backed issue proposals and duplicate candidates.
 - [ ] Explicitly approved issue creation.
@@ -42,4 +47,4 @@ A phase is complete only with tests, documentation, a reproducible demo, and kno
 
 ## Agent toolkit delivery
 
-See [the product architecture and acceptance plan](AGENT-TOOLKIT.md). Agent JSON ingestion/report is implemented locally with regression coverage. Skill source is now maintained in this repository; actual Codex/Cursor installation testing and MCP implementation are pending. CI is not required to run these checks locally, and must not be triggered while the user is avoiding Actions usage.
+See [the product architecture and acceptance plan](AGENT-TOOLKIT.md). Agent JSON ingestion/report is implemented locally with regression coverage. Skill source is now maintained in this repository; actual Codex/Cursor installation testing and runtime publication are pending; local MCP implementation and SDK subprocess checks are complete. CI is not required to run these checks locally, and must not be triggered while the user is avoiding Actions usage.

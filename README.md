@@ -68,7 +68,7 @@ The CLI never overwrites an existing output file. Keep API keys in environment v
 - **Skill**: portable analysis workflow, evidence standards, and human-review gates. Canonical source: [skills/meeting-to-action](skills/meeting-to-action/SKILL.md) in this repository.
 - **Provider**: model-neutral `AnalysisProvider` interface with an OpenAI-compatible implementation.
 - **TypeScript core**: normalization, contracts, prompt construction, analysis validation, evidence checks, and rendering.
-- **MCP**: planned integration for project context and approval-gated GitHub issue creation.
+- **MCP**: five local stdio tools for preparation, splitting, schema discovery, validation and rendering; external integrations are future work.
 
 ## Principles
 
@@ -116,3 +116,7 @@ In Codex, request: `Use $meeting-to-action to analyze meeting.md, preserve evide
 With this runtime available, use the inspect/report flow above for strict schema and evidence validation. Tell the assistant the runtime checkout path when it differs from the meeting project. No extra model key is needed; the optional `analyze` provider mode remains separate.
 
 For maintainers: run `npm run skill:schema` after contract changes, then `npm test` to verify the bundled schema still matches Core. The behavior rubric and synthetic edge-case fixture are linked from the Skill.
+
+## Local MCP milestone
+
+Five stateless stdio tools are implemented. Build and test with `npm run mcp:smoke`; see [MCP setup and limits](docs/MCP.md) for Codex/Cursor configuration examples. The client should launch `node /absolute/path/to/dist/mcp/server.js` directly. No extra API key is required. Actual client discovery and npm publication remain pending.

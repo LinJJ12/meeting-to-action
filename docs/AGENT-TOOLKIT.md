@@ -11,7 +11,7 @@ Meeting-to-Action turns supplied meeting transcripts into evidence-backed draft 
 | Skill | Interpretation, uncertainty handling, review workflow | Deterministic validation or credentials |
 | Core | Normalization, versioned contracts, evidence checks, rendering | Client UI or implicit external approval |
 | CLI | Local file input/output around Core | Semantic analysis without a host or configured provider |
-| MCP (planned) | Thin stdio tools around the same Core | A second model call in Agent mode |
+| MCP (local implementation) | Thin stdio tools around the same Core | A second model call in Agent mode |
 | Provider (optional) | Explicit standalone model analysis | Default Agent workflow |
 
 Two modes share contracts: Agent mode authors JSON using Codex/Cursor's model; standalone `analyze` uses the existing configured provider. Local processing does not mean the host model runs offline: transcript privacy also depends on the chosen assistant and its settings.
@@ -59,9 +59,9 @@ Installation target: copy `skills/meeting-to-action/` from this checkout. Codex 
 
 References checked 2026-11-24: [OpenAI customization](https://learn.chatgpt.com/docs/customization/overview), [Cursor Skills](https://cursor.com/docs/skills). Actual client installation/discovery is a release gate, not something proven by unit tests.
 
-## MCP v0.2 interface proposal (not implemented)
+## MCP v0.2 local implementation (release pending)
 
-Use the stable official TypeScript SDK and stdio. Stdout carries protocol messages only. No secrets or raw meeting text in diagnostics. Initial tools accept inline data; no arbitrary filesystem read tool is required.
+Implemented using the stable official TypeScript SDK and stdio; see [setup, limits and verification](MCP.md). Stdout carries protocol messages only. No secrets or raw meeting text in diagnostics. Initial tools accept inline data; no arbitrary filesystem read tool is required.
 
 | Tool | Input | Output / validation |
 |---|---|---|
@@ -71,7 +71,7 @@ Use the stable official TypeScript SDK and stdio. Stdout carries protocol messag
 | `validate_analysis` | `{input: MeetingInput, analysis: unknown}` | Validated full analysis, or stable error codes |
 | `render_report` | `{input: MeetingInput, analysis: unknown}` | Markdown only after the same full validation |
 
-JSON Schemas must be generated from Zod, not hand-maintained. Tool argument objects reject unknown fields. Use bounded request sizes; proposed initial limits: 2 MiB UTF-8 content and 10,000 segments, explicitly tested before release. Splitting must preserve evidence coordinates, split oversized segments on line boundaries, and explicitly reject an oversized single line until a column-aware contract exists. Chunk output is not a source rewrite.
+JSON Schemas must be generated from Zod, not hand-maintained. Tool argument objects reject unknown fields. Use bounded request sizes; implemented limits: 2 MiB UTF-8 content, 10,000 segments and a 4 MiB transport/request bound, covered by local tests. Splitting must preserve evidence coordinates, split oversized segments on line boundaries, and explicitly reject an oversized single line until a column-aware contract exists. These source-preserving behaviors are implemented. Chunk output is not a source rewrite.
 
 No default persistence/network access or model calls. If later adding path-based tools, require explicit workspace roots and reject traversal, symlink/junction escapes and unauthorized paths. Future writes use separate tools; a boolean `approved` supplied by a model is insufficient authorization.
 
