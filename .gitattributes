@@ -1,0 +1,8 @@
+# 统一换行符：仓库内一律 LF，任何平台检出都一样。
+#
+# 背景：src/core/normalize.ts 会基于「原始字节」计算 sourceId 与 checksum。
+# 若 Windows（core.autocrlf=true）检出时把 LF 转成 CRLF，
+# 同一个逐字稿会算出不同的 checksum，examples/agent-workflow 的 golden 测试
+# 就会在 Windows 和 Linux 上得出相反结论。
+# 固定 eol=lf 后，哈希在所有平台一致。
+* text=auto eol=lf
