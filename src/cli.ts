@@ -6,6 +6,7 @@ import { normalizeTranscript } from "./core/normalize.js";
 import { analyzeMeeting } from "./core/analyze.js";
 import { renderMarkdown } from "./render/markdown.js";
 import { OpenAICompatibleProvider } from "./providers/openai-compatible.js";
+import { ProviderError } from "./providers/types.js";
 import { MAX_CONTENT_BYTES, MAX_SEGMENTS } from "./core/limits.js";
 
 function usage(): never {
@@ -102,6 +103,11 @@ try {
   } else process.stdout.write(output);
   }
 } catch (error) {
-  console.error(error instanceof Error && error.name==="ZodError" ? "INPUT_SCHEMA_INVALID" : error instanceof Error ? error.message : String(error));
+  // ProviderError 的 code 是稳定机器可读标识：打印出来，脚本排障时不必解析英文消息。
+  if (error instanceof ProviderError) {
+    console.error(error.code ? `${error.code}: ${error.message}` : error.message);
+  } else {
+    console.error(error instanceof Error && error.name==="ZodError" ? "INPUT_SCHEMA_INVALID" : error instanceof Error ? error.message : String(error));
+  }
   process.exitCode = 1;
 }
