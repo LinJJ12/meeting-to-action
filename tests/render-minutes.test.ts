@@ -126,9 +126,9 @@ it("builds the task table from analysis facts, not from minutes prose",()=>{
   analysis.actionItems[0]!.title="整理灰度名单（事实）";
   analysis.actionItems[0]!.assignee="苏禾（事实）";
   analysis.actionItems[0]!.dueDate="周五（事实）";
-  analysis.actionItems[0]!.status="accepted";
+  analysis.actionItems[0]!.status="done";
   const md=renderMinutesDocument(inputFixture(),analysis,minutes);
-  expect(md).toContain("| 整理灰度名单（事实） | 苏禾（事实） | 周五（事实） | 已接受 |");
+  expect(md).toContain("| 整理灰度名单（事实） | 苏禾（事实） | 周五（事实） | 已完成 |");
   expect(md).toContain("登录改造回归已完成（纪要草稿）");
   expect(md.indexOf("以下任务来自会议原文提取")).toBeLessThan(md.indexOf("| 任务 | 负责人 | 期限 | 状态 |"));
 });
