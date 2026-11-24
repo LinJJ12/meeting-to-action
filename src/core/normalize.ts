@@ -2,7 +2,7 @@ import {createHash} from "node:crypto";
 import {basename,extname} from "node:path";
 import {MeetingInputSchema,type MeetingInput} from "../domain/schema.js";
 
-export function normalizeTranscript(content:string,fileName:string,options:{title?:string}={}):MeetingInput {
+export function normalizeTranscript(content:string,fileName:string,options:{title?:string;maxSegments?:number}={}):MeetingInput {
  if(!content.trim())throw new Error("INPUT_EMPTY: transcript content is empty");
  const ext=extname(fileName).toLowerCase();
  if(![".txt",".md",".markdown"].includes(ext))throw new Error("INPUT_UNSUPPORTED: expected TXT or Markdown");
@@ -13,6 +13,8 @@ export function normalizeTranscript(content:string,fileName:string,options:{titl
  const flush=(end:number)=>{
   const text=buffer.join("\n").trim();
   if(text){
+   // 到达上限立即停止：先拒绝，再构造 segment，避免超大输入先把内存吃完再报错。
+   if(options.maxSegments!==undefined&&segments.length>=options.maxSegments)throw new Error("INPUT_SEGMENT_LIMIT");
    // Recognize only a complete export header. A label is not proof of a person's identity.
    const header=/^([^()\r\n]{1,100})\((\d{2}:[0-5]\d:[0-5]\d)\)[:：]$/.exec(buffer[0]!.trim());
    segments.push({id:"seg-"+(segments.length+1),sourceId,text,lineStart:start,lineEnd:end,...(header?{speaker:header[1]!.trim(),timestamp:header[2]!}:{})});

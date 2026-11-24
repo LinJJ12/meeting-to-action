@@ -4,10 +4,10 @@ import {normalizeTranscript} from "../core/normalize.js";
 import {splitTranscript} from "../core/split.js";
 import {validateAnalysis} from "../core/analysis.js";
 import {renderMarkdown} from "../render/markdown.js";
+import {MAX_CONTENT_BYTES,MAX_REQUEST_BYTES,MAX_SEGMENTS} from "../core/limits.js";
 
-export const MAX_CONTENT_BYTES=2*1024*1024;
-export const MAX_REQUEST_BYTES=4*1024*1024;
-export const MAX_SEGMENTS=10_000;
+// 上限常量与 CLI 共用同一来源（src/core/limits.ts），这里保留导出以免破坏既有引用。
+export {MAX_CONTENT_BYTES,MAX_REQUEST_BYTES,MAX_SEGMENTS};
 const content=z.string().max(MAX_CONTENT_BYTES);
 const input=z.unknown(); // Full relational checks run inside the handler, with redacted errors.
 const definitions={
@@ -33,7 +33,7 @@ export function callTool(name:string,args:unknown):{content:{type:"text";text:st
    case "prepare_meeting":{
     const a=definitions.prepare_meeting.schema.parse(args);
     if(Buffer.byteLength(a.content,"utf8")>MAX_CONTENT_BYTES)throw new Error("INPUT_SIZE_LIMIT");
-    result=boundedInput(normalizeTranscript(a.content,a.fileName,a.title?{title:a.title}:{}));break;
+    result=boundedInput(normalizeTranscript(a.content,a.fileName,{...(a.title?{title:a.title}:{}),maxSegments:MAX_SEGMENTS}));break;
    }
    case "get_meeting_schema":{
     definitions.get_meeting_schema.schema.parse(args);
