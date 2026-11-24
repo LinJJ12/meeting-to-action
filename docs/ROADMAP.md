@@ -1,28 +1,29 @@
 # Roadmap
 
 ## Phase 0 — Project baseline
-- [x] Replace legacy project content with Meeting-to-Action documentation.
 - [x] Establish product scope, architecture, data contract, and security principles.
-- [x] Create an isolated feature branch from main.
+- [x] Create an isolated feature branch and preserve the existing project baseline.
 
 ## Phase 1 — Local foundation
 - [x] TypeScript project configuration.
-- [x] TXT/Markdown transcript normalization.
+- [x] TXT/Markdown transcript normalization with source checksums and line references.
 - [x] Versioned Zod input/output schemas.
 - [x] Evidence reference helpers and validation.
-- [x] Markdown report renderer.
-- [x] CLI inspect command.
-- [x] Initial unit tests and sample fixture.
+- [x] Markdown report renderer and local inspect CLI.
+- [x] Initial normalization tests and sample fixture.
 - [ ] Run CI in a real Node.js environment and fix any failures.
-- [ ] Add Skill to LinJJ12/skills and validate portability.
-- [ ] Define a model-neutral analysis provider interface.
-- [ ] Add validated analysis JSON ingestion and report command.
+- [ ] Merge the portable Meeting-to-Action Skill PR in LinJJ12/skills.
 
 ## Phase 2 — Agent analysis
-- [ ] Implement Skill-guided extraction of topics, decisions, actions, risks, conflicts, and open questions.
-- [ ] Require evidence references for material claims.
-- [ ] Add golden evaluation fixtures and a human-reviewed rubric.
-- [ ] Test uncertain owners, deadlines, contradictions, and prompt-injection text.
+- [x] Define a model-neutral AnalysisProvider interface.
+- [x] Add an OpenAI-compatible Chat Completions provider.
+- [x] Build a Skill-guided analysis prompt.
+- [x] Validate structured output and evidence source/segment/line/quote integrity.
+- [x] Add analyze CLI command and Markdown evidence report.
+- [x] Add analysis and prompt-injection regression tests.
+- [ ] Validate extraction quality with a human-reviewed golden dataset.
+- [ ] Add long-transcript chunking, token budgeting, retries, and rate-limit handling.
+- [ ] Add provider-specific structured-output adapters as needed.
 
 ## Phase 3 — GitHub MCP
 - [ ] MCP server using the stable TypeScript SDK.

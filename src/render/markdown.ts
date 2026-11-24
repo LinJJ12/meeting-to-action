@@ -8,10 +8,10 @@ export function renderMarkdown(value:MeetingAnalysis):string {
  const d=MeetingAnalysisSchema.parse(value);
  return ["# Meeting report: "+text(d.meetingId),"","## Summary",...(d.summary.length?d.summary.map(x=>"- "+text(x)):["- No summary supplied."]),
  "","## Topics",...(d.topics.length?d.topics.flatMap(x=>["- **"+text(x.title)+"**: "+text(x.summary),...evidence(x.evidence)]):["- None extracted."]),
- "","## Decisions",...(d.decisions.length?d.decisions.flatMap(x=>["- **["+x.status+"]** "+text(x.statement),...evidence(x.evidence)]):["- None extracted."]),
- "","## Action items","| Task | Owner | Deadline | Status |","|---|---|---|---|",...(d.actionItems.length?d.actionItems.map(x=>"| "+cell(x.title)+" | "+cell(x.assignee)+" | "+cell(x.dueDate)+" | "+x.status+" |"):["| None extracted | — | — | — |"]),
+ "","## Decisions",...(d.decisions.length?d.decisions.flatMap(x=>["- **["+x.status+"]** "+text(x.statement)+" (confidence: "+x.confidence+")",...evidence(x.evidence)]):["- None extracted."]),
+ "","## Action items","| Task | Owner | Deadline | Status | Confidence |","|---|---|---|---|---|",...(d.actionItems.length?d.actionItems.map(x=>"| "+cell(x.title)+" | "+cell(x.assignee)+" | "+cell(x.dueDate)+" | "+x.status+" | "+x.confidence+" |"):["| None extracted | — | — | — | — |"]),
  ...d.actionItems.flatMap(x=>["","- Task: "+text(x.title),...(x.description?["  - "+text(x.description)]:[]),...evidence(x.evidence)]),
  "","## Risks",...(d.risks.length?d.risks.flatMap(x=>["- ["+x.severity+"] "+text(x.description),...evidence(x.evidence)]):["- None extracted."]),
  "","## Open questions",...(d.openQuestions.length?d.openQuestions.flatMap(x=>["- "+text(x.question),...evidence(x.evidence)]):["- None extracted."]),
- "","## Conflicts",...(d.conflicts.length?d.conflicts.flatMap(x=>["- "+text(x.description),...evidence(x.evidence)]):["- None extracted."]),""].join("\n");
+ "","## Conflicts",...(d.conflicts.length?d.conflicts.flatMap(x=>["- "+text(x.description),...evidence(x.evidence)]):["- None extracted."]),"","_Generated: "+d.generatedAt+"_",""].join("\n");
 }
