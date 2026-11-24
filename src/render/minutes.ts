@@ -13,6 +13,21 @@ type FactKind="decision"|"action"|"risk"|"openQuestion"|"conflict";
 interface AnalysisFact{kind:FactKind;summary:string;evidence:EvidenceRef[];}
 
 const READING_MODES:readonly string[]=["minutes","actions","evidence"];
+
+/** CLI 的 `--mode` 与 MCP 的 `mode` 共用同一份合法取值。 */
+export function isReadingMode(value:string):value is ReadingMode{return READING_MODES.includes(value);}
+
+/**
+ * CLI 与 MCP 共用的模式决议：显式模式优先（非法值抛 RENDER_MODE_INVALID）；未提供时
+ * 有 minutes 编辑稿默认 minutes、没有则默认 evidence。缺编辑稿却要求 minutes/actions
+ * 属于接线层错误，抛 MINUTES_MISSING 由入口呈现为机器码。
+ */
+export function resolveReadingMode(mode:string|undefined,hasMinutes:boolean):ReadingMode {
+ if(mode!==undefined&&!isReadingMode(mode))throw new Error("RENDER_MODE_INVALID: "+mode);
+ const resolved:ReadingMode=mode!==undefined?mode as ReadingMode:(hasMinutes?"minutes":"evidence");
+ if(!hasMinutes&&resolved!=="evidence")throw new Error("MINUTES_MISSING: "+resolved+" 模式需要 minutes 编辑稿");
+ return resolved;
+}
 const CLAIM_KIND_LABELS:Record<MinutesClaim["kind"],string>={progress:"进展",decision:"已确认决定",followup:"后续",open:"待确认"};
 const ACTION_STATUS_LABELS:Record<ActionStatus,string>={proposed:"提议",accepted:"已接受",in_progress:"进行中",done:"已完成",blocked:"受阻",unknown:"未确认"};
 const FACT_KIND_LABELS:Record<FactKind,string>={decision:"决定",action:"行动项",risk:"风险",openQuestion:"待确认问题",conflict:"分歧"};
