@@ -65,7 +65,7 @@ JSON Schema describes shape only; cross-field identity, duplicate IDs, source re
 ## Limits and errors
 
 - Maximum raw transport read buffer and serialized tool arguments: 4 MiB.
-- Transcript/combined segment text: 2 MiB UTF-8; at most 10,000 segments.
+- Transcript/combined segment text: 2 MiB UTF-8; at most 10,000 segments. Limits are counted in UTF-8 bytes, so oversized ASCII and CJK content is rejected consistently as INPUT_SIZE_LIMIT with the actual bytes and limit.
 - maxChars: integer 1 through 2,097,152. An inconsistent segment line count is rejected by splitting.
 - Oversized transport input closes the connection. Other tool validation failures return `isError: true` with a stable code and do not expose arguments.
 - Known codes include INPUT_INVALID, INPUT_SIZE_LIMIT, INPUT_SEGMENT_LIMIT, CHUNK_LINE_TOO_LONG, SEGMENT_LINE_COUNT_INVALID, ANALYSIS_MEETING_MISMATCH, ANALYSIS_DUPLICATE_ID, ANALYSIS_EVIDENCE_INVALID and TOOL_UNKNOWN.
