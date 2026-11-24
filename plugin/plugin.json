@@ -1,9 +1,11 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "meeting-to-action",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "Evidence-backed meeting analysis, decisions and follow-up tasks using your coding assistant.",
-  "author": {"name": "LinJJ12"},
+  "author": {
+    "name": "LinJJ12"
+  },
   "repository": "https://github.com/LinJJ12/meeting-to-action",
   "extensions": {
     "com.openai": {
@@ -14,8 +16,12 @@
         "longDescription": "Analyze supplied meeting records with your current assistant. Includes a portable Skill and five local validation/rendering MCP tools. No extra API key or automatic external writes.",
         "developerName": "LinJJ12",
         "category": "Productivity",
-        "capabilities": ["Read"],
-        "defaultPrompt": ["Analyze the supplied meeting notes, preserve evidence and create a report without creating external issues."]
+        "capabilities": [
+          "Read"
+        ],
+        "defaultPrompt": [
+          "Analyze the supplied meeting notes, preserve evidence and create a report without creating external issues."
+        ]
       }
     }
   }

@@ -20,3 +20,5 @@ Decision status: confirmed, proposed, rejected, superseded, unclear. Action stat
 Each item's evidence array must be nonempty. Prefer `{sourceId, segmentId, lineStart, lineEnd, quote}` copied from the normalized input. Bounds are positive integers inclusive, must be supplied together and fall within the cited segment. A quote must occur within the cited lines. Segment and source must match. Unknown optional values are omitted, never null or invented.
 
 Textual support does not prove an interpretation is true. Historical comparisons, recommendations and issue drafts are separate narrative artifacts, not additional fields in this contract.
+
+Export headers such as `Demo User(00:01:37):` can populate optional speaker/timestamp fields. Evidence metadata, when supplied, must match its cited normalized segment. Reports show these as source labels and timestamps; a label does not verify the actual speaker or task owner.

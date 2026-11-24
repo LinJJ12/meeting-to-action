@@ -3,7 +3,7 @@ export function evidenceForSegment(input:MeetingInput,segmentId:string):Evidence
  MeetingInputSchema.parse(input);
  const s=input.segments.find(x=>x.id===segmentId);
  if(!s)throw new Error("EVIDENCE_REFERENCE_INVALID: "+segmentId);
- return {sourceId:s.sourceId,segmentId,lineStart:s.lineStart,lineEnd:s.lineEnd,quote:s.text.slice(0,240)};
+ return {sourceId:s.sourceId,segmentId,lineStart:s.lineStart,lineEnd:s.lineEnd,quote:s.text.slice(0,240),...(s.speaker?{speaker:s.speaker}:{}),...(s.timestamp?{timestamp:s.timestamp}:{})};
 }
 export function validateEvidence(input:MeetingInput,refs:EvidenceRef[]):string[] {
  const errors:string[]=[];
@@ -21,6 +21,7 @@ export function validateEvidence(input:MeetingInput,refs:EvidenceRef[]):string[]
   const selected=candidates.filter(x=>start===undefined||end===undefined||(x.lineStart<=start&&x.lineEnd>=end));
   if(start!==undefined&&!selected.length){errors.push("Evidence lines outside segment bounds");continue;}
   if(!segment&&start===undefined){errors.push("Evidence requires a segment or line range");continue;}
+  if((ref.speaker!==undefined||ref.timestamp!==undefined)&&!selected.some(x=>(ref.speaker===undefined||x.speaker===ref.speaker)&&(ref.timestamp===undefined||x.timestamp===ref.timestamp)))errors.push("Evidence metadata does not match cited segment");
   if(ref.quote!==undefined&&!selected.some(x=>{
    const text=start===undefined||end===undefined?x.text:x.text.split("\n").slice(start-x.lineStart,end-x.lineStart+1).join("\n");
    return text.includes(ref.quote!);

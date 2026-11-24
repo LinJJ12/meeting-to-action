@@ -3,7 +3,7 @@ import {MeetingAnalysisSchema} from "../domain/schema.js";
 // Escape untrusted text before placing it in Markdown or HTML-capable viewers.
 const text=(value:string)=>value.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/([\\`*_{}\[\]()#+.!|~-])/g,"\\$1").replace(/[\r\n]+/g," ");
 const cell=(value?:string)=>text(value??"TBD");
-const evidence=(refs:EvidenceRef[])=>refs.map(ref=>"  - Evidence: "+text(ref.sourceId)+(ref.segmentId?" / "+text(ref.segmentId):"")+(ref.lineStart!==undefined?" lines "+ref.lineStart+"–"+(ref.lineEnd??ref.lineStart):"")+(ref.quote?" — “"+text(ref.quote)+"”":""));
+const evidence=(refs:EvidenceRef[])=>refs.map(ref=>"  - Evidence: "+text(ref.sourceId)+(ref.segmentId?" / "+text(ref.segmentId):"")+(ref.lineStart!==undefined?" lines "+ref.lineStart+"–"+(ref.lineEnd??ref.lineStart):"")+(ref.timestamp?" @ "+text(ref.timestamp):"")+(ref.speaker?" [label: "+text(ref.speaker)+"]":"")+(ref.quote?" — “"+text(ref.quote)+"”":""));
 export function renderMarkdown(value:MeetingAnalysis):string {
  const d=MeetingAnalysisSchema.parse(value);
  return ["# Meeting report: "+text(d.meetingId),"","## Summary",...(d.summary.length?d.summary.map(x=>"- "+text(x)):["- No summary supplied."]),
