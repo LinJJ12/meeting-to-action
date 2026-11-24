@@ -1,12 +1,12 @@
 import "dotenv/config";
 import {validateAnalysis} from "./core/analysis.js";
-import { readFile, writeFile } from "node:fs/promises";
+import { readFile, stat, writeFile } from "node:fs/promises";
 import { resolve, basename } from "node:path";
 import { normalizeTranscript } from "./core/normalize.js";
 import { analyzeMeeting } from "./core/analyze.js";
 import { renderMarkdown } from "./render/markdown.js";
 import { OpenAICompatibleProvider } from "./providers/openai-compatible.js";
-import { assertContentWithinLimit, MAX_SEGMENTS } from "./core/limits.js";
+import { MAX_CONTENT_BYTES, MAX_SEGMENTS } from "./core/limits.js";
 
 function usage(): never {
   console.error([
@@ -43,6 +43,17 @@ async function readJson(path:string):Promise<unknown>{
  const raw=await readFile(path,"utf8");
  try{return JSON.parse(raw);}catch{throw new Error("INPUT_JSON_INVALID");}
 }
+function assertTranscriptSize(bytes:number,path:string):void{
+ if(bytes>MAX_CONTENT_BYTES)throw new Error(`INPUT_SIZE_LIMIT: transcript ${path} is ${bytes} bytes, limit is ${MAX_CONTENT_BYTES}`);
+}
+/** analyze 会把整份逐字稿发给模型：先按 stat 大小拒绝，超大文件永远不读进内存。inspect 属于本地查看工具，保持无上限。 */
+async function readTranscriptForAnalyze(path:string):Promise<string>{
+ assertTranscriptSize((await stat(path)).size,path);
+ const raw=await readFile(path);
+ // stat 与读取之间文件可能变化，按实际读到的 Buffer 字节数复核一次。
+ assertTranscriptSize(raw.byteLength,path);
+ return raw.toString("utf8");
+}
 
 try {
   const absoluteInput = resolve(input);
@@ -52,10 +63,7 @@ try {
     if(outputPath){await writeFile(resolve(outputPath),report,{encoding:"utf8",flag:"wx"});console.log("Wrote "+resolve(outputPath));}
     else process.stdout.write(report);
   }else{
-  const transcript = await readFile(absoluteInput, "utf8");
-  // analyze 会把整份逐字稿发给模型，必须在读入后、规范化前先按与 MCP 一致的上限拦截，
-  // 而不是等到 provider 报上下文超限；inspect 属于本地查看工具，保持无上限。
-  if (command === "analyze") assertContentWithinLimit(transcript);
+  const transcript = command === "analyze" ? await readTranscriptForAnalyze(absoluteInput) : await readFile(absoluteInput, "utf8");
   const meeting = normalizeTranscript(
     transcript,
     basename(absoluteInput),

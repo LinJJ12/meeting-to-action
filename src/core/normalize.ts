@@ -1,12 +1,21 @@
 import {createHash} from "node:crypto";
 import {basename,extname} from "node:path";
 import {MeetingInputSchema,type MeetingInput} from "../domain/schema.js";
+import {MAX_SEGMENTS} from "./limits.js";
+
+/** 非有限数或小于 1 的 maxSegments 回落到 MAX_SEGMENTS，有限数向下取整。 */
+function resolveMaxSegments(value:number|undefined):number|undefined{
+ if(value===undefined)return undefined;
+ if(!Number.isFinite(value)||value<1)return MAX_SEGMENTS;
+ return Math.floor(value);
+}
 
 export function normalizeTranscript(content:string,fileName:string,options:{title?:string;maxSegments?:number}={}):MeetingInput {
  if(!content.trim())throw new Error("INPUT_EMPTY: transcript content is empty");
  const ext=extname(fileName).toLowerCase();
  if(![".txt",".md",".markdown"].includes(ext))throw new Error("INPUT_UNSUPPORTED: expected TXT or Markdown");
  const sourceId=createHash("sha256").update(fileName+"\0"+content).digest("hex").slice(0,16);
+ const maxSegments=resolveMaxSegments(options.maxSegments);
  const lines=content.replace(/\r\n?/g,"\n").split("\n");
  const segments:MeetingInput["segments"]=[];
  let buffer:string[]=[],start=1;
@@ -14,7 +23,7 @@ export function normalizeTranscript(content:string,fileName:string,options:{titl
   const text=buffer.join("\n").trim();
   if(text){
    // 到达上限立即停止：先拒绝，再构造 segment，避免超大输入先把内存吃完再报错。
-   if(options.maxSegments!==undefined&&segments.length>=options.maxSegments)throw new Error("INPUT_SEGMENT_LIMIT");
+   if(maxSegments!==undefined&&segments.length>=maxSegments)throw new Error(`INPUT_SEGMENT_LIMIT: transcript has more than ${maxSegments} segments`);
    // Recognize only a complete export header. A label is not proof of a person's identity.
    const header=/^([^()\r\n]{1,100})\((\d{2}:[0-5]\d:[0-5]\d)\)[:：]$/.exec(buffer[0]!.trim());
    segments.push({id:"seg-"+(segments.length+1),sourceId,text,lineStart:start,lineEnd:end,...(header?{speaker:header[1]!.trim(),timestamp:header[2]!}:{})});

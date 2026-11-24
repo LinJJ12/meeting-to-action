@@ -4,11 +4,13 @@ import {normalizeTranscript} from "../core/normalize.js";
 import {splitTranscript} from "../core/split.js";
 import {validateAnalysis} from "../core/analysis.js";
 import {renderMarkdown} from "../render/markdown.js";
-import {MAX_CONTENT_BYTES,MAX_REQUEST_BYTES,MAX_SEGMENTS} from "../core/limits.js";
+import {assertContentWithinLimit,MAX_CONTENT_BYTES,MAX_REQUEST_BYTES,MAX_SEGMENTS} from "../core/limits.js";
 
 // 上限常量与 CLI 共用同一来源（src/core/limits.ts），这里保留导出以免破坏既有引用。
 export {MAX_CONTENT_BYTES,MAX_REQUEST_BYTES,MAX_SEGMENTS};
-const content=z.string().max(MAX_CONTENT_BYTES);
+// 不设字符数上限：Zod 的 max() 按 UTF-16 字符数计，会先于字节校验触发，
+// 使 ASCII 超限报 INPUT_INVALID 而中文超限报 INPUT_SIZE_LIMIT。超限统一交给字节校验。
+const content=z.string();
 const input=z.unknown(); // Full relational checks run inside the handler, with redacted errors.
 const definitions={
  prepare_meeting:{description:"Normalize supplied TXT/Markdown content locally. No filesystem reads or model calls.",schema:z.object({content,fileName:z.string().min(1).max(1024),title:z.string().min(1).max(1024).optional()}).strict()},
@@ -20,19 +22,21 @@ const definitions={
 export const toolList=Object.entries(definitions).map(([name,tool])=>({name,description:tool.description,inputSchema:z.toJSONSchema(tool.schema),annotations:{readOnlyHint:true,destructiveHint:false,idempotentHint:true,openWorldHint:false}}));
 function boundedInput(value:unknown){
  const meeting=MeetingInputSchema.parse(value);
- if(meeting.segments.length>MAX_SEGMENTS)throw new Error("INPUT_SEGMENT_LIMIT");
- if(meeting.segments.reduce((sum,s)=>sum+Buffer.byteLength(s.text,"utf8"),0)>MAX_CONTENT_BYTES)throw new Error("INPUT_SIZE_LIMIT");
+ if(meeting.segments.length>MAX_SEGMENTS)throw new Error(`INPUT_SEGMENT_LIMIT: input has ${meeting.segments.length} segments, limit is ${MAX_SEGMENTS}`);
+ const bytes=meeting.segments.reduce((sum,s)=>sum+Buffer.byteLength(s.text,"utf8"),0);
+ if(bytes>MAX_CONTENT_BYTES)throw new Error(`INPUT_SIZE_LIMIT: input is ${bytes} bytes, limit is ${MAX_CONTENT_BYTES}`);
  return meeting;
 }
 const codes=new Set(["INPUT_EMPTY","INPUT_UNSUPPORTED","INPUT_SEGMENT_LIMIT","INPUT_SIZE_LIMIT","CHUNK_LINE_TOO_LONG","SEGMENT_LINE_COUNT_INVALID","ANALYSIS_MEETING_MISMATCH","ANALYSIS_DUPLICATE_ID","ANALYSIS_EVIDENCE_INVALID"]);
 export function callTool(name:string,args:unknown):{content:{type:"text";text:string}[];isError?:boolean}{
  try{
-  if(Buffer.byteLength(JSON.stringify(args)??"","utf8")>MAX_REQUEST_BYTES)throw new Error("INPUT_SIZE_LIMIT");
+  const requestBytes=Buffer.byteLength(JSON.stringify(args)??"","utf8");
+  if(requestBytes>MAX_REQUEST_BYTES)throw new Error(`INPUT_SIZE_LIMIT: request is ${requestBytes} bytes, limit is ${MAX_REQUEST_BYTES}`);
   let result:unknown;
   switch(name){
    case "prepare_meeting":{
     const a=definitions.prepare_meeting.schema.parse(args);
-    if(Buffer.byteLength(a.content,"utf8")>MAX_CONTENT_BYTES)throw new Error("INPUT_SIZE_LIMIT");
+    assertContentWithinLimit(a.content);
     result=boundedInput(normalizeTranscript(a.content,a.fileName,{...(a.title?{title:a.title}:{}),maxSegments:MAX_SEGMENTS}));break;
    }
    case "get_meeting_schema":{
