@@ -82,3 +82,16 @@ See [PRD](docs/PRD.md), [architecture](docs/ARCHITECTURE.md), [data schema](docs
 
 Reports preserve evidence references and escape source Markdown/HTML. See the runtime validation limitations in [data contracts](docs/DATA-SCHEMA.md).
 
+
+## Use with an AI coding assistant (no extra API key)
+
+The implementation and release plan is [Agent toolkit architecture](docs/AGENT-TOOLKIT.md). Skill source remains in [LinJJ12/skills PR #4](https://github.com/LinJJ12/skills/pull/4); it is not yet a released MCP package.
+
+```sh
+npm run dev -- inspect examples/sample-meeting.md --out normalized.json
+# Ask your coding assistant to author analysis.json using the normalized IDs
+# and the full MeetingAnalysisSchema in src/domain/schema.ts.
+npm run dev -- report normalized.json --analysis analysis.json --out report.md
+```
+
+`report` validates the meeting identity, schema, duplicate item IDs and every claim's evidence before rendering. It makes no model/API call. `analyze` remains the optional standalone provider mode. Source matching does not prove that an interpretation is correct; review the result before acting on it.

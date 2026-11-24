@@ -39,3 +39,7 @@
 - [ ] Additional transcript formats and source adapters.
 
 A phase is complete only with tests, documentation, a reproducible demo, and known limitations. External writes remain approval-gated.
+
+## Agent toolkit delivery
+
+See [the product architecture and acceptance plan](AGENT-TOOLKIT.md). Agent JSON ingestion/report is implemented locally with regression coverage. Skill PR #4 remains open; actual Codex/Cursor installation testing and MCP implementation are pending. CI is not required to run these checks locally, and must not be triggered while the user is avoiding Actions usage.

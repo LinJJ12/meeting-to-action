@@ -90,4 +90,4 @@ export type MeetingAnalysis = {
 
 Call `validateEvidence(input, refs)` for all claim evidence before accepting analysis. It checks source/segment relationships, paired line bounds within a segment, and exact quotes within the cited text. A source ID alone is insufficient. Line-only references currently must fit within one segment. This verifies textual support, not the semantic truth of an interpretation.
 
-`renderMarkdown` validates analysis structure, escapes untrusted Markdown/HTML, and preserves topics and evidence. It does not have the source input and cannot verify evidence against original text. The future ingestion command must also verify meetingId and call evidence validation. Summary strings currently have no evidence field and remain unverified narrative.
+`renderMarkdown` validates analysis structure, escapes untrusted Markdown/HTML, and preserves topics and evidence. It does not have the source input and cannot verify evidence against original text. The `report` command verifies meetingId, duplicate item IDs and evidence through `validateAnalysis` before rendering. Summary strings currently have no evidence field and remain unverified narrative.

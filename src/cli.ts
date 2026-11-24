@@ -1,4 +1,5 @@
 import "dotenv/config";
+import {validateAnalysis} from "./core/analysis.js";
 import { readFile, writeFile } from "node:fs/promises";
 import { resolve, basename } from "node:path";
 import { normalizeTranscript } from "./core/normalize.js";
@@ -11,6 +12,7 @@ function usage(): never {
     "Usage:",
     "  meeting-to-action inspect <transcript.txt|transcript.md> [--out normalized.json]",
     "  meeting-to-action analyze <transcript.txt|transcript.md> [--out report.md]",
+    "  meeting-to-action report <normalized.json> --analysis <analysis.json> [--out report.md]",
     "",
     "Environment for analyze:",
     "  OPENAI_API_KEY (required)",
@@ -22,16 +24,33 @@ function usage(): never {
 }
 
 const [command, input, ...args] = process.argv.slice(2);
-if (!command || !input || !["inspect", "analyze"].includes(command)) usage();
+if (!command || !input || !["inspect", "analyze", "report"].includes(command)) usage();
 
 let outputPath: string | undefined;
-for (let index = 0; index < args.length; index += 1) {
-  if (args[index] === "--out" && args[index + 1]) outputPath = args[++index];
-  else usage();
+let analysisPath: string | undefined;
+const seen=new Set<string>();
+for (let index=0;index<args.length;index+=2){
+ const key=args[index]!,value=args[index+1];
+ if(!value||value.startsWith("--")||seen.has(key))usage();
+ seen.add(key);
+ if(key==="--out")outputPath=value;
+ else if(key==="--analysis"&&command==="report")analysisPath=value;
+ else usage();
+}
+if(command==="report"&&!analysisPath)usage();
+async function readJson(path:string):Promise<unknown>{
+ const raw=await readFile(path,"utf8");
+ try{return JSON.parse(raw);}catch{throw new Error("INPUT_JSON_INVALID");}
 }
 
 try {
   const absoluteInput = resolve(input);
+  if(command==="report"){
+    const analysis=validateAnalysis(await readJson(absoluteInput),await readJson(resolve(analysisPath!)));
+    const report=renderMarkdown(analysis);
+    if(outputPath){await writeFile(resolve(outputPath),report,{encoding:"utf8",flag:"wx"});console.log("Wrote "+resolve(outputPath));}
+    else process.stdout.write(report);
+  }else{
   const transcript = await readFile(absoluteInput, "utf8");
   const meeting = normalizeTranscript(transcript, basename(absoluteInput));
 
@@ -62,7 +81,8 @@ try {
     await writeFile(resolve(outputPath), output, { encoding: "utf8", flag: "wx" });
     console.log("Wrote " + resolve(outputPath));
   } else process.stdout.write(output);
+  }
 } catch (error) {
-  console.error(error instanceof Error ? error.message : String(error));
+  console.error(error instanceof Error && error.name==="ZodError" ? "INPUT_SCHEMA_INVALID" : error instanceof Error ? error.message : String(error));
   process.exitCode = 1;
 }
