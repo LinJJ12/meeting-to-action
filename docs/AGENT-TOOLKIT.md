@@ -18,7 +18,7 @@ Two modes share contracts: Agent mode authors JSON using Codex/Cursor's model; s
 
 ## Current verified baseline
 
-Core PR #3 is merged remotely and integrated locally. Skill PR #4 is open at `LinJJ12/skills`, path `skills/meeting-to-action/SKILL.md`. Keep that repository as the sole Skill authority; do not maintain a second independent Skill in this runtime repository. No npm MCP package or plugin has been published.
+Core PR #3 is merged remotely and integrated locally. By user decision, this repository owns Skill, Core and future MCP together. The canonical Skill is `skills/meeting-to-action/`; no coordination with a separate skills repository is required. No npm MCP package or plugin has been published.
 
 Runtime modules:
 
@@ -46,7 +46,7 @@ The report command rejects malformed/schema-invalid JSON, mismatched meetings, d
 
 ## Skill productization in the canonical repository
 
-Extend PR #4 rather than duplicating it here:
+Maintain `skills/meeting-to-action/` in this repository:
 
 1. Keep one `meeting-to-action` Skill, with analysis, historical comparison and issue-draft modes. Load history only when supplied/authorized; absence of history must not imply no previous decisions.
 2. Add conditional references for analysis/evidence rules and `analysis-schema@1.0`. Preserve instructions for unknown owners/dates and transcript prompt injection.
@@ -55,7 +55,7 @@ Extend PR #4 rather than duplicating it here:
 5. Issue mode produces reviewable drafts only. Search through an already installed GitHub connector when authorized. External writes require the exact target and content approved by the user.
 6. Add synthetic fixtures covering ambiguous owners, relative deadlines, contradictions and embedded instructions. Use real meeting content only with explicit permission to distribute it.
 
-Installation target: copy the canonical folder, not this runtime checkout. Codex project path is `.agents/skills/meeting-to-action/`; Cursor's documented native project path is `.cursor/skills/meeting-to-action/`. Keep identical Skill contents and test discovery separately rather than assume every client version shares directories. Preserve automatic discovery; explicit invocation remains available. Do not automatically edit user-wide configuration.
+Installation target: copy `skills/meeting-to-action/` from this checkout. Codex project path is `.agents/skills/meeting-to-action/`; Cursor's documented native project path is `.cursor/skills/meeting-to-action/`. Keep identical Skill contents and test discovery separately rather than assume every client version shares directories. Preserve automatic discovery; explicit invocation remains available. Do not automatically edit user-wide configuration.
 
 References checked 2026-11-24: [OpenAI customization](https://learn.chatgpt.com/docs/customization/overview), [Cursor Skills](https://cursor.com/docs/skills). Actual client installation/discovery is a release gate, not something proven by unit tests.
 
@@ -77,7 +77,7 @@ No default persistence/network access or model calls. If later adding path-based
 
 ## Versions and releases
 
-Core owns contract versions and fixtures. Skill declares supported contract version plus a tested Core commit/release. Export schema and fixture artifacts for the Skill repository; compare compatibility locally before tagging either release. Breaking contract changes require a new schema version and explicit migration. Skill content must still work without Core installed.
+Core owns contract versions and fixtures. Skill declares supported contract version plus a tested Core commit/release. Generate the bundled Skill JSON Schema with `npm run skill:schema`; verify it against Core in local tests before a release. Skill and Core ship from the same repository revision. Breaking contract changes require a new schema version and explicit migration. Skill content must still work without Core installed.
 
 Keep the existing runtime private until package names, bin entrypoints and packaged file contents are verified. Future client MCP configuration should reference a real released package, never a placeholder that users might execute. Pin releases for reproducibility. Do not automate Actions-based packaging while quota is exhausted; use local checks and manual release artifacts.
 
@@ -85,7 +85,7 @@ Keep the existing runtime private until package names, bin entrypoints and packa
 
 | Stage | Deliverable | Required evidence |
 |---|---|---|
-| 1 | Skill v0.1 productization | Canonical PR reviewed; frontmatter validation; no-MCP transcript demo in Codex and Cursor; unknown owner/date and injection rubric; copy/install instructions |
+| 1 | Skill v0.1 productization | In-repository Skill reviewed; frontmatter validation; no-MCP transcript demo in Codex and Cursor; unknown owner/date and injection rubric; copy/install instructions |
 | 1a | Core Agent workflow | inspect/report CLI integration tests; fabricated evidence and mismatched meeting rejection; output never overwritten; no API credentials needed |
 | 2 | MCP v0.2 | Five tools; stdio client roundtrip; invalid payload/size tests; no transcript logs; real Codex and Cursor smoke tests; installable package |
 | 3 | Continuity | SQLite schema/migrations, opt-in retention, historical provenance, superseded decisions and action status tests |

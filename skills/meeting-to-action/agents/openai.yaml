@@ -1,0 +1,4 @@
+interface:
+  display_name: "Meeting-to-Action"
+  short_description: "Evidence-backed meeting decisions and follow-up tasks"
+  default_prompt: "Use $meeting-to-action to analyze the supplied meeting notes and draft an evidence-backed report without creating external issues."

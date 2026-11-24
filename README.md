@@ -65,7 +65,7 @@ The CLI never overwrites an existing output file. Keep API keys in environment v
 
 ## Architecture
 
-- **Skill**: portable analysis workflow, evidence standards, and human-review gates. Canonical source: [LinJJ12/skills](https://github.com/LinJJ12/skills).
+- **Skill**: portable analysis workflow, evidence standards, and human-review gates. Canonical source: [skills/meeting-to-action](skills/meeting-to-action/SKILL.md) in this repository.
 - **Provider**: model-neutral `AnalysisProvider` interface with an OpenAI-compatible implementation.
 - **TypeScript core**: normalization, contracts, prompt construction, analysis validation, evidence checks, and rendering.
 - **MCP**: planned integration for project context and approval-gated GitHub issue creation.
@@ -85,7 +85,7 @@ Reports preserve evidence references and escape source Markdown/HTML. See the ru
 
 ## Use with an AI coding assistant (no extra API key)
 
-The implementation and release plan is [Agent toolkit architecture](docs/AGENT-TOOLKIT.md). Skill source remains in [LinJJ12/skills PR #4](https://github.com/LinJJ12/skills/pull/4); it is not yet a released MCP package.
+The implementation and release plan is [Agent toolkit architecture](docs/AGENT-TOOLKIT.md). Skill source is [skills/meeting-to-action](skills/meeting-to-action/SKILL.md) in this repository; it is not a published MCP package.
 
 ```sh
 npm run dev -- inspect examples/sample-meeting.md --out normalized.json
@@ -95,3 +95,24 @@ npm run dev -- report normalized.json --analysis analysis.json --out report.md
 ```
 
 `report` validates the meeting identity, schema, duplicate item IDs and every claim's evidence before rendering. It makes no model/API call. `analyze` remains the optional standalone provider mode. Source matching does not prove that an interpretation is correct; review the result before acting on it.
+
+## Install the bundled Skill
+
+The canonical Skill, runtime and future MCP are maintained together in this repository. Copy the entire `skills/meeting-to-action` folder into your target project's Skill directory. Do not copy just SKILL.md: its references and schema are required.
+
+PowerShell examples (run from this checkout; replace the target path):
+
+```powershell
+# Codex: install into the target project
+New-Item -ItemType Directory -Force 'C:\path\to\project\.agents\skills' | Out-Null
+Copy-Item -LiteralPath '.\skills\meeting-to-action' -Destination 'C:\path\to\project\.agents\skills\meeting-to-action' -Recurse
+# Cursor: use .cursor\skills instead of .agents\skills
+```
+
+Use an empty destination; compare existing installations before replacing them. No user-wide configuration is changed by these instructions. Discovery locations are documented by [OpenAI](https://learn.chatgpt.com/docs/customization/overview) and [Cursor](https://cursor.com/docs/skills); actual discovery depends on the client version and remains to be smoke-tested.
+
+In Codex, request: `Use $meeting-to-action to analyze meeting.md, preserve evidence and generate a Markdown report. Do not create GitHub issues.` In other assistants, explicitly ask it to read the installed SKILL.md if discovery is unavailable. The Skill works without MCP or the Core checkout by producing a cited Markdown draft; that fallback is not programmatically validated.
+
+With this runtime available, use the inspect/report flow above for strict schema and evidence validation. Tell the assistant the runtime checkout path when it differs from the meeting project. No extra model key is needed; the optional `analyze` provider mode remains separate.
+
+For maintainers: run `npm run skill:schema` after contract changes, then `npm test` to verify the bundled schema still matches Core. The behavior rubric and synthetic edge-case fixture are linked from the Skill.

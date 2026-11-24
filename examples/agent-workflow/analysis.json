@@ -1,0 +1,161 @@
+{
+  "schemaVersion": "1.0",
+  "meetingId": "meeting-f528e7d4a48526a1",
+  "generatedAt": "2026-11-24T07:44:01.865Z",
+  "summary": [
+    "API planning contains an unassigned import task, an API review commitment and disputed launch timing."
+  ],
+  "topics": [
+    {
+      "title": "API planning",
+      "summary": "Import and API review were discussed.",
+      "evidence": [
+        {
+          "sourceId": "f528e7d4a48526a1",
+          "segmentId": "seg-3",
+          "lineStart": 5,
+          "lineEnd": 5,
+          "quote": "Lee: Someone should implement import. Mia knows that area, but has not accepted the task."
+        },
+        {
+          "sourceId": "f528e7d4a48526a1",
+          "segmentId": "seg-4",
+          "lineStart": 7,
+          "lineEnd": 7,
+          "quote": "Jo: I will review the API next Friday."
+        }
+      ]
+    }
+  ],
+  "decisions": [
+    {
+      "id": "d1",
+      "statement": "Adding retries remains a proposal.",
+      "status": "proposed",
+      "confidence": "high",
+      "evidence": [
+        {
+          "sourceId": "f528e7d4a48526a1",
+          "segmentId": "seg-5",
+          "lineStart": 9,
+          "lineEnd": 9,
+          "quote": "Lee: We should add retries; this is a proposal, not an agreement."
+        }
+      ]
+    },
+    {
+      "id": "d2",
+      "statement": "Launch timing is disputed; no unambiguous shared decision can be extracted.",
+      "status": "unclear",
+      "confidence": "high",
+      "evidence": [
+        {
+          "sourceId": "f528e7d4a48526a1",
+          "segmentId": "seg-6",
+          "lineStart": 11,
+          "lineEnd": 11,
+          "quote": "Pat: We agreed to defer launch."
+        },
+        {
+          "sourceId": "f528e7d4a48526a1",
+          "segmentId": "seg-7",
+          "lineStart": 13,
+          "lineEnd": 13,
+          "quote": "Lee: Launch is still this week. I do not agree that it was deferred."
+        }
+      ]
+    }
+  ],
+  "actionItems": [
+    {
+      "id": "a1",
+      "title": "Implement import",
+      "status": "proposed",
+      "confidence": "medium",
+      "evidence": [
+        {
+          "sourceId": "f528e7d4a48526a1",
+          "segmentId": "seg-3",
+          "lineStart": 5,
+          "lineEnd": 5,
+          "quote": "Lee: Someone should implement import. Mia knows that area, but has not accepted the task."
+        }
+      ]
+    },
+    {
+      "id": "a2",
+      "title": "Review the API",
+      "assignee": "Jo",
+      "dueDate": "next Friday",
+      "status": "accepted",
+      "confidence": "high",
+      "evidence": [
+        {
+          "sourceId": "f528e7d4a48526a1",
+          "segmentId": "seg-4",
+          "lineStart": 7,
+          "lineEnd": 7,
+          "quote": "Jo: I will review the API next Friday."
+        }
+      ]
+    }
+  ],
+  "risks": [],
+  "openQuestions": [
+    {
+      "id": "q1",
+      "question": "Who will accept the import task?",
+      "evidence": [
+        {
+          "sourceId": "f528e7d4a48526a1",
+          "segmentId": "seg-3",
+          "lineStart": 5,
+          "lineEnd": 5,
+          "quote": "Lee: Someone should implement import. Mia knows that area, but has not accepted the task."
+        }
+      ]
+    },
+    {
+      "id": "q2",
+      "question": "Which calendar date is intended by next Friday?",
+      "evidence": [
+        {
+          "sourceId": "f528e7d4a48526a1",
+          "segmentId": "seg-2",
+          "lineStart": 3,
+          "lineEnd": 3,
+          "quote": "Meeting date: not supplied."
+        },
+        {
+          "sourceId": "f528e7d4a48526a1",
+          "segmentId": "seg-4",
+          "lineStart": 7,
+          "lineEnd": 7,
+          "quote": "Jo: I will review the API next Friday."
+        }
+      ]
+    }
+  ],
+  "conflicts": [
+    {
+      "id": "c1",
+      "description": "Pat says launch was deferred; Lee disputes it and says launch is this week.",
+      "evidence": [
+        {
+          "sourceId": "f528e7d4a48526a1",
+          "segmentId": "seg-6",
+          "lineStart": 11,
+          "lineEnd": 11,
+          "quote": "Pat: We agreed to defer launch."
+        },
+        {
+          "sourceId": "f528e7d4a48526a1",
+          "segmentId": "seg-7",
+          "lineStart": 13,
+          "lineEnd": 13,
+          "quote": "Lee: Launch is still this week. I do not agree that it was deferred."
+        }
+      ]
+    }
+  ]
+}

@@ -12,7 +12,7 @@
 - [x] Markdown report renderer and local inspect CLI.
 - [x] Initial normalization tests and sample fixture.
 - [ ] Run CI in a real Node.js environment and fix any failures.
-- [ ] Merge the portable Meeting-to-Action Skill PR in LinJJ12/skills.
+- [x] Bundle the portable Meeting-to-Action Skill in this repository.
 
 ## Phase 2 — Agent analysis
 - [x] Define a model-neutral AnalysisProvider interface.
@@ -42,4 +42,4 @@ A phase is complete only with tests, documentation, a reproducible demo, and kno
 
 ## Agent toolkit delivery
 
-See [the product architecture and acceptance plan](AGENT-TOOLKIT.md). Agent JSON ingestion/report is implemented locally with regression coverage. Skill PR #4 remains open; actual Codex/Cursor installation testing and MCP implementation are pending. CI is not required to run these checks locally, and must not be triggered while the user is avoiding Actions usage.
+See [the product architecture and acceptance plan](AGENT-TOOLKIT.md). Agent JSON ingestion/report is implemented locally with regression coverage. Skill source is now maintained in this repository; actual Codex/Cursor installation testing and MCP implementation are pending. CI is not required to run these checks locally, and must not be triggered while the user is avoiding Actions usage.
