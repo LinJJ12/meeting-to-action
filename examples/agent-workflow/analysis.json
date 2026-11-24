@@ -1,6 +1,6 @@
 {
   "schemaVersion": "1.0",
-  "meetingId": "meeting-f528e7d4a48526a1",
+  "meetingId": "meeting-086bf0903de66bcb",
   "generatedAt": "2026-11-24T07:44:01.865Z",
   "summary": [
     "API planning contains an unassigned import task, an API review commitment and disputed launch timing."
@@ -11,14 +11,14 @@
       "summary": "Import and API review were discussed.",
       "evidence": [
         {
-          "sourceId": "f528e7d4a48526a1",
+          "sourceId": "086bf0903de66bcb",
           "segmentId": "seg-3",
           "lineStart": 5,
           "lineEnd": 5,
           "quote": "Lee: Someone should implement import. Mia knows that area, but has not accepted the task."
         },
         {
-          "sourceId": "f528e7d4a48526a1",
+          "sourceId": "086bf0903de66bcb",
           "segmentId": "seg-4",
           "lineStart": 7,
           "lineEnd": 7,
@@ -35,7 +35,7 @@
       "confidence": "high",
       "evidence": [
         {
-          "sourceId": "f528e7d4a48526a1",
+          "sourceId": "086bf0903de66bcb",
           "segmentId": "seg-5",
           "lineStart": 9,
           "lineEnd": 9,
@@ -50,14 +50,14 @@
       "confidence": "high",
       "evidence": [
         {
-          "sourceId": "f528e7d4a48526a1",
+          "sourceId": "086bf0903de66bcb",
           "segmentId": "seg-6",
           "lineStart": 11,
           "lineEnd": 11,
           "quote": "Pat: We agreed to defer launch."
         },
         {
-          "sourceId": "f528e7d4a48526a1",
+          "sourceId": "086bf0903de66bcb",
           "segmentId": "seg-7",
           "lineStart": 13,
           "lineEnd": 13,
@@ -74,7 +74,7 @@
       "confidence": "medium",
       "evidence": [
         {
-          "sourceId": "f528e7d4a48526a1",
+          "sourceId": "086bf0903de66bcb",
           "segmentId": "seg-3",
           "lineStart": 5,
           "lineEnd": 5,
@@ -91,7 +91,7 @@
       "confidence": "high",
       "evidence": [
         {
-          "sourceId": "f528e7d4a48526a1",
+          "sourceId": "086bf0903de66bcb",
           "segmentId": "seg-4",
           "lineStart": 7,
           "lineEnd": 7,
@@ -107,7 +107,7 @@
       "question": "Who will accept the import task?",
       "evidence": [
         {
-          "sourceId": "f528e7d4a48526a1",
+          "sourceId": "086bf0903de66bcb",
           "segmentId": "seg-3",
           "lineStart": 5,
           "lineEnd": 5,
@@ -120,14 +120,14 @@
       "question": "Which calendar date is intended by next Friday?",
       "evidence": [
         {
-          "sourceId": "f528e7d4a48526a1",
+          "sourceId": "086bf0903de66bcb",
           "segmentId": "seg-2",
           "lineStart": 3,
           "lineEnd": 3,
           "quote": "Meeting date: not supplied."
         },
         {
-          "sourceId": "f528e7d4a48526a1",
+          "sourceId": "086bf0903de66bcb",
           "segmentId": "seg-4",
           "lineStart": 7,
           "lineEnd": 7,
@@ -142,14 +142,14 @@
       "description": "Pat says launch was deferred; Lee disputes it and says launch is this week.",
       "evidence": [
         {
-          "sourceId": "f528e7d4a48526a1",
+          "sourceId": "086bf0903de66bcb",
           "segmentId": "seg-6",
           "lineStart": 11,
           "lineEnd": 11,
           "quote": "Pat: We agreed to defer launch."
         },
         {
-          "sourceId": "f528e7d4a48526a1",
+          "sourceId": "086bf0903de66bcb",
           "segmentId": "seg-7",
           "lineStart": 13,
           "lineEnd": 13,
