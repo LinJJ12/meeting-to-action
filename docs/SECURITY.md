@@ -3,7 +3,8 @@
 Meeting transcripts may contain confidential business information, personal data, customer details, or credentials. Treat all source material as sensitive by default.
 
 - Local-first processing and storage.
-- No raw transcript text in logs.
+- No raw transcript text in logs by default.
+- Provider error excerpts are opt-in (`OPENAI_VERBOSE_ERRORS=1`) and only best-effort redacted: common secret patterns become `[REDACTED]`, but the truncated excerpt may still contain sensitive content, including transcript text. Enable it only for local troubleshooting.
 - No credentials in source, reports, fixtures, or prompts.
 - Explicit configuration before sending transcript content to a remote model provider.
 - Least-privilege GitHub/document permissions; read-only by default.

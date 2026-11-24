@@ -21,7 +21,7 @@ function usage(): never {
     "  OPENAI_MODEL (required)",
     "  OPENAI_BASE_URL (optional; defaults to https://api.openai.com/v1)",
     "  OPENAI_TIMEOUT_MS (optional; defaults to 60000)",
-    "  OPENAI_VERBOSE_ERRORS (optional; set 1 to include a redacted provider response excerpt in errors)",
+    "  OPENAI_VERBOSE_ERRORS (optional; set 1 to include a best-effort redacted provider error excerpt; may still contain sensitive content)",
   ].join("\n"));
   process.exit(2);
 }

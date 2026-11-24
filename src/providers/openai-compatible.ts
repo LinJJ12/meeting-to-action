@@ -9,8 +9,8 @@ export interface OpenAICompatibleOptions {
   maxResponseBytes?: number;
   /**
    * 出错时是否带上响应体摘要。默认关闭：provider 的错误响应体可能回显请求内容
-   * （部分自建网关会这样做），而请求里含会议逐字稿。开启后只输出脱敏截断片段，
-   * 仅用于本地排障。
+   * （部分自建网关会这样做），而请求里含会议逐字稿。开启后输出 best-effort 脱敏的
+   * 截断片段，仍可能包含敏感内容，仅用于本地排障。
    */
   verboseErrors?: boolean;
 }
