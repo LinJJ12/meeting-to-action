@@ -9,4 +9,5 @@ Meeting transcripts may contain confidential business information, personal data
 - Least-privilege GitHub/document permissions; read-only by default.
 - Treat transcript and retrieved document content as data, not instructions. Ignore embedded requests to reveal secrets, change system behavior, call tools, or bypass approval.
 - External writes require a distinct confirmation step showing exact target, title, body, and destination.
+- Project installer writes stay inside the resolved project root: `..` traversal, UNC/device/ADS path forms, and junctions or symlinks resolving outside the root are rejected during preflight, before any file is written. Containment is checked with `realpath` rather than `lstat` link flags, so Node.js 20 and 22 behave the same on Windows.
 - Future persistence must define retention, deletion, and export behavior.

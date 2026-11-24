@@ -15,7 +15,7 @@
 
 ## 从源码开始
 
-需要 Node.js 20+ 和 npm。在仓库根目录执行：
+需要 Node.js 20+ 和 npm（Windows 上使用项目级安装器时推荐 Node.js 22+，原因见[项目级安装](#项目级安装)）。在仓库根目录执行：
 
 ```sh
 npm ci
@@ -40,6 +40,8 @@ npm run setup:client -- --client codex --project /absolute/path/to/project --app
 ```
 
 Cursor 改用 `--client cursor`。已有不同配置会报告冲突，不会自动合并。参见[项目安装说明](docs/CLIENT-SETUP.md)和[手工 MCP 配置](docs/MCP.md)。插件安装与项目安装是两种替代方案，通常选择一种即可，避免重复加载工具。
+
+安装器在预检和每次写入前都用 `realpath` 对项目根和目标路径做包含性校验：`..` 越界、UNC/设备路径/ADS 形式分别以 `SETUP_PATH_ESCAPE`、`SETUP_PATH_INVALID` 拒绝，解析后指向项目外的 junction/symlink 以 `SETUP_LINK_REJECTED` 拒绝，预检失败不会产生部分写入。该防护不再依赖 `lstat` 的符号链接判断，因此 Node 20 与 Node 22 行为一致；Windows 上仍推荐 Node 22+，因为 Node 20 的 `lstat` 会把目录 junction 误报为普通目录（Node 22 已修正），其他依赖该标记的脚本可能因此误判。
 
 仅安装 Skill 时，将整个 `skills/meeting-to-action/`（包括 references 和 agents）复制到目标项目的 `.agents/skills/`（Codex）或 `.cursor/skills/`（Cursor）。仅复制 SKILL.md 不完整。发现行为取决于客户端版本；也可明确要求助手读取该文件。
 
