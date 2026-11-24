@@ -5,6 +5,7 @@ import {
   type MeetingInput,
 } from "../domain/schema.js";
 import { buildAnalysisMessages } from "./prompt.js";
+import { validateEvidence } from "./evidence.js";
 import type { AnalysisProvider } from "../providers/types.js";
 
 const DraftSchema = MeetingAnalysisSchema.omit({ schemaVersion: true, meetingId: true, generatedAt: true });
@@ -20,26 +21,20 @@ function collectEvidence(analysis: MeetingAnalysis): EvidenceRef[][] {
   ];
 }
 
+/**
+ * 校验模型输出里的全部 evidence 引用。
+ *
+ * 这里必须复用 `validateEvidence`——历史上 analyze 路径自己实现了一套近似逻辑，
+ * 结果与 report / MCP 路径语义相反：它不校验 speaker/timestamp（伪造的说话人可以
+ * 通过），却要求行号与 segment 边界严格相等（段内子区间被拒）。两条路径对同一份
+ * 数据给出不同结论，且伪造元数据只在 analyze 路径上不被发现。
+ */
 export function validateAnalysisEvidence(input: MeetingInput, analysis: MeetingAnalysis): string[] {
-  const segments = new Map(input.segments.map((segment) => [segment.id, segment]));
   const errors: string[] = [];
 
   for (const [index, refs] of collectEvidence(analysis).entries()) {
     if (refs.length === 0) errors.push(`Evidence group ${index + 1} is empty`);
-    for (const ref of refs) {
-      const segment = ref.segmentId ? segments.get(ref.segmentId) : undefined;
-      if (!segment) {
-        errors.push(`Unknown or missing segmentId: ${ref.segmentId ?? "(missing)"}`);
-        continue;
-      }
-      if (segment.sourceId !== ref.sourceId) errors.push(`sourceId mismatch for ${ref.segmentId}`);
-      if (segment.lineStart !== ref.lineStart || segment.lineEnd !== ref.lineEnd) {
-        errors.push(`Line range mismatch for ${ref.segmentId}`);
-      }
-      if (ref.quote && !segment.text.includes(ref.quote)) {
-        errors.push(`Evidence quote is not an exact substring of ${ref.segmentId}`);
-      }
-    }
+    errors.push(...validateEvidence(input, refs));
   }
 
   return errors;
