@@ -77,7 +77,7 @@ npm run dev -- report examples/agent-workflow/normalized.json --analysis example
 npm run dev -- analyze examples/sample-meeting.md --out report.md
 ```
 
-CLI 会加载本地 `.env`，也可使用 shell 环境变量。此模式会将记录发送给所配置的模型服务，可能产生费用；不要提交密钥或私有会议资料。当前适配器使用兼容 Chat Completions 的 JSON 模式，尚无自动长文分析、重试和限流退避。`analyze` 对逐字稿有 2 MiB UTF-8 上限：文件超过上限时在读入内存前以 `INPUT_SIZE_LIMIT` 拒绝；`inspect`/`report` 不调用模型，不设该上限。详见[分析引擎](docs/ANALYSIS-ENGINE.md)。
+CLI 会加载本地 `.env`，也可使用 shell 环境变量。此模式会将记录发送给所配置的模型服务，可能产生费用；不要提交密钥或私有会议资料。当前适配器使用兼容 Chat Completions 的 JSON 模式，尚无自动长文分析、重试和限流退避。`analyze` 对逐字稿有 2 MiB UTF-8 上限：文件超过上限时在读入内存前以 `INPUT_SIZE_LIMIT` 拒绝；`report` 虽然不调用模型，但同样按文件大小先行拒绝超过 2 MiB 的 normalized JSON 与超过 4 MiB 的 analysis JSON，解析后的输入还要满足 2 MiB / 10,000 段上限；`inspect` 不设该上限。详见[分析引擎](docs/ANALYSIS-ENGINE.md)。
 
 ## 能力与边界
 

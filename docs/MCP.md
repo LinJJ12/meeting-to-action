@@ -66,6 +66,8 @@ JSON Schema describes shape only; cross-field identity, duplicate IDs, source re
 
 - Maximum raw transport read buffer and serialized tool arguments: 4 MiB.
 - Transcript/combined segment text: 2 MiB UTF-8; at most 10,000 segments. Limits are counted in UTF-8 bytes, so oversized ASCII and CJK content is rejected consistently as INPUT_SIZE_LIMIT with the actual bytes and limit.
+- Local `report` files are checked with `stat` before reading: normalized input JSON against 2 MiB and analysis JSON against 4 MiB. Oversized files are rejected as INPUT_SIZE_LIMIT without loading them; a parsed input is also held to the 2 MiB / 10,000-segment rule above.
+- Evidence resource caps: at most 200 references per analysis entry and at most 4,000 characters per quote. Exceeding either returns ANALYSIS_EVIDENCE_INVALID with the actual limit in the message. Evidence checks build one per-source index per analysis instead of rescanning every segment for every reference.
 - maxChars: integer 1 through 2,097,152. An inconsistent segment line count is rejected by splitting.
 - Oversized transport input closes the connection. Other tool validation failures return `isError: true` with a stable code and do not expose arguments.
 - Known codes include INPUT_INVALID, INPUT_SIZE_LIMIT, INPUT_SEGMENT_LIMIT, CHUNK_LINE_TOO_LONG, SEGMENT_LINE_COUNT_INVALID, ANALYSIS_MEETING_MISMATCH, ANALYSIS_DUPLICATE_ID, ANALYSIS_EVIDENCE_INVALID and TOOL_UNKNOWN.
