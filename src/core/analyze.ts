@@ -5,7 +5,7 @@ import {
   type MeetingInput,
 } from "../domain/schema.js";
 import { buildAnalysisMessages } from "./prompt.js";
-import { validateEvidence } from "./evidence.js";
+import { buildEvidenceIndex, validateEvidenceWithIndex } from "./evidence.js";
 import type { AnalysisProvider } from "../providers/types.js";
 import { ZodError } from "zod";
 
@@ -134,10 +134,12 @@ function collectEvidence(analysis: MeetingAnalysis): EvidenceRef[][] {
  */
 export function validateAnalysisEvidence(input: MeetingInput, analysis: MeetingAnalysis): string[] {
   const errors: string[] = [];
+  // 与 validateAnalysis 一致：整份分析只构建一次证据索引，避免逐条目重复扫描 segments。
+  const evidenceIndex = buildEvidenceIndex(input);
 
   for (const [index, refs] of collectEvidence(analysis).entries()) {
     if (refs.length === 0) errors.push(`Evidence group ${index + 1} is empty`);
-    errors.push(...validateEvidence(input, refs));
+    errors.push(...validateEvidenceWithIndex(evidenceIndex, refs));
   }
 
   return errors;

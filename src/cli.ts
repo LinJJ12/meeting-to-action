@@ -6,7 +6,8 @@ import { normalizeTranscript } from "./core/normalize.js";
 import { analyzeMeeting } from "./core/analyze.js";
 import { renderMarkdown } from "./render/markdown.js";
 import { OpenAICompatibleProvider } from "./providers/openai-compatible.js";
-import { MAX_CONTENT_BYTES, MAX_SEGMENTS } from "./core/limits.js";
+import { MAX_ANALYSIS_BYTES, MAX_CONTENT_BYTES, MAX_SEGMENTS, assertMeetingInputWithinLimits } from "./core/limits.js";
+import { MeetingInputSchema } from "./domain/schema.js";
 
 function usage(): never {
   console.error([
@@ -40,9 +41,18 @@ for (let index=0;index<args.length;index+=2){
  else usage();
 }
 if(command==="report"&&!analysisPath)usage();
-async function readJson(path:string):Promise<unknown>{
- const raw=await readFile(path,"utf8");
- try{return JSON.parse(raw);}catch{throw new Error("INPUT_JSON_INVALID");}
+/**
+ * report 的 input/analysis 都来自本地文件：先按 stat 大小拒绝超大文件，绝不整读。
+ * stat 与读取之间文件可能变化，按实际读到的 Buffer 字节数复核一次。
+ */
+async function readJsonWithinLimit(path:string,maxBytes:number,label:string):Promise<unknown>{
+ const assertSize=(bytes:number):void=>{
+  if(bytes>maxBytes)throw new Error(`INPUT_SIZE_LIMIT: ${label} ${path} is ${bytes} bytes, limit is ${maxBytes}`);
+ };
+ assertSize((await stat(path)).size);
+ const raw=await readFile(path);
+ assertSize(raw.byteLength);
+ try{return JSON.parse(raw.toString("utf8"));}catch{throw new Error("INPUT_JSON_INVALID");}
 }
 function assertTranscriptSize(bytes:number,path:string):void{
  if(bytes>MAX_CONTENT_BYTES)throw new Error(`INPUT_SIZE_LIMIT: transcript ${path} is ${bytes} bytes, limit is ${MAX_CONTENT_BYTES}`);
@@ -59,7 +69,10 @@ async function readTranscriptForAnalyze(path:string):Promise<string>{
 try {
   const absoluteInput = resolve(input);
   if(command==="report"){
-    const analysis=validateAnalysis(await readJson(absoluteInput),await readJson(resolve(analysisPath!)));
+    const meeting=MeetingInputSchema.parse(await readJsonWithinLimit(absoluteInput,MAX_CONTENT_BYTES,"meeting input"));
+    // report 不调用模型，但仍要让病态输入（段数/总文本）在渲染与证据校验前被明确拒绝。
+    assertMeetingInputWithinLimits(meeting);
+    const analysis=validateAnalysis(meeting,await readJsonWithinLimit(resolve(analysisPath!),MAX_ANALYSIS_BYTES,"analysis"));
     const report=renderMarkdown(analysis);
     if(outputPath){await writeFile(resolve(outputPath),report,{encoding:"utf8",flag:"wx"});console.log("Wrote "+resolve(outputPath));}
     else process.stdout.write(report);

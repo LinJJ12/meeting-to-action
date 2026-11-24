@@ -4,7 +4,7 @@ import {normalizeTranscript} from "../core/normalize.js";
 import {splitTranscript} from "../core/split.js";
 import {validateAnalysis} from "../core/analysis.js";
 import {renderMarkdown} from "../render/markdown.js";
-import {assertContentWithinLimit,MAX_CONTENT_BYTES,MAX_REQUEST_BYTES,MAX_SEGMENTS} from "../core/limits.js";
+import {assertContentWithinLimit,assertMeetingInputWithinLimits,MAX_CONTENT_BYTES,MAX_REQUEST_BYTES,MAX_SEGMENTS} from "../core/limits.js";
 
 // 上限常量与 CLI 共用同一来源（src/core/limits.ts），这里保留导出以免破坏既有引用。
 export {MAX_CONTENT_BYTES,MAX_REQUEST_BYTES,MAX_SEGMENTS};
@@ -22,9 +22,8 @@ const definitions={
 export const toolList=Object.entries(definitions).map(([name,tool])=>({name,description:tool.description,inputSchema:z.toJSONSchema(tool.schema),annotations:{readOnlyHint:true,destructiveHint:false,idempotentHint:true,openWorldHint:false}}));
 function boundedInput(value:unknown){
  const meeting=MeetingInputSchema.parse(value);
- if(meeting.segments.length>MAX_SEGMENTS)throw new Error(`INPUT_SEGMENT_LIMIT: input has ${meeting.segments.length} segments, limit is ${MAX_SEGMENTS}`);
- const bytes=meeting.segments.reduce((sum,s)=>sum+Buffer.byteLength(s.text,"utf8"),0);
- if(bytes>MAX_CONTENT_BYTES)throw new Error(`INPUT_SIZE_LIMIT: input is ${bytes} bytes, limit is ${MAX_CONTENT_BYTES}`);
+ // 与 CLI report 共用同一套已解析输入上限（段数 + segment 文本 UTF-8 总字节）。
+ assertMeetingInputWithinLimits(meeting);
  return meeting;
 }
 const codes=new Set(["INPUT_EMPTY","INPUT_UNSUPPORTED","INPUT_SEGMENT_LIMIT","INPUT_SIZE_LIMIT","CHUNK_LINE_TOO_LONG","SEGMENT_LINE_COUNT_INVALID","ANALYSIS_MEETING_MISMATCH","ANALYSIS_DUPLICATE_ID","ANALYSIS_EVIDENCE_INVALID"]);
