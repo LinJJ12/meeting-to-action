@@ -7,6 +7,7 @@ export type EvidenceRef = {
   sourceId: string;
   segmentId?: string;
   speaker?: string;
+  timestamp?: string;
   lineStart?: number;
   lineEnd?: number;
   quote?: string;
@@ -33,6 +34,7 @@ export type MeetingInput = {
     sourceId: string;
     text: string;
     speaker?: string;
+    timestamp?: string;
     lineStart: number;
     lineEnd: number;
   }>;
@@ -81,6 +83,7 @@ export type MeetingAnalysis = {
 - Material decisions, actions, risks, topics, and conflicts cite source evidence.
 - Quotes are short and exact when included.
 - Missing evidence means unverified, not confirmed.
+- Speaker labels and timestamps are optional metadata. When supplied, they must equal the cited segment's own metadata; a mismatched label is rejected rather than rendered.
 - A speaker label alone does not establish task ownership.
 - Unknown owners and dates remain absent.
 
@@ -88,6 +91,17 @@ export type MeetingAnalysis = {
 
 `src/domain/schema.ts` is the authoritative runtime contract. Material claim arrays require at least one evidence reference per item; unknown nested fields are rejected. Input source and segment IDs must be unique, segment sources must exist, and line ranges must be ordered.
 
-Call `validateEvidence(input, refs)` for all claim evidence before accepting analysis. It checks source/segment relationships, paired line bounds within a segment, and exact quotes within the cited text. A source ID alone is insufficient. Line-only references currently must fit within one segment. This verifies textual support, not the semantic truth of an interpretation.
+**There is exactly one evidence validator: `validateEvidence(input, refs, mode)` in `src/core/evidence.ts`.** Every entry point calls it — the standalone `analyze` provider path, the `report` CLI command, and the MCP `validate_analysis` / `render_report` tools. It checks source and segment relationships, paired line bounds, exact quotes within the cited text, and speaker/timestamp metadata against the cited segment.
+
+The `mode` argument selects how strict the reference shape must be:
+
+| mode | segmentId | line bounds | used by |
+|---|---|---|---|
+| `fragment` (default) | optional | may be a sub-range inside the cited segment | `report`, MCP tools, `analyze` |
+| `strict` | required | must equal the cited segment's boundaries exactly | available for callers that require exact per-segment citations |
+
+Metadata (`speaker`, `timestamp`) and quotes are validated identically in both modes: relaxing the line range never relaxes "the citation cannot be fabricated". A source ID alone is insufficient in either mode. This verifies textual support, not the semantic truth of an interpretation.
+
+> History: before this was unified, the `analyze` path used its own close-but-different checker. That checker ignored `speaker`/`timestamp` (fabricated labels passed) while demanding exactly-equal line bounds, so the same analysis could be accepted by `analyze` and rejected by `report`. Both directions are now covered by `tests/evidence-consistency.test.ts`.
 
 `renderMarkdown` validates analysis structure, escapes untrusted Markdown/HTML, and preserves topics and evidence. It does not have the source input and cannot verify evidence against original text. The `report` command verifies meetingId, duplicate item IDs and evidence through `validateAnalysis` before rendering. Summary strings currently have no evidence field and remain unverified narrative.
