@@ -82,6 +82,7 @@ export type MeetingAnalysis = {
 
 - Material decisions, actions, risks, topics, and conflicts cite source evidence.
 - Quotes are short and exact when included.
+- Resource limits: at most 200 evidence references per entry and at most 4,000 characters per quote. Exceeding either is rejected as ANALYSIS_EVIDENCE_INVALID with the actual limit.
 - Missing evidence means unverified, not confirmed.
 - Speaker labels and timestamps are optional metadata. When supplied, they must equal the cited segment's own metadata; a mismatched label is rejected rather than rendered.
 - A speaker label alone does not establish task ownership.
@@ -91,7 +92,7 @@ export type MeetingAnalysis = {
 
 `src/domain/schema.ts` is the authoritative runtime contract. Material claim arrays require at least one evidence reference per item; unknown nested fields are rejected. Input source and segment IDs must be unique, segment sources must exist, and line ranges must be ordered.
 
-**There is exactly one evidence validator: `validateEvidence(input, refs, mode)` in `src/core/evidence.ts`.** Every entry point calls it — the standalone `analyze` provider path, the `report` CLI command, and the MCP `validate_analysis` / `render_report` tools. It checks source and segment relationships, paired line bounds, exact quotes within the cited text, and speaker/timestamp metadata against the cited segment.
+**There is exactly one evidence validator: `validateEvidence(input, refs, mode)` in `src/core/evidence.ts`.** Every entry point calls it — the standalone `analyze` provider path, the `report` CLI command, and the MCP `validate_analysis` / `render_report` tools. It checks source and segment relationships, paired line bounds, exact quotes within the cited text, and speaker/timestamp metadata against the cited segment. Validation builds one per-source segment index per analysis and reuses it across entries, so cost grows with segments plus references rather than their product.
 
 The `mode` argument selects how strict the reference shape must be:
 
