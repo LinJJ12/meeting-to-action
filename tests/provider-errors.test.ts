@@ -1,4 +1,4 @@
-import { afterEach, describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { createServer, type IncomingMessage, type Server, type ServerResponse } from "node:http";
 import type { AddressInfo } from "node:net";
 import { OpenAICompatibleProvider, type OpenAICompatibleOptions } from "../src/providers/openai-compatible.js";
@@ -16,8 +16,16 @@ async function stubServer(handler: (req: IncomingMessage, res: ServerResponse) =
 }
 
 afterEach(async () => {
+  vi.restoreAllMocks();
   await Promise.all(
-    servers.splice(0).map((server) => new Promise<void>((resolve) => server.close(() => resolve()))),
+    servers.splice(0).map(
+      (server) =>
+        new Promise<void>((resolve) => {
+          // 超时/中止用例会留下半开连接，先全部掐断，避免 afterEach 卡在 close 上。
+          server.closeAllConnections();
+          server.close(() => resolve());
+        }),
+    ),
   );
 });
 
@@ -214,5 +222,105 @@ describe("provider 错误处理与响应上限", () => {
     expect(verboseMessage).toContain("400");
     expect(verboseMessage).toContain("PRIVATE_TRANSCRIPT");
     expect(verboseMessage.length).toBeLessThan(700);
+  });
+});
+
+describe("provider 网络错误分类", () => {
+  it("连接被上游提前关闭时返回 REQUEST_FAILED，且不回显 URL 查询串", async () => {
+    const baseUrl = await stubServer((req) => req.socket.destroy());
+
+    const error = await provider(`${baseUrl}?key=SECRET_QUERY_VALUE`)
+      .complete([{ role: "user", content: "x" }])
+      .catch((caught: unknown) => caught);
+
+    expect(error).toBeInstanceOf(ProviderError);
+    expect((error as ProviderError).code).toBe("REQUEST_FAILED");
+    const message = String((error as Error).message);
+    expect(message).not.toContain("SECRET_QUERY_VALUE");
+    expect(message).not.toContain("http://");
+  });
+
+  it("请求超时时返回 REQUEST_TIMEOUT", async () => {
+    // 接受连接但永不响应，让客户端自己触发 AbortSignal.timeout。
+    const baseUrl = await stubServer(() => {});
+
+    const error = await provider(`${baseUrl}?key=SECRET_QUERY_VALUE`, { timeoutMs: 200 })
+      .complete([{ role: "user", content: "x" }])
+      .catch((caught: unknown) => caught);
+
+    expect(error).toBeInstanceOf(ProviderError);
+    expect((error as ProviderError).code).toBe("REQUEST_TIMEOUT");
+    const message = String((error as Error).message);
+    expect(message).toMatch(/timed out/i);
+    expect(message).not.toContain("SECRET_QUERY_VALUE");
+    expect(message).not.toContain("http://");
+  });
+
+  it("请求被外部中止时返回 REQUEST_ABORTED", async () => {
+    vi.spyOn(globalThis, "fetch").mockRejectedValue(
+      new DOMException("This operation was aborted", "AbortError"),
+    );
+
+    const error = await provider("http://127.0.0.1:1/v1")
+      .complete([{ role: "user", content: "x" }])
+      .catch((caught: unknown) => caught);
+
+    expect(error).toBeInstanceOf(ProviderError);
+    expect((error as ProviderError).code).toBe("REQUEST_ABORTED");
+    expect(String((error as Error).message)).toMatch(/aborted/i);
+  });
+});
+
+describe("verbose 错误体脱敏", () => {
+  it("常见凭据模式在 verbose 诊断中被替换为 [REDACTED]", async () => {
+    const secrets = {
+      apiKey: "sk-live-ABC123",
+      bearer: "abc.def",
+      transcriptToken: "SECRET_TRANSCRIPT_TOKEN_4f2a",
+      queryValue: "topsecretvalue",
+      secretValue: "hunter2value",
+    };
+    const baseUrl = await stubServer((_req, res) => {
+      res.writeHead(400, { "content-type": "application/json" });
+      res.end(
+        JSON.stringify({
+          error: `${secrets.transcriptToken} alice said the launch is cancelled`,
+          api_key: secrets.apiKey,
+          authorization: `Bearer ${secrets.bearer}`,
+          apiKeyQuery: `api_key=${secrets.queryValue}`,
+          secret_field: `secret=${secrets.secretValue}`,
+        }),
+      );
+    });
+
+    const error = await provider(baseUrl, { verboseErrors: true })
+      .complete([{ role: "user", content: "x" }])
+      .catch((caught: unknown) => caught);
+
+    expect((error as ProviderError).code).toBe("HTTP_ERROR");
+    const message = String((error as Error).message);
+    expect(message).toContain("HTTP 400");
+    expect(message).toContain("[REDACTED]");
+    for (const secret of Object.values(secrets)) {
+      expect(message).not.toContain(secret);
+    }
+    expect(message.length).toBeLessThan(700);
+  });
+
+  it("非 verbose 模式仍然完全不回显错误体", async () => {
+    const baseUrl = await stubServer((_req, res) => {
+      res.writeHead(400, { "content-type": "text/plain" });
+      res.end("sk-live-ABC123 Bearer abc.def SECRET_TRANSCRIPT_TOKEN_4f2a");
+    });
+
+    const error = await provider(baseUrl)
+      .complete([{ role: "user", content: "x" }])
+      .catch((caught: unknown) => caught);
+
+    expect((error as ProviderError).code).toBe("HTTP_ERROR");
+    const message = String((error as Error).message);
+    expect(message).not.toContain("sk-live-ABC123");
+    expect(message).not.toContain("abc.def");
+    expect(message).not.toContain("SECRET_TRANSCRIPT_TOKEN_4f2a");
   });
 });
