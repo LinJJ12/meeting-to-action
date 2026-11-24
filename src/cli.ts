@@ -19,6 +19,7 @@ function usage(): never {
     "  OPENAI_MODEL (required)",
     "  OPENAI_BASE_URL (optional; defaults to https://api.openai.com/v1)",
     "  OPENAI_TIMEOUT_MS (optional; defaults to 60000)",
+    "  OPENAI_VERBOSE_ERRORS (optional; set 1 to include a redacted provider response excerpt in errors)",
   ].join("\n"));
   process.exit(2);
 }
@@ -72,6 +73,8 @@ try {
       model,
       ...(process.env.OPENAI_BASE_URL ? { baseUrl: process.env.OPENAI_BASE_URL } : {}),
       timeoutMs: timeout,
+      // 默认不把上游响应体带进错误：错误响应可能回显会议逐字稿。
+      ...(process.env.OPENAI_VERBOSE_ERRORS === "1" ? { verboseErrors: true } : {}),
     });
     const analysis = await analyzeMeeting(meeting, provider);
     output = renderMarkdown(analysis);
