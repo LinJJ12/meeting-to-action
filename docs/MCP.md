@@ -74,4 +74,4 @@ No default persistence, arbitrary disk reads/writes, GitHub access, model calls 
 
 ## Verification status
 
-Local SDK source/compiled subprocess tests are passing. Actual Codex/Cursor discovery, client UI and hosted model behavior remain separate release checks. The server is an implemented local milestone, not a published v0.2 package or a completed client integration release.
+Local SDK source/compiled subprocess tests are passing. Actual Codex CLI/App Server Skill and five-tool discovery has also passed; [acceptance details and project setup](CLIENT-SETUP.md) distinguish invocation overrides from trusted project config loading. Cursor UI and model-level behavior remain separate release checks. The server is an implemented local milestone, not a published v0.2 package or a completed client integration release.

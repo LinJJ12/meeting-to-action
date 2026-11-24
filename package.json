@@ -11,7 +11,8 @@
     "skill:schema": "tsx scripts/export-skill-schema.ts",
     "mcp": "node dist/mcp/server.js",
     "mcp:dev": "tsx src/mcp/server.ts",
-    "mcp:smoke": "npm run build && node scripts/smoke-mcp.mjs"
+    "mcp:smoke": "npm run build && node scripts/smoke-mcp.mjs",
+    "setup:client": "node dist/setup.js"
   },
   "engines": {
     "node": ">=20"

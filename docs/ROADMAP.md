@@ -30,7 +30,9 @@
 - [x] Five meeting tools: prepare, split, schema, validate and render.
 - [x] Input size limits, redacted errors and source-preserving splitting.
 - [x] SDK client integration and compiled subprocess smoke tests.
-- [ ] Verify discovery and usage in actual Codex and Cursor clients.
+- [x] Add project-local installer with preview, conflict checks and repeatable application.
+- [x] Verify actual Codex CLI/App Server Skill and five-tool discovery without a model turn.
+- [ ] Verify trusted project-config loading and model-level usage in Codex desktop and Cursor.
 - [ ] Publish an installable runtime package after client acceptance.
 - [ ] Read-only repository and issue search.
 - [ ] Evidence-backed issue proposals and duplicate candidates.
@@ -48,3 +50,5 @@ A phase is complete only with tests, documentation, a reproducible demo, and kno
 ## Agent toolkit delivery
 
 See [the product architecture and acceptance plan](AGENT-TOOLKIT.md). Agent JSON ingestion/report is implemented locally with regression coverage. Skill source is now maintained in this repository; actual Codex/Cursor installation testing and runtime publication are pending; local MCP implementation and SDK subprocess checks are complete. CI is not required to run these checks locally, and must not be triggered while the user is avoiding Actions usage.
+
+Installer and client acceptance details: [CLIENT-SETUP.md](CLIENT-SETUP.md). Codex CLI discovery passed on 2026-11-24; Cursor UI remains pending.

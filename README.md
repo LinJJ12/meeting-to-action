@@ -120,3 +120,14 @@ For maintainers: run `npm run skill:schema` after contract changes, then `npm te
 ## Local MCP milestone
 
 Five stateless stdio tools are implemented. Build and test with `npm run mcp:smoke`; see [MCP setup and limits](docs/MCP.md) for Codex/Cursor configuration examples. The client should launch `node /absolute/path/to/dist/mcp/server.js` directly. No extra API key is required. Actual client discovery and npm publication remain pending.
+
+## Project installer
+
+After `npm run build`, preview a project-local Skill + MCP installation:
+
+```sh
+npm run setup:client -- --client codex --project /absolute/path/to/project
+# Add --apply to install; use --client cursor for Cursor.
+```
+
+The default is read-only preview. Existing different configs/Skill files are preserved and reported as conflicts. See [installation behavior and client acceptance](docs/CLIENT-SETUP.md). Codex CLI discovery of the Skill and five MCP tools has been verified; Cursor UI and model-level invocation remain pending.
