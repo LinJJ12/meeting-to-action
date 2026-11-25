@@ -7,7 +7,7 @@ import {tmpdir} from "node:os";
 import {join,resolve} from "node:path";
 it("CLI validates arguments, writes JSON, and never overwrites existing files",()=>{
  const dir=mkdtempSync(join(tmpdir(),"meeting-cli-"));
- const run=(...args:string[])=>spawnSync(process.execPath,["--import","tsx",resolve("src/cli.ts"),...args],{encoding:"utf8"});
+ const run=(...args:string[])=>spawnSync(process.execPath,["--import","tsx",resolve("src/cli.ts"),...args],{encoding:"utf8",timeout:20_000,killSignal:"SIGKILL"});
  try{
   const input=join(dir,"meeting.md"),out=join(dir,"output.json");writeFileSync(input,"# Plan\n\nAlice: review.");
   expect(run("inspect",input,"--out",out).status).toBe(0);
