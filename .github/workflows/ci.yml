@@ -1,24 +1,43 @@
 name: CI
 
+# CI is paused: GitHub billing issue; local preflight (`npm run preflight`) is the source of truth.
+# When billing is restored, trigger this once manually via workflow_dispatch before
+# re-enabling push/pull_request automation.
 on:
+  workflow_dispatch:
   push:
-    branches: [main, "feat/**"]
+    branches: [main, "feat/**", "integration/**"]
   pull_request:
     branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   verify:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     strategy:
+      fail-fast: false
       matrix:
         node-version: [20, 22]
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      # Actions pinned to commit SHA (verified via git ls-remote) per the
+      # GitHub Actions security-hardening guidance on third-party actions.
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
           node-version: ${{ matrix.node-version }}
-      - run: npm install -g npm@10.8.2
-      - run: npm install --no-audit --no-fund --legacy-peer-deps --install-strategy=nested
+          cache: npm
+      # npm ci validates package-lock.json (npm install never did); no global npm
+      # downgrade, no legacy-peer-deps - CI must match local installs exactly.
+      - run: npm ci --no-audit --no-fund
       - run: npm run typecheck
       - run: npm test
       - run: npm run build
+      - run: npm run mcp:smoke
+      - run: npm run plugin:build
