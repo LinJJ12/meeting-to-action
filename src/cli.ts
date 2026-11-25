@@ -1,4 +1,4 @@
-import "dotenv/config";
+import {config as loadEnvConfig} from "dotenv";
 import {validateAnalysis} from "./core/analysis.js";
 import {validateMinutes} from "./core/minutes.js";
 import {MeetingInputSchema} from "./domain/schema.js";
@@ -13,12 +13,13 @@ import { isReadingMode, renderMinutesDocument, resolveReadingMode, type ReadingM
 import { OpenAICompatibleProvider } from "./providers/openai-compatible.js";
 import { ProviderError } from "./providers/types.js";
 import { MAX_ANALYSIS_BYTES, MAX_CONTENT_BYTES, MAX_SEGMENTS, assertMeetingInputWithinLimits } from "./core/limits.js";
+import { assertSafePathForm } from "./core/path-guard.js";
 
 const USAGE=[
   "Usage:",
   "  meeting-to-action --version",
   "  meeting-to-action inspect <transcript.txt|transcript.md> [--out normalized.json]",
-  "  meeting-to-action analyze <transcript.txt|transcript.md> [--out report.md]",
+  "  meeting-to-action analyze <transcript.txt|transcript.md> [--env <path>] [--out report.md]",
   "  meeting-to-action report <normalized.json> --analysis <analysis.json> [--minutes <minutes.json>] [--mode minutes|actions|evidence] [--no-appendix] [--out report.md]",
   "",
   "Report modes:",
@@ -26,10 +27,14 @@ const USAGE=[
   "  --no-appendix omits the trace appendix from minutes output (the appendix is on by default).",
   "",
   "Environment for analyze:",
+  "  --env <path>  load environment variables from an explicit file (default: none).",
+  "                     The CLI never reads a .env from the working directory implicitly.",
   "  OPENAI_API_KEY (required)",
   "  OPENAI_MODEL (required)",
-  "  OPENAI_BASE_URL (optional; defaults to https://api.openai.com/v1)",
+  "  OPENAI_BASE_URL (optional; defaults to https://api.openai.com/v1; must be https unless it",
+  "                   points at localhost/127.0.0.1/[::1], or OPENAI_ALLOW_INSECURE=1 is set)",
   "  OPENAI_TIMEOUT_MS (optional; defaults to 60000)",
+  "  OPENAI_ALLOW_INSECURE (optional; set 1 to allow plain http endpoints other than loopback)",
   "  OPENAI_VERBOSE_ERRORS (optional; set 1 to include a best-effort redacted provider error excerpt; may still contain sensitive content)",
 ].join("\n");
 
@@ -58,6 +63,7 @@ let outputPath: string | undefined;
 let analysisPath: string | undefined;
 let minutesPath: string | undefined;
 let modeOption: ReadingMode | undefined;
+let envPath: string | undefined;
 let appendix = true;
 const seen=new Set<string>();
 for (let index=0;index<args.length;index++){
@@ -79,9 +85,32 @@ for (let index=0;index<args.length;index++){
   if(!isReadingMode(value))invalidMode(value);
   modeOption=value;
  }
+ else if(command==="analyze"&&key==="--env")envPath=value;
  else usage();
 }
 if(command==="report"&&!analysisPath)usage();
+// --out 是用户显式传入的输出路径，但 UNC/设备命名空间/ADS 形态可能触发 SMB 出站
+// 认证或设备访问（如误抄了不可信文档里的命令）：按形态在触碰文件系统前拒绝。
+// 正常的本地相对/绝对路径不受影响。
+if(outputPath!==undefined){
+ try{
+  assertSafePathForm(outputPath,"OUT_PATH_INVALID");
+ }catch{
+  const clipped=outputPath.length>120?outputPath.slice(0,120)+"…":outputPath;
+  console.error("OUT_PATH_INVALID: unsupported output path (network, device namespace, drive-relative and alternate-data-stream forms are rejected): "+clipped);
+  process.exit(1);
+ }
+}
+// 环境变量只在 analyze 显式给 --env 时从文件加载：工作目录里的 .env 可能来自
+// 不可信 clone，隐式加载会把逐字稿发到攻击者配置的端点（README 历史上推荐过复制
+// .env，这个习惯必须显式化）。
+if (envPath!==undefined) {
+ const loaded=loadEnvConfig({path:envPath});
+ if(loaded.error){
+  console.error("CONFIG_INVALID: cannot read --env (pass a readable file path)");
+  process.exit(1);
+ }
+}
 /**
  * report 的 input/analysis 都来自本地文件：先按 stat 大小拒绝超大文件，绝不整读。
  * stat 与读取之间文件可能变化，按实际读到的 Buffer 字节数复核一次。
@@ -156,6 +185,8 @@ try {
       model,
       ...(process.env.OPENAI_BASE_URL ? { baseUrl: process.env.OPENAI_BASE_URL } : {}),
       timeoutMs: timeout,
+      // 显式 opt-in 才放行发往非 loopback 主机的明文 http。
+      ...(process.env.OPENAI_ALLOW_INSECURE === "1" ? { allowInsecureHttp: true } : {}),
       // 默认不把上游响应体带进错误：错误响应可能回显会议逐字稿。
       ...(process.env.OPENAI_VERBOSE_ERRORS === "1" ? { verboseErrors: true } : {}),
     });
