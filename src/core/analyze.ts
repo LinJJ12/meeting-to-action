@@ -14,8 +14,16 @@ const DraftSchema = MeetingAnalysisSchema.omit({ schemaVersion: true, meetingId:
 const DEFAULT_RETRIES = 1;
 const MAX_RETRIES = 5;
 const MAX_ECHO_CHARS = 8000;
-/** 防御异常/恶意响应：平衡花括号扫描最多收集这么多个候选，避免平方级开销。 */
+/** 防御异常/恶意响应：平衡花括号扫描最多收集这么多个候选。 */
 const MAX_BRACE_CANDIDATES = 500;
+/**
+ * 平衡花括号扫描的字符预算。逐起点扫描在「候选稀少」时是平方级的：一次 8 MiB
+ * 的病态模型响应（例如几百万个未闭合的 "{"）会退化成数万亿次字符比较，把进程
+ * 挂起数小时。预算把总工作量钳在约一次线性扫描（8 MiB 响应 ≈ 8.4e6 字符），
+ * 超限即停——真实的 JSON 一定在输出前部，不值得为尾部可能存在的候选扫完全文；
+ * 前导诱饵在预算内的正常响应（数千个 decoy 花括号）仍能完整恢复。
+ */
+const MAX_BRACE_SCAN_CHARS = 8_000_000;
 
 /** JSON 提取全部失败时使用；带上尝试过的候选数量，便于定位模型输出问题。 */
 class JsonExtractionError extends Error {
@@ -44,12 +52,15 @@ function fenceCandidates(text: string): string[] {
 function balancedBraceCandidates(text: string): string[] {
   if (!text.includes("}")) return [];
   const candidates: string[] = [];
-  for (let start = 0; start < text.length && candidates.length < MAX_BRACE_CANDIDATES; start++) {
+  let budget = MAX_BRACE_SCAN_CHARS;
+  outer: for (let start = 0; start < text.length && candidates.length < MAX_BRACE_CANDIDATES; start++) {
     if (text[start] !== "{") continue;
     let depth = 0;
     let inString = false;
     let escaped = false;
     for (let cursor = start; cursor < text.length; cursor++) {
+      // 预算统计所有起点的累计扫描步数；耗尽即整体放弃，而不是让单个病态响应吃满 CPU。
+      if (--budget < 0) break outer;
       const char = text[cursor]!;
       if (inString) {
         if (escaped) escaped = false;

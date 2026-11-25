@@ -300,3 +300,28 @@ describe("analyzeMeeting 重试消息序列", () => {
     expect(assistantEcho?.content.length).toBe(8000);
   });
 });
+
+describe("analyzeMeeting 花括号扫描预算", () => {
+  // 逐起点的平衡扫描在候选稀少时是平方级的：数十万个未闭合 "{" 曾让一次 8 MiB
+  // 级的病态响应挂起进程数小时。这两个用例钉住修复后的两个面：
+  // 1) 病态输入必须快速放弃（撞 vitest 默认 5s 超时即回归）；
+  // 2) 预算内的正常容错提取不受预算影响。
+  it("大段未闭合花括号的病态响应快速失败为 ANALYSIS_INVALID_JSON，不重复请求", async () => {
+    // 60 万个 "{" + 一个孤立 "}"：候选稀少，修复前从每个 "{" 起点全量重扫，
+    // 本机实测 16 万前缀就要 23 秒，60 万约 5 分钟，必然撞默认 5s 超时。
+    const payload = "{".repeat(600_000) + "}";
+    const provider = new ScriptedProvider([payload]);
+    const error = await rejection(analyzeMeeting(input, provider, { retries: 0 }));
+    expect(error.message).toContain("ANALYSIS_INVALID_JSON");
+    expect(provider.calls).toBe(1);
+  });
+
+  it("预算内的前导诱饵花括号仍能恢复出后面的合法对象", async () => {
+    // 数千个 decoy "{" 属于正常容错范围：修复前与修复后都应找到末尾的合法对象。
+    const payload = "Notes:\n" + "{".repeat(2_000) + " end of notes\n\n" + validJson;
+    const provider = new ScriptedProvider([payload]);
+    const analysis = await analyzeMeeting(input, provider, { retries: 0 });
+    expect(analysis.meetingId).toBe(input.meeting.id);
+    expect(provider.calls).toBe(1);
+  });
+});
