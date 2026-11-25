@@ -9,7 +9,13 @@ export async function buildPlugin(output=join(repo,"dist","plugin-marketplace"))
  // 重建前先清空输出目录，避免上一轮残留文件被一起安装（旧产物/已删除的引用会存活）
  await rm(output,{recursive:true,force:true});
  await mkdir(join(plugin,"server"),{recursive:true});
- await writeFile(join(plugin,"plugin.json"),JSON.stringify(await json(join(repo,"plugin","plugin.json")),null,2)+"\n");
+ // 版本单一来源是 src/version.ts 的 APP_VERSION（#17）：产物清单以它为准，
+ // 避免源 plugin.json 与 package.json/服务端自报版本漂移。
+ const appVersion=/export const APP_VERSION\s*=\s*"([^"]+)"/.exec(await readFile(join(repo,"src","version.ts"),"utf8"))?.[1];
+ if(!appVersion)throw new Error("cannot read APP_VERSION from src/version.ts");
+ const pluginManifest=await json(join(repo,"plugin","plugin.json"));
+ pluginManifest.version=appVersion;
+ await writeFile(join(plugin,"plugin.json"),JSON.stringify(pluginManifest,null,2)+"\n");
  // 生成的 mcp.json 把裸 `node` 替换成当前解释器的绝对路径，避免插件运行时依赖 PATH
  const mcp=await json(join(repo,"plugin","mcp.json"));
  for(const server of Object.values(mcp.mcpServers??{}))if(server&&server.command==="node")server.command=process.execPath;

@@ -3,8 +3,9 @@ import {StdioServerTransport} from "@modelcontextprotocol/sdk/server/stdio.js";
 import {CallToolRequestSchema,ListToolsRequestSchema} from "@modelcontextprotocol/sdk/types.js";
 import {callTool,toolList,MAX_REQUEST_BYTES} from "./tools.js";
 import {oversizeLineError,RequestLineGuard} from "./line-guard.js";
+import {APP_VERSION} from "../version.js";
 
-const server=new Server({name:"meeting-to-action",version:"0.2.0"},{capabilities:{tools:{}}});
+const server=new Server({name:"meeting-to-action",version:APP_VERSION},{capabilities:{tools:{}}});
 server.setRequestHandler(ListToolsRequestSchema,async()=>({tools:toolList}));
 server.setRequestHandler(CallToolRequestSchema,async(request)=>callTool(request.params.name,request.params.arguments??{}));
 // Protocol only on stdout. Never print payloads or transport errors containing source text.
