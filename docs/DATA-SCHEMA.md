@@ -28,6 +28,13 @@ export type MeetingInput = {
     format: "txt" | "markdown";
     fileName?: string;
     checksum?: string;
+    transcriptFormat?:
+      | "speaker-header"
+      | "speaker-inline"
+      | "timestamp-first"
+      | "speaker-colon"
+      | "speaker-bracket"
+      | "mixed";
   }>;
   segments: Array<{
     id: string;
@@ -77,6 +84,25 @@ export type MeetingAnalysis = {
   generatedAt: string;
 };
 ```
+
+## Transcript input formats
+
+`normalizeTranscript` accepts `.txt` / `.md` / `.markdown` and recognizes these line formats (including mixed files):
+
+| `sources[].transcriptFormat` | example line | speaker | timestamp |
+|---|---|---|---|
+| `speaker-header` | `张三 (00:05:32)：` on its own line; text on following lines | 张三 | `00:05:32` |
+| `speaker-inline` | `说话人1 00:05:32 内容` | 说话人1 | `00:05:32` |
+| `timestamp-first` | `00:05 说话人1 内容` | 说话人1 | `00:00:05` |
+| `speaker-colon` | `说话人1：内容` | 说话人1 | absent |
+| `speaker-bracket` | `【说话人1】内容` | 说话人1 | absent |
+
+Rules:
+
+- A new turn starts only at a complete export header, a line that begins with a timestamp, or a recognized anonymous speaker label (`说话人N` / `发言人N` / `参与者N` / `嘉宾` / `主持人` / `Speaker N`). Ordinary prose such as `Decision: defer launch.` is never guessed into a speaker.
+- `MM:SS` timestamps are normalized to `HH:MM:SS` (`00:05` → `00:00:05`); existing `HH:MM:SS` values are kept as-is. Missing timestamps stay absent (`timestamp` omitted and rendered as `—`): no time is invented, and no relative date is resolved.
+- Segment `text` keeps the original source line(s) unchanged, so evidence quotes stay exact and line ranges map back to the file.
+- `transcriptFormat` is `mixed` when one file combines several formats, and omitted when no speaker metadata was recognized (plain text).
 
 ## Evidence rules
 
