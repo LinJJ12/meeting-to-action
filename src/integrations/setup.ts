@@ -1,21 +1,11 @@
 import {lstat,readdir,readFile,realpath,mkdir,writeFile,stat} from "node:fs/promises";
 import {resolve,join,dirname,relative,sep,basename,isAbsolute} from "node:path";
+import {assertSafePathForm} from "../core/path-guard.js";
 
 export type ClientName="codex"|"cursor";
 export type SetupOptions={client:ClientName;project:string;runtime:string;apply?:boolean};
 export type SetupPlan={client:ClientName;project:string;files:{path:string;status:"create"|"unchanged"}[];applied:boolean};
 const windows=process.platform==="win32";
-/** Reject path forms that are never legitimate install targets: UNC shares, device
- * namespaces, alternate data streams and drive-relative Windows paths. */
-function assertSafePathForm(candidate:string){
- if(candidate.includes("\0"))throw new Error("SETUP_PATH_INVALID");
- if(/^[\\/]{2}/.test(candidate))throw new Error("SETUP_PATH_INVALID");
- if(!windows)return;
- if(/^[A-Za-z]:(?![\\/])/.test(candidate))throw new Error("SETUP_PATH_INVALID");
- const absolute=/^[A-Za-z]:[\\/]/.test(candidate);
- for(let index=candidate.indexOf(":");index!==-1;index=candidate.indexOf(":",index+1))
-  if(!(absolute&&index===1))throw new Error("SETUP_PATH_INVALID");
-}
 /** Resolve a path whose tail may not exist yet: realpath the nearest existing ancestor
  * and append the remaining segments verbatim, so junctions in the existing prefix are
  * always followed while a not-yet-created tail cannot escape through them. */
