@@ -8,6 +8,12 @@ export interface OpenAICompatibleOptions {
   /** 响应体最大字节数，超出即中止读取，默认 8 MiB。 */
   maxResponseBytes?: number;
   /**
+   * 是否放行发往非 loopback 主机的明文 http 端点。默认拒绝：逐字稿与 API key 都会
+   * 以明文出现在网络上。loopback（localhost/127.0.0.1/[::1]）不受此开关约束，
+   * 本地 stub 与开发网关始终可用。
+   */
+  allowInsecureHttp?: boolean;
+  /**
    * 出错时是否带上响应体摘要。默认关闭：provider 的错误响应体可能回显请求内容
    * （部分自建网关会这样做），而请求里含会议逐字稿。开启后输出 best-effort 脱敏的
    * 截断片段，仍可能包含敏感内容，仅用于本地排障。
@@ -225,6 +231,33 @@ async function readErrorBodySilently(response: Response, maxBytes: number): Prom
   return Buffer.concat(chunks.map((chunk) => Buffer.from(chunk))).toString("utf8");
 }
 
+/** 视为本机回环的 host 名；对这些主机的明文 http 始终放行（流量不出机器）。 */
+const LOOPBACK_HOSTS = new Set(["localhost", "127.0.0.1", "[::1]"]);
+
+/**
+ * 校验 base URL：仅接受 https；http 仅放行 loopback（或显式 allowInsecureHttp）。
+ * 逐字稿与 API key 都会发往该端点，scheme 校验防止配置被悄悄改成明文/非网络协议。
+ * 查询串/片段沿用旧语义原样保留（既有测试钉住「错误不回显查询串」）。
+ * 错误信息只描述原因，不回显 URL 本身（可能含内网拓扑）。
+ */
+function assertEndpointAllowed(baseUrl: string, allowInsecureHttp: boolean): void {
+  let parsed: URL;
+  try {
+    parsed = new URL(baseUrl);
+  } catch {
+    throw new ProviderError("OPENAI_BASE_URL is not a valid absolute URL", { code: "CONFIG_INVALID" });
+  }
+  if (parsed.protocol === "https:") return;
+  if (parsed.protocol === "http:") {
+    if (LOOPBACK_HOSTS.has(parsed.hostname.toLowerCase()) || allowInsecureHttp) return;
+    throw new ProviderError(
+      "OPENAI_BASE_URL only allows https, or plain http on localhost/127.0.0.1/[::1]; set OPENAI_ALLOW_INSECURE=1 to allow plain http elsewhere",
+      { code: "CONFIG_INVALID" },
+    );
+  }
+  throw new ProviderError(`OPENAI_BASE_URL scheme is not supported: ${parsed.protocol}`, { code: "CONFIG_INVALID" });
+}
+
 export class OpenAICompatibleProvider implements AnalysisProvider {
   private readonly endpoint: string;
   private readonly timeoutMs: number;
@@ -234,7 +267,9 @@ export class OpenAICompatibleProvider implements AnalysisProvider {
   constructor(private readonly options: OpenAICompatibleOptions) {
     if (!options.apiKey.trim()) throw new ProviderError("OPENAI_API_KEY is required");
     if (!options.model.trim()) throw new ProviderError("OPENAI_MODEL is required");
-    this.endpoint = (options.baseUrl ?? "https://api.openai.com/v1").replace(/\/+$/, "") + "/chat/completions";
+    const baseUrl = options.baseUrl ?? "https://api.openai.com/v1";
+    assertEndpointAllowed(baseUrl, options.allowInsecureHttp ?? false);
+    this.endpoint = baseUrl.replace(/\/+$/, "") + "/chat/completions";
     this.timeoutMs = options.timeoutMs ?? 60_000;
     this.maxResponseBytes = options.maxResponseBytes ?? DEFAULT_MAX_RESPONSE_BYTES;
     this.verboseErrors = options.verboseErrors ?? false;
@@ -255,6 +290,10 @@ export class OpenAICompatibleProvider implements AnalysisProvider {
           temperature: 0.1,
           response_format: { type: "json_object" },
         }),
+        // 逐字稿在 307/308 重定向时会被原样重发给跳转目标（跨域只剥 Authorization，
+        // 不剥 body），且凭据剥离实现历史上有 CVE；端点必须是用户显式配置的那一个，
+        // 因此拒绝一切重定向而不是跟随。
+        redirect: "error",
         signal: AbortSignal.timeout(this.timeoutMs),
       });
     } catch (error) {
