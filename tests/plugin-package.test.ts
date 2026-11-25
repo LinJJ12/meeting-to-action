@@ -5,6 +5,7 @@ import {tmpdir} from "node:os";
 import {Client} from "@modelcontextprotocol/sdk/client/index.js";
 import {StdioClientTransport} from "@modelcontextprotocol/sdk/client/stdio.js";
 import {buildPlugin} from "../scripts/build-plugin.mjs";
+import {APP_VERSION} from "../src/version.js";
 it("ships a relocatable plugin with its Skill and a standalone MCP bundle",async()=>{
  const root=await mkdtemp(join(tmpdir(),"meeting-plugin space-"));
   // 预置一个上一轮的残留文件：重建输出目录时应被清掉
@@ -15,6 +16,8 @@ it("ships a relocatable plugin with its Skill and a standalone MCP bundle",async
   const output=await buildPlugin(root);
   const manifest=JSON.parse(await readFile(join(output.plugin,"plugin.json"),"utf8"));
   expect(manifest.name).toBe("meeting-to-action");
+  // 产物清单版本必须来自 src/version.ts（#17：构建盖写，不允许源清单漂移进产物）
+  expect(manifest.version).toBe(APP_VERSION);
   const config=JSON.parse(await readFile(join(output.plugin,"mcp.json"),"utf8"));
   const server=config.mcpServers["meeting-to-action"];
   expect(server.type).toBe("stdio");expect(server.args[0]).toBe("${PLUGIN_ROOT}/server/mcp.mjs");

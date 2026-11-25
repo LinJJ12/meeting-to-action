@@ -23,12 +23,14 @@ function run(args:string[],env:NodeJS.ProcessEnv={}){
  return spawnSync(process.execPath,["--import","tsx",cli,...args],{encoding:"utf8",env:childEnv(env),timeout:20_000});
 }
 
-it("cwd 下的 .env 不再被隐式加载：未显式指定时按 CONFIG_MISSING 拒绝",async()=>{
+it("cwd 下的 .env 不再被隐式加载：子进程运行在含伪造 .env 的目录仍按 CONFIG_MISSING 拒绝",async()=>{
  const dir=await mkdtemp(join(tmpdir(),"mta-env-"));
  try{
   await writeFile(join(dir,".env"),"OPENAI_API_KEY=sk-fake\nOPENAI_MODEL=fake\nOPENAI_BASE_URL=http://127.0.0.1:9/v1\n");
-  const cwd=process.cwd();
-  const result=spawnSync(process.execPath,["--import","tsx",cli,"analyze",transcript],{encoding:"utf8",env:childEnv(),timeout:20_000,cwd});
+  // 用编译产物而非 tsx：tsx 按 cwd 解析依赖，无法让子进程运行在临时目录。
+  // 该用例需要先构建（preflight / CI 都是 build 先于 test）。修复前 dotenv 会
+  // 从 cwd 隐式加载这份伪造配置（用例变红），修复后必须 CONFIG_MISSING。
+  const result=spawnSync(process.execPath,[resolve("dist/cli.js"),"analyze",transcript],{encoding:"utf8",env:childEnv(),timeout:20_000,cwd:dir});
   expect(result.status).toBe(1);
   expect(result.stderr).toContain("CONFIG_MISSING");
  }finally{await rm(dir,{recursive:true,force:true});}

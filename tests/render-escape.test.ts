@@ -51,16 +51,25 @@ it("minutes 渲染同样剥离（标题/正文/表格三条通道）",()=>{
  expect(md).toContain("working");
 });
 
-it("转义函数本身对孤立/未闭合 ESC 也不放行",()=>{
- // 未闭合 CSI：ESCa 和参数一起被序列匹配吃掉，不留 "[3" 残尾
- expect(escapeMarkdownInline("a\u001B[3b")).toBe("ab");
+it("转义函数对完整 ECMA-48 序列语义正确（对抗矩阵）",()=>{
+ const ESC="\u001B",BEL="\u0007",ST=ESC+"\\";
+ // 完整序列（含参数分号、C1-CSI、OSC8 超链接的 BEL/ST 终止、DCS、两字节 ESC）整体剥离
+ expect(escapeMarkdownInline("a"+ESC+"[2Jb")).toBe("ab");
+ expect(escapeMarkdownInline("a"+ESC+"[1;31mb")).toBe("ab");
  expect(escapeMarkdownInline("a\u009B2Jb")).toBe("ab");
- // 未闭合 OSC（缺 BEL/ST 终止符）：与 strip-ansi 语义一致——ESC 字节必须消失，
- // 可打印残尾允许保留为纯文本（不再构成链接/控制序列）
- const unterminated=escapeMarkdownText("a\u001B]8;;http://xb");
- expect(unterminated).not.toContain("\u001B");
- expect(unterminated).not.toContain("\u009B");
- // 保留制表符与普通文本
+ expect(escapeMarkdownInline("a"+ESC+"]8;;http://x"+BEL+"t"+ESC+"]8;;"+BEL+"b")).toBe("atb");
+ expect(escapeMarkdownInline("a"+ESC+"]8;;http://x"+ST+"t"+ESC+"]8;;"+ST+"b")).toBe("atb");
+ expect(escapeMarkdownInline("a"+ESC+"]0;title"+BEL+"b")).toBe("ab");
+ expect(escapeMarkdownInline("a"+ESC+"Pdata"+ST+"b")).toBe("ab");
+ expect(escapeMarkdownInline("a"+ESC+"(Bb")).toBe("ab");
+ expect(escapeMarkdownInline("a"+ESC+"Mb")).toBe("ab");
+ // 未终止的 OSC 顺吃到下一个 ESC 或串尾：残尾（伪造 URL）不得以正文形式存活
+ expect(escapeMarkdownInline("a"+ESC+"]8;;http://xb")).toBe("a");
+ expect(escapeMarkdownInline("a"+ESC+"]8;;http://x"+ESC+"[0mb")).toBe("ab");
+ // 孤立 ESC + 打印字符是合法两字节序列语法，整体消费
+ expect(escapeMarkdownInline("a"+ESC+"b")).toBe("a");
+ // 保留制表符、emoji、中文与普通文本
  expect(escapeMarkdownInline("a\tb")).toBe("a\tb");
+ expect(escapeMarkdownInline("会"+ESC+"[31m议\u{1F600}纪要")).toBe("会议\u{1F600}纪要");
  expect(escapeMarkdownInline("2026-11-24 v0.2")).toBe("2026-11-24 v0.2");
 });

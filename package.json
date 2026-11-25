@@ -15,7 +15,7 @@
     "setup:client": "node dist/setup.js",
     "plugin:build": "node scripts/build-plugin.mjs",
     "plugin:check-installed": "node scripts/check-installed-plugin.mjs",
-    "preflight": "npm run typecheck && npm test && npm run build && npm run mcp:smoke && npm run plugin:build"
+    "preflight": "npm run typecheck && npm run build && npm test && npm run mcp:smoke && npm run plugin:build"
   },
   "engines": {
     "node": ">=20"

@@ -11,16 +11,32 @@ function run(...args:string[]){
  return spawnSync(process.execPath,["--import","tsx",cli,...args],{encoding:"utf8",timeout:20_000});
 }
 
-it("--out 拒绝 UNC/设备/盘符相对/ADS 形态，且不创建任何文件（#23）",async()=>{
+it("--out 拒绝跨平台的网络/设备路径形态，且不创建任何文件（#23）",async()=>{
  const dir=await mkdtemp(join(tmpdir(),"mta-out-"));
  try{
-  const cases=["//server/share/x.md","\\\\127.0.0.1\\share\\x.md","\\\\?\\C:\\temp\\x.md","\\\\.\\pipe\\x","C:relative.md","report.md:ads"];
+  // 前导 // 或 \\ 的形态在所有平台都被 path-guard 拒绝
+  const cases=["//server/share/x.md","\\\\127.0.0.1\\share\\x.md","\\\\?\\C:\\temp\\x.md","\\\\.\\pipe\\x"];
   for(const bad of cases){
    const result=run("inspect",transcript,"--out",bad);
    expect(result.status,bad).toBe(1);
    expect(result.stderr,bad).toContain("OUT_PATH_INVALID");
   }
   // 目标目录未被写入任何占位文件
+  expect(await readdir(dir)).toEqual([]);
+ }finally{await rm(dir,{recursive:true,force:true});}
+},30_000);
+
+// 盘符相对/ADS/保留设备名是 Windows 专属概念：POSIX 上它们是合法文件名，
+// path-guard 在非 Windows 平台有意放行，因此这些用例只在 Windows 断言。
+const itOnWindows=it.skipIf(process.platform!=="win32");
+itOnWindows("--out 拒绝盘符相对/ADS/保留设备名形态（Windows）",async()=>{
+ const dir=await mkdtemp(join(tmpdir(),"mta-out-win-"));
+ try{
+  for(const bad of ["C:relative.md","report.md:ads","CON","com1"]){
+   const result=run("inspect",transcript,"--out",bad);
+   expect(result.status,bad).toBe(1);
+   expect(result.stderr,bad).toContain("OUT_PATH_INVALID");
+  }
   expect(await readdir(dir)).toEqual([]);
  }finally{await rm(dir,{recursive:true,force:true});}
 },30_000);

@@ -37,7 +37,10 @@ jobs:
       # downgrade, no legacy-peer-deps - CI must match local installs exactly.
       - run: npm ci --no-audit --no-fund
       - run: npm run typecheck
-      - run: npm test
+      # build precedes test: the setup-entry and cli-env suites exercise the
+      # compiled dist/cli.js and dist/mcp/server.js, which do not exist on a
+      # fresh checkout.
       - run: npm run build
+      - run: npm test
       - run: npm run mcp:smoke
       - run: npm run plugin:build

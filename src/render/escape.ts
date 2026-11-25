@@ -4,14 +4,23 @@
 // Markdown-significant punctuation (backslash included), then all line breaks
 // collapsed to one space.
 
-// Strip complete ANSI sequences BEFORE removing stray control bytes: an ESC
-// consumed as part of CSI/OSC must not leave its printable tail (e.g. "[2J")
-// behind as visible garbage. Covers ESC and C1-CSI (0x9B) forms, including
-// OSC links terminated by BEL or ST, then any leftover C0/C1 control byte
-// (keeping \t; \r\n are collapsed separately below). Semantics follow
-// strip-ansi (https://www.npmjs.com/package/strip-ansi), CWE-150 mitigation.
+// Strip terminal escape sequences BEFORE removing stray control bytes: an ESC
+// consumed as part of a sequence must not leave its printable tail (e.g. "8;;http://x"
+// of an OSC 8 link) behind as visible or spoofable text. Matched semantically per ECMA-48:
+//   1. string-terminated sequences (OSC "ESC ]", DCS "ESC P", SOS "ESC X", PM "ESC ^",
+//      APC "ESC _" and their C1 initiators) up to BEL / ST ("ESC \\" / 0x9C); an
+//      unterminated one is consumed up to the next ESC or end of input - keeping the
+//      tail would let a fake URL survive as plain text;
+//   2. CSI ("ESC [" or 0x9B) with parameter/intermediate/final byte ranges;
+//   3. remaining two-byte ESC sequences (ESC M, ESC ( B, ESC c, ...);
+//   4. any leftover C0/C1 control byte (keeping \t; \r\n are collapsed separately below).
+// All passes are linear; no nested quantifiers (CWE-150 mitigation, no dependency).
 const stripTerminalEscapes=(value:string)=>value
- .replace(/[\u001B\u009B][[\]()#;?]*(?:(?:(?:[a-zA-Z\d]*(?:;[-a-zA-Z\d/#&.=?%@$^~_:! ]*)?)\u0007)|(?:(?:\d{1,4}(?:;\d{0,4})*)?[\dA-PRZcf-ntqry=><~]))/g,"")
+ .replace(/\u001B[\]^PX^_][^\u0007\u001B\u009C]*(?:\u0007|\u001B\\|\u009C)?/g,"")
+ .replace(/[\u0090\u0098\u009D\u009E\u009F][^\u0007\u001B\u009C]*(?:\u0007|\u001B\\|\u009C)?/g,"")
+ .replace(/\u001B\[[0-9:;<=>?]*[ -/]*[@-~]/g,"")
+ .replace(/\u009B[0-9:;<=>?]*[ -/]*[@-~]/g,"")
+ .replace(/\u001B[\u0020-\u002F]*[\u0030-\u007E]/g,"")
  .replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F-\u009F]/g,"");
 
 export const escapeMarkdownText=(value:string)=>stripTerminalEscapes(value).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/([\\`*_{}\[\]()#+.!|~-])/g,"\\$1").replace(/[\r\n]+/g," ");
