@@ -28,7 +28,7 @@
 ## Phase 3 — Local MCP and future external integrations
 - [x] Local stdio MCP server using the stable TypeScript SDK.
 - [x] Five meeting tools: prepare, split, schema, validate and render.
-- [x] Input size limits, redacted errors and source-preserving splitting.
+- [x] Input size limits, best-effort redacted errors and source-preserving splitting.
 - [x] SDK client integration and compiled subprocess smoke tests.
 - [x] Add project-local installer with preview, conflict checks and repeatable application.
 - [x] Verify actual Codex CLI/App Server Skill and five-tool discovery without a model turn.
