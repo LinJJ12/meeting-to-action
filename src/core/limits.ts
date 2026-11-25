@@ -28,6 +28,13 @@ export const MAX_EVIDENCE_REFS_PER_ENTRY = 200;
 /** 单条 evidence quote 的字符数上限（UTF-16），超长引文在被反复包含检查前就拒绝。 */
 export const MAX_QUOTE_CHARS = 4000;
 
+/**
+ * 单个 MCP 工具调用的 CPU 时间预算（毫秒）。
+ * 证据索引把最坏路径降到几十毫秒，但 handler 仍应有一个硬上限：
+ * 超过预算时抛 WORK_LIMIT_EXCEEDED，避免异常输入长时间占住事件循环。
+ */
+export const MAX_TOOL_WORK_MS = 5_000;
+
 /** 已解析 meeting input 的最小结构视图，供 limits 层复用而不反向依赖 domain/schema。 */
 export interface MeetingInputLike {
   segments: ReadonlyArray<{ text: string }>;
