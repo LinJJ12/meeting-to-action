@@ -55,7 +55,7 @@ npm run plugin:check-installed
 
 ## 更新与清理
 
-源码变更不会自动更新客户端已安装缓存。维护者更新 `plugin/plugin.json` 的版本后重新构建；用户在客户端更新或重新安装，再启动新会话并检查。Core 的 package.json 版本与插件版本不要求相同，数据契约版本另行维护。
+源码变更不会自动更新客户端已安装缓存。版本单一来源是 `src/version.ts` 的 `APP_VERSION`：维护者运行 `node scripts/version-sync.mjs <version>` 同步全部清单后重新构建（`tests/version-consistency.test.ts` 会对齐把关）；用户在客户端更新或重新安装，再启动新会话并检查。数据契约 `schemaVersion` 与包版本无关，另行维护。
 
 本地市场注册引用 `dist/plugin-marketplace/`，请保持路径存在。不要在仍使用该市场时直接清空 dist；清理后需先重新构建。移动 checkout 后也需更新注册路径。卸载插件或移除市场请使用当前客户端的管理入口或帮助中列出的命令；删除源码目录不等于卸载。
 

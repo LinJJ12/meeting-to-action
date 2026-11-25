@@ -15,12 +15,17 @@ The analysis engine has four explicit boundaries:
 
 ## Evidence integrity
 
-Each material item must contain evidence. Every reference is checked for:
+Each material item must contain evidence. Every reference is checked by the single shared validator
+(`validateEvidence`, fragment mode by default) for:
 
-- An existing segment ID.
-- A source ID matching that segment.
-- Exact original line start and end values.
-- An optional quote that is a literal substring of the source segment.
+- An existing segment ID (when given) whose source matches the reference.
+- Line bounds that cover the cited text: line pairs must both be present, and the quoted range
+  must stay inside the referenced segment. In the default fragment mode a reference may cover a
+  sub-range of a segment; the stricter `strict` mode (exact segment bounds) is available to
+  callers that opt in.
+- Speaker labels and timestamps, when present on a reference, must exactly match the metadata of
+  the cited segment - fabricated metadata is rejected.
+- An optional quote that is a literal substring of the cited text.
 
 Invalid model output is rejected as a whole. The engine does not silently repair fabricated evidence.
 
@@ -35,7 +40,9 @@ On Windows PowerShell, set environment variables with `$env:NAME = "value"`.
 ## Current limitations
 
 - One model call per meeting; no chunking or map/reduce for long transcripts.
-- No automatic retries, rate-limit backoff, or token-budget estimation.
+- JSON extraction and schema failures are retried once by default (configurable 0-5, 0 disables);
+  every retry sends the transcript to the provider again. Evidence failures are never retried.
+  No rate-limit backoff or token-budget estimation.
 - No provider-specific structured-output adapters beyond OpenAI-compatible JSON mode.
 - No persistence, cross-meeting memory, or GitHub issue creation yet.
 - Human review is required before treating extracted decisions and actions as accepted work.

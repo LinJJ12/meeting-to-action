@@ -26,7 +26,10 @@ Runtime modules:
 - `core/normalize.ts`: original checksum and stable line/segment references.
 - `core/evidence.ts`: source/segment, bounds and verbatim quote checks.
 - `core/analysis.ts`: full externally authored analysis ingestion, meeting identity and duplicate ID checks.
+- `core/limits.ts`, `core/split.ts`: shared byte/segment resource limits and transcript chunking.
+- `core/minutes.ts`, `domain/minutes.ts`, `render/minutes.ts`: minutes-contract@1.0 validation and reading modes (minutes/actions/evidence).
 - `core/analyze.ts`, `core/prompt.ts`, `providers/`: optional standalone engine.
+- `mcp/line-guard.ts`: stdio transport byte-limit guard.
 - `render/markdown.ts`: escaped Markdown with traceable citations.
 - `cli.ts`: local inspect, report and optional analyze workflows.
 

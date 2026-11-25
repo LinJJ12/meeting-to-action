@@ -87,7 +87,28 @@ npm run dev -- report normalized.json --analysis analysis.json --minutes minutes
 npm run dev -- analyze examples/sample-meeting.md --out report.md
 ```
 
-CLI 会加载本地 `.env`，也可使用 shell 环境变量。此模式会将记录发送给所配置的模型服务，可能产生费用；不要提交密钥或私有会议资料。当前适配器使用兼容 Chat Completions 的 JSON 模式，尚无自动长文分析、重试和限流退避。`analyze` 对逐字稿有 2 MiB UTF-8 上限：文件超过上限时在读入内存前以 `INPUT_SIZE_LIMIT` 拒绝；`report` 虽然不调用模型，但同样按文件大小先行拒绝超过 2 MiB 的 normalized JSON 与超过 4 MiB 的 analysis JSON，解析后的输入还要满足 2 MiB / 10,000 段上限；`inspect` 不设该上限。详见[分析引擎](docs/ANALYSIS-ENGINE.md)。
+CLI 只在 `analyze --env <path>` 显式指定时读取环境文件，否则仅使用 shell 环境变量——工作目录下的 `.env` 不会被隐式加载。此模式会将记录发送给所配置的模型服务，可能产生费用；不要提交密钥或私有会议资料。当前适配器使用兼容 Chat Completions 的 JSON 模式：JSON/schema 解析失败默认自动重试 1 次（`0-5` 次可调，`0` 关闭），每次重试都会把逐字稿再次发送给 provider；证据校验失败不重试；尚无长文分块、限流退避和 token 预算。`analyze` 对逐字稿有 2 MiB UTF-8 上限：文件超过上限时在读入内存前以 `INPUT_SIZE_LIMIT` 拒绝；`report` 虽然不调用模型，但同样按文件大小先行拒绝超过 2 MiB 的 normalized JSON 与超过 4 MiB 的 analysis JSON，解析后的输入还要满足 2 MiB / 10,000 段上限；`inspect` 不设该上限。详见[分析引擎](docs/ANALYSIS-ENGINE.md)。
+
+### CLI 错误码与退出码
+
+退出码：`0` 成功；`1` 运行错误（含非法 `--mode` 取值）；`2` 用法错误（未知参数、缺参数、非 analyze 命令使用 analyze 专属旗标）。
+
+| 错误码 | 含义 |
+|---|---|
+| `CONFIG_MISSING` | `analyze` 缺 `OPENAI_API_KEY` / `OPENAI_MODEL` |
+| `CONFIG_INVALID` | 环境文件不可读、`OPENAI_TIMEOUT_MS` 越界、`OPENAI_BASE_URL` scheme 不合法（非 https 且非 loopback 明文 http） |
+| `INPUT_UNSUPPORTED` / `INPUT_EMPTY` | 逐字稿扩展名不支持 / 内容为空 |
+| `INPUT_SIZE_LIMIT` | 输入超过 2 MiB（analysis 4 MiB）或超过 10,000 段 |
+| `INPUT_SEGMENT_LIMIT` | 归一化时段数超限 |
+| `INPUT_JSON_INVALID` | normalized / analysis / minutes JSON 文件读取或解析失败 |
+| `OUT_PATH_INVALID` | `--out` 为 UNC/设备命名空间/盘符相对/备用数据流形态 |
+| `INPUT_SCHEMA_INVALID` | normalized JSON 不符合 schema（report 输入） |
+| `ANALYSIS_MEETING_MISMATCH` / `ANALYSIS_DUPLICATE_ID` / `ANALYSIS_EVIDENCE_INVALID` | analysis 与输入会议身份不符 / 条目 ID 重复 / 证据校验失败 |
+| `ANALYSIS_INVALID_JSON` / `ANALYSIS_SCHEMA_INVALID` | 模型输出不可解析为 JSON / JSON 合法但不符合 schema（重试耗尽后） |
+| `MINUTES_MISSING` / `MINUTES_*` / `RENDER_MODE_INVALID` | minutes 契约与渲染模式错误（见[展示契约](docs/MINUTES-CONTRACT.md)） |
+| `HTTP_ERROR` / `REQUEST_FAILED` / `REQUEST_TIMEOUT` / `REQUEST_ABORTED` | provider 返回非 2xx / 网络失败 / 超时 / 外部中止 |
+| `RESPONSE_TOO_LARGE` / `BODY_READ_FAILED` / `INVALID_JSON` / `EMPTY_COMPLETION` / `PROVIDER_RESPONSE_INVALID` | provider 响应体超限 / 读取失败 / 非 JSON / 空 completion / 形状不合法 |
+| `SETUP_*` | `setup:client` 安装器错误（路径形态、越界、冲突、缺构建产物等） |
 
 ## 能力与边界
 
@@ -112,7 +133,7 @@ docs/        安装、技术契约、设计与路线图
 .github/     CI 工作流
 ```
 
-完整导航与维护约定见[文档索引](docs/README.md)。`dist/` 为构建输出，`node_modules/` 为依赖，均不纳入版本控制。Core 包、插件包和数据契约独立版本化，以各自清单为准。
+完整导航与维护约定见[文档索引](docs/README.md)。`dist/` 为构建输出，`node_modules/` 为依赖，均不纳入版本控制。包版本单一来源是 `src/version.ts` 的 `APP_VERSION`（CLI `--version`、MCP `serverInfo.version` 与插件清单一致，`node scripts/version-sync.mjs <ver>` 一键同步）；数据契约 `schemaVersion` 独立演进，与包版本无关。
 
 ## 开发验证
 
