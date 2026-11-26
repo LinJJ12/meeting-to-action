@@ -36,6 +36,20 @@ function normalizeClock(value: string): string {
   return /^[0-9]{2}:[0-5][0-9]$/.test(value) ? `00:${value}` : value;
 }
 
+/** 同行标签里一眼不是人名的字符：日期（年月日）、书名号、路径分隔符、百分比。 */
+const NOT_INLINE_LABEL = /[年月日《》/\\%]/;
+
+/**
+ * 同行格式的标签校验：真实导出里会出现「4月20日 11:15 B1录音」这类标题行与
+ * 「《/tmp/…》」这类路径行，它们长得像 `标签 时间 正文` 但不是发言，不能把
+ * speaker 挂到标题上（否则证据会指向错误的人）。
+ */
+function isInlineSpeakerLabel(label: string): boolean {
+  return (
+    label.length > 0 && label.length <= 20 && !NOT_INLINE_LABEL.test(label) && /\p{L}/u.test(label)
+  );
+}
+
 /**
  * 判断一行是否开启一段新发言。
  * 只认完整表头、带时间戳的同行格式、匿名说话人标签；普通正文（含 "Decision: ..."）不猜。
@@ -54,7 +68,7 @@ function parseLineMeta(line: string): LineMeta | undefined {
       return { speaker: label, timestamp: normalizeClock(speakerTime[2]!), format: "speaker-time" };
   }
   const inline = /^([^()\s:：]{1,50})\s+([0-9]{2}:[0-5][0-9](?::[0-5][0-9])?)\s+(\S.*)$/.exec(text);
-  if (inline)
+  if (inline && isInlineSpeakerLabel(inline[1]!.trim()))
     return {
       speaker: inline[1]!.trim(),
       timestamp: normalizeClock(inline[2]!),
