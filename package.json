@@ -15,6 +15,8 @@
     "setup:client": "node dist/setup.js",
     "plugin:build": "node scripts/build-plugin.mjs",
     "plugin:check-installed": "node scripts/check-installed-plugin.mjs",
+    "format": "prettier --write src tests scripts",
+    "format:check": "prettier --check src tests scripts",
     "preflight": "npm run typecheck && npm run build && npm test && npm run mcp:smoke && npm run plugin:build"
   },
   "engines": {
@@ -28,6 +30,7 @@
   "devDependencies": {
     "@types/node": "^22.19.0",
     "esbuild": "^0.28.2",
+    "prettier": "^3.10.1",
     "tsx": "^4.20.6",
     "typescript": "^5.9.3",
     "vitest": "^4.0.8"
