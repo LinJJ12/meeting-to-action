@@ -14,6 +14,7 @@ import { OpenAICompatibleProvider } from "./providers/openai-compatible.js";
 import { ProviderError } from "./providers/types.js";
 import { MAX_ANALYSIS_BYTES, MAX_CONTENT_BYTES, MAX_SEGMENTS, assertMeetingInputWithinLimits } from "./core/limits.js";
 import { assertSafePathForm } from "./core/path-guard.js";
+import { describeZodError } from "./core/zod-detail.js";
 
 const USAGE=[
   "Usage:",
@@ -204,7 +205,8 @@ try {
   if (error instanceof ProviderError) {
     console.error(error.code ? `${error.code}: ${error.message}` : error.message);
   } else {
-    console.error(error instanceof Error && error.name==="ZodError" ? "INPUT_SCHEMA_INVALID" : error instanceof Error ? error.message : String(error));
+    // Zod 错误带上第一个字段路径：宿主/脚本能直接定位，不必猜「哪个字段错了」。
+    console.error(describeZodError(error,"INPUT_SCHEMA_INVALID") ?? (error instanceof Error ? error.message : String(error)));
   }
   process.exitCode = 1;
 }

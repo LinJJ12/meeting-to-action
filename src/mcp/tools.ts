@@ -8,6 +8,7 @@ import {validateMinutes} from "../core/minutes.js";
 import {renderMarkdown} from "../render/markdown.js";
 import {renderMinutesDocument,resolveReadingMode} from "../render/minutes.js";
 import {assertContentWithinLimit,assertMeetingInputWithinLimits,MAX_CONTENT_BYTES,MAX_REQUEST_BYTES,MAX_SEGMENTS,MAX_TOOL_WORK_MS} from "../core/limits.js";
+import {describeZodError} from "../core/zod-detail.js";
 
 // 上限常量与 CLI 共用同一来源（src/core/limits.ts），这里保留导出以免破坏既有引用。
 export {MAX_CONTENT_BYTES,MAX_REQUEST_BYTES,MAX_SEGMENTS};
@@ -85,6 +86,8 @@ export function callTool(name:string,args:unknown):{content:{type:"text";text:st
   if(Date.now()>deadline)throw new Error("WORK_LIMIT_EXCEEDED");
   return {content:[{type:"text",text:JSON.stringify(result)}]};
  }catch(error){
-  return {isError:true,content:[{type:"text",text:toolErrorCode(error)}]};
+  // Zod 错误附带字段路径（不泄露值）：宿主模型能自助修正参数，而不是反复试错。
+  const detail=describeZodError(error,"INPUT_INVALID");
+  return {isError:true,content:[{type:"text",text:detail??toolErrorCode(error)}]};
  }
 }
