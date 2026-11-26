@@ -4,7 +4,7 @@ import {MeetingInputSchema,type MeetingInput} from "../domain/schema.js";
 import {MAX_SEGMENTS} from "./limits.js";
 
 /** 能识别的源逐字稿行格式；mixed 表示同一份文件里混用了多种。 */
-export const TRANSCRIPT_FORMATS=["speaker-header","speaker-inline","timestamp-first","speaker-colon","speaker-bracket"] as const;
+export const TRANSCRIPT_FORMATS=["speaker-header","speaker-time","speaker-inline","timestamp-first","speaker-colon","speaker-bracket"] as const;
 export type TranscriptFormat=(typeof TRANSCRIPT_FORMATS)[number]|"mixed";
 
 /** 非有限数或小于 1 的 maxSegments 回落到 MAX_SEGMENTS，有限数向下取整。 */
@@ -32,6 +32,13 @@ function parseLineMeta(line:string):LineMeta|undefined{
  const text=line.trim();
  const header=/^([^()\r\n]{1,100})\(([0-9]{2}:[0-5][0-9]:[0-5][0-9])\)[:：]$/.exec(text);
  if(header)return{speaker:header[1]!.trim(),timestamp:header[2]!,format:"speaker-header"};
+ // 独立成行的「说话人 + 时间码」表头，例如 `说话人1 00:00` / `说话人1（质量管理部部长） 00:25`。
+ // 只认匿名说话人标签，避免把「会议时间 00:05」这类正文误判成新发言。
+ const speakerTime=/^(.{1,120}?)\s+([0-9]{1,2}:[0-5][0-9](?::[0-5][0-9])?)$/.exec(text);
+ if(speakerTime){
+  const label=speakerTime[1]!.replace(/[（(][^）)]*[）)]\s*$/,"").trim();
+  if(ANON_LABEL.test(label))return{speaker:label,timestamp:normalizeClock(speakerTime[2]!),format:"speaker-time"};
+ }
  const inline=/^([^()\s:：]{1,50})\s+([0-9]{2}:[0-5][0-9](?::[0-5][0-9])?)\s+(\S.*)$/.exec(text);
  if(inline)return{speaker:inline[1]!.trim(),timestamp:normalizeClock(inline[2]!),format:"speaker-inline"};
  const timestampFirst=/^([0-9]{2}:[0-5][0-9](?::[0-5][0-9])?)\s+([^\s:：]{1,50})\s+(\S.*)$/.exec(text);

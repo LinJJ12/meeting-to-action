@@ -45,6 +45,33 @@ describe("transcript line-format detection (#26 P1)",()=>{
   expect(input.sources[0]?.transcriptFormat).toBe("speaker-bracket");
  });
 
+ it("parses dataset-style speaker + MM:SS header lines",()=>{
+  const input=norm([
+   "说话人1 00:00",
+   "各位，我们今天开这个会。",
+   "",
+   "说话人2 00:25",
+   "好的，我先汇报一下。",
+  ]);
+  expect(input.segments).toHaveLength(2);
+  expect(input.segments[0]).toMatchObject({speaker:"说话人1",timestamp:"00:00:00",lineStart:1,lineEnd:2});
+  expect(input.segments[1]).toMatchObject({speaker:"说话人2",timestamp:"00:00:25",lineStart:4,lineEnd:5});
+  expect(input.segments[1]?.text).toContain("好的，我先汇报一下。");
+  expect(input.sources[0]?.transcriptFormat).toBe("speaker-time");
+ });
+
+ it("parses speaker-time headers with a role in parentheses",()=>{
+  const input=norm(["说话人1（质量管理部部长） 00:25","先说一下今天会议的议题。"]);
+  expect(input.segments[0]).toMatchObject({speaker:"说话人1",timestamp:"00:00:25"});
+  expect(input.sources[0]?.transcriptFormat).toBe("speaker-time");
+ });
+
+ it("does not treat prose ending in a clock-looking value as a speaker header",()=>{
+  const input=normalizeTranscript("会议时间 00:05\n内容照常。","demo.txt");
+  expect(input.segments.every((s)=>s.speaker===undefined)).toBe(true);
+  expect(input.sources[0]?.transcriptFormat).toBeUndefined();
+ });
+
  it("supports mixed line formats in one file and records it",()=>{
   const input=norm([
    "说话人1 00:00:05 第一段",
