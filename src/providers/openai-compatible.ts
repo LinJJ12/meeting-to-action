@@ -73,7 +73,9 @@ function describeJsonType(value: unknown): string {
 }
 
 function invalidResponse(reason: string): ProviderError {
-  return new ProviderError(`Model provider response is invalid: ${reason}`, { code: "PROVIDER_RESPONSE_INVALID" });
+  return new ProviderError(`Model provider response is invalid: ${reason}`, {
+    code: "PROVIDER_RESPONSE_INVALID",
+  });
 }
 
 /**
@@ -99,12 +101,16 @@ function extractCompletionContent(payload: unknown): string {
 
   const message = (choice as { message?: unknown }).message;
   if (message === null || typeof message !== "object" || Array.isArray(message)) {
-    throw invalidResponse(`choices[0].message is missing or not an object (type=${describeJsonType(message)})`);
+    throw invalidResponse(
+      `choices[0].message is missing or not an object (type=${describeJsonType(message)})`,
+    );
   }
 
   const content = (message as { content?: unknown }).content;
   if (typeof content !== "string") {
-    throw invalidResponse(`choices[0].message.content is missing or not a string (type=${describeJsonType(content)})`);
+    throw invalidResponse(
+      `choices[0].message.content is missing or not a string (type=${describeJsonType(content)})`,
+    );
   }
   return content;
 }
@@ -135,7 +141,10 @@ function requestFailureDetail(error: unknown): string {
 function requestFailure(error: unknown, timeoutMs: number): ProviderError {
   const code = requestFailureCode(error);
   if (code === "REQUEST_TIMEOUT") {
-    return new ProviderError(`Model request timed out after ${timeoutMs} ms`, { cause: error, code });
+    return new ProviderError(`Model request timed out after ${timeoutMs} ms`, {
+      cause: error,
+      code,
+    });
   }
   if (code === "REQUEST_ABORTED") {
     return new ProviderError("Model request was aborted", { cause: error, code });
@@ -160,7 +169,9 @@ async function readBoundedText(response: Response, maxBytes: number): Promise<st
   const declared = Number(response.headers.get("content-length") ?? "");
   if (Number.isFinite(declared) && declared > maxBytes) {
     await cancelBody(response);
-    throw new ProviderError(`Model provider response exceeded ${maxBytes} bytes`, { code: "RESPONSE_TOO_LARGE" });
+    throw new ProviderError(`Model provider response exceeded ${maxBytes} bytes`, {
+      code: "RESPONSE_TOO_LARGE",
+    });
   }
 
   const body = response.body;
@@ -176,7 +187,9 @@ async function readBoundedText(response: Response, maxBytes: number): Promise<st
       if (!value) continue;
       total += value.byteLength;
       if (total > maxBytes) {
-        throw new ProviderError(`Model provider response exceeded ${maxBytes} bytes`, { code: "RESPONSE_TOO_LARGE" });
+        throw new ProviderError(`Model provider response exceeded ${maxBytes} bytes`, {
+          code: "RESPONSE_TOO_LARGE",
+        });
       }
       chunks.push(value);
     }
@@ -245,7 +258,9 @@ function assertEndpointAllowed(baseUrl: string, allowInsecureHttp: boolean): voi
   try {
     parsed = new URL(baseUrl);
   } catch {
-    throw new ProviderError("OPENAI_BASE_URL is not a valid absolute URL", { code: "CONFIG_INVALID" });
+    throw new ProviderError("OPENAI_BASE_URL is not a valid absolute URL", {
+      code: "CONFIG_INVALID",
+    });
   }
   if (parsed.protocol === "https:") return;
   if (parsed.protocol === "http:") {
@@ -255,7 +270,9 @@ function assertEndpointAllowed(baseUrl: string, allowInsecureHttp: boolean): voi
       { code: "CONFIG_INVALID" },
     );
   }
-  throw new ProviderError(`OPENAI_BASE_URL scheme is not supported: ${parsed.protocol}`, { code: "CONFIG_INVALID" });
+  throw new ProviderError(`OPENAI_BASE_URL scheme is not supported: ${parsed.protocol}`, {
+    code: "CONFIG_INVALID",
+  });
 }
 
 export class OpenAICompatibleProvider implements AnalysisProvider {
@@ -313,7 +330,9 @@ export class OpenAICompatibleProvider implements AnalysisProvider {
         await cancelBody(response);
       }
       const status = `${response.status} ${response.statusText}`.trim();
-      throw new ProviderError(`Model provider returned HTTP ${status}${detail}`, { code: "HTTP_ERROR" });
+      throw new ProviderError(`Model provider returned HTTP ${status}${detail}`, {
+        code: "HTTP_ERROR",
+      });
     }
 
     // 读取响应体本身也可能超时或中止，必须包裹成 ProviderError，并限制大小。
@@ -332,11 +351,17 @@ export class OpenAICompatibleProvider implements AnalysisProvider {
     try {
       payload = JSON.parse(body);
     } catch (error) {
-      throw new ProviderError("Model provider returned invalid JSON", { cause: error, code: "INVALID_JSON" });
+      throw new ProviderError("Model provider returned invalid JSON", {
+        cause: error,
+        code: "INVALID_JSON",
+      });
     }
 
     const content = extractCompletionContent(payload);
-    if (!content.trim()) throw new ProviderError("Model provider returned an empty completion", { code: "EMPTY_COMPLETION" });
+    if (!content.trim())
+      throw new ProviderError("Model provider returned an empty completion", {
+        code: "EMPTY_COMPLETION",
+      });
     return content;
   }
 }

@@ -11,7 +11,9 @@ export const MAX_SEGMENTS = 10_000;
 export function assertContentWithinLimit(content: string): void {
   const bytes = Buffer.byteLength(content, "utf8");
   if (bytes > MAX_CONTENT_BYTES) {
-    throw new Error(`INPUT_SIZE_LIMIT: transcript is ${bytes} bytes, limit is ${MAX_CONTENT_BYTES}`);
+    throw new Error(
+      `INPUT_SIZE_LIMIT: transcript is ${bytes} bytes, limit is ${MAX_CONTENT_BYTES}`,
+    );
   }
 }
 
@@ -47,7 +49,9 @@ export interface MeetingInputLike {
 export function assertMeetingInputWithinLimits(input: MeetingInputLike): void {
   const segmentCount = input.segments.length;
   if (segmentCount > MAX_SEGMENTS) {
-    throw new Error(`INPUT_SEGMENT_LIMIT: input has ${segmentCount} segments, limit is ${MAX_SEGMENTS}`);
+    throw new Error(
+      `INPUT_SEGMENT_LIMIT: input has ${segmentCount} segments, limit is ${MAX_SEGMENTS}`,
+    );
   }
   let bytes = 0;
   for (const segment of input.segments) {

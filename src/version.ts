@@ -4,4 +4,4 @@
  * 由 tests/version-consistency.test.ts 把关。发布时改这里 + 同步 package.json，
  * 或运行 `node scripts/version-sync.mjs <version>` 一键改齐。
  */
-export const APP_VERSION="0.1.0";
+export const APP_VERSION = "0.1.0";

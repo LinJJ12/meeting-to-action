@@ -1,13 +1,18 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { createServer, type IncomingMessage, type Server, type ServerResponse } from "node:http";
 import type { AddressInfo } from "node:net";
-import { OpenAICompatibleProvider, type OpenAICompatibleOptions } from "../src/providers/openai-compatible.js";
+import {
+  OpenAICompatibleProvider,
+  type OpenAICompatibleOptions,
+} from "../src/providers/openai-compatible.js";
 import { ProviderError } from "../src/providers/types.js";
 
 const servers: Server[] = [];
 const MIB = 1024 * 1024;
 
-async function stubServer(handler: (req: IncomingMessage, res: ServerResponse) => void): Promise<string> {
+async function stubServer(
+  handler: (req: IncomingMessage, res: ServerResponse) => void,
+): Promise<string> {
   const server = createServer(handler);
   servers.push(server);
   await new Promise<void>((resolve) => server.listen(0, "127.0.0.1", resolve));
@@ -30,7 +35,12 @@ afterEach(async () => {
 });
 
 function provider(baseUrl: string, extra: Partial<OpenAICompatibleOptions> = {}) {
-  return new OpenAICompatibleProvider({ apiKey: "test-key", model: "test-model", baseUrl, ...extra });
+  return new OpenAICompatibleProvider({
+    apiKey: "test-key",
+    model: "test-model",
+    baseUrl,
+    ...extra,
+  });
 }
 
 /**
@@ -124,10 +134,12 @@ describe("provider 错误处理与响应上限", () => {
   it("正常响应仍返回模型内容", async () => {
     const baseUrl = await stubServer((_req, res) => {
       res.writeHead(200, { "content-type": "application/json" });
-      res.end(JSON.stringify({ choices: [{ message: { content: "{\"ok\":true}" } }] }));
+      res.end(JSON.stringify({ choices: [{ message: { content: '{"ok":true}' } }] }));
     });
 
-    await expect(provider(baseUrl).complete([{ role: "user", content: "x" }])).resolves.toBe("{\"ok\":true}");
+    await expect(provider(baseUrl).complete([{ role: "user", content: "x" }])).resolves.toBe(
+      '{"ok":true}',
+    );
   });
 
   it("4xx 响应体超过 8 MiB 时返回 HTTP 错误，而不是 RESPONSE_TOO_LARGE", async () => {

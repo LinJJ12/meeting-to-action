@@ -6,7 +6,9 @@ import { ProviderError } from "../src/providers/types.js";
 
 const servers: Server[] = [];
 
-async function stubServer(handler: (req: IncomingMessage, res: ServerResponse) => void): Promise<string> {
+async function stubServer(
+  handler: (req: IncomingMessage, res: ServerResponse) => void,
+): Promise<string> {
   const server = createServer(handler);
   servers.push(server);
   await new Promise<void>((resolve) => server.listen(0, "127.0.0.1", resolve));
@@ -45,23 +47,58 @@ describe("provider 端点校验（#15）", () => {
   });
 
   it("查询串/片段沿用旧语义被容忍（错误不回显由 provider-errors 测试钉住）", () => {
-    expect(() => new OpenAICompatibleProvider({ apiKey: "k", model: "m", baseUrl: "https://api.example.com/v1?key=x" })).not.toThrow();
-    expect(() => new OpenAICompatibleProvider({ apiKey: "k", model: "m", baseUrl: "http://127.0.0.1:9/v1?token=t" })).not.toThrow();
+    expect(
+      () =>
+        new OpenAICompatibleProvider({
+          apiKey: "k",
+          model: "m",
+          baseUrl: "https://api.example.com/v1?key=x",
+        }),
+    ).not.toThrow();
+    expect(
+      () =>
+        new OpenAICompatibleProvider({
+          apiKey: "k",
+          model: "m",
+          baseUrl: "http://127.0.0.1:9/v1?token=t",
+        }),
+    ).not.toThrow();
   });
 
   it("拒绝发往非 loopback 的明文 http（默认），显式 opt-in 后放行", () => {
     expectConfigInvalid("http://10.0.0.1/v1");
     expectConfigInvalid("http://insecure.example.com/v1");
     // opt-in：仅用于用户显式接受明文风险的场景
-    expect(() => new OpenAICompatibleProvider({ apiKey: "k", model: "m", baseUrl: "http://10.0.0.1/v1", allowInsecureHttp: true })).not.toThrow();
+    expect(
+      () =>
+        new OpenAICompatibleProvider({
+          apiKey: "k",
+          model: "m",
+          baseUrl: "http://10.0.0.1/v1",
+          allowInsecureHttp: true,
+        }),
+    ).not.toThrow();
   });
 
   it("放行 https 与 loopback 明文 http，端点拼上 /chat/completions", () => {
-    const p = new OpenAICompatibleProvider({ apiKey: "k", model: "m", baseUrl: "https://api.example.com/v1/" });
+    const p = new OpenAICompatibleProvider({
+      apiKey: "k",
+      model: "m",
+      baseUrl: "https://api.example.com/v1/",
+    });
     // 私有字段只通过行为验证：不抛错即可；这里直接断言内部 endpoint 保证拼接语义
-    expect((p as unknown as { endpoint: string }).endpoint).toBe("https://api.example.com/v1/chat/completions");
-    for (const loopback of ["http://localhost:9/v1", "http://127.0.0.1:9/v1", "http://[::1]:9/v1", "http://LOCALHOST:9/v1"]) {
-      expect(() => new OpenAICompatibleProvider({ apiKey: "k", model: "m", baseUrl: loopback })).not.toThrow();
+    expect((p as unknown as { endpoint: string }).endpoint).toBe(
+      "https://api.example.com/v1/chat/completions",
+    );
+    for (const loopback of [
+      "http://localhost:9/v1",
+      "http://127.0.0.1:9/v1",
+      "http://[::1]:9/v1",
+      "http://LOCALHOST:9/v1",
+    ]) {
+      expect(
+        () => new OpenAICompatibleProvider({ apiKey: "k", model: "m", baseUrl: loopback }),
+      ).not.toThrow();
     }
   });
 
@@ -78,12 +115,12 @@ describe("provider 端点校验（#15）", () => {
     });
 
     const provider = new OpenAICompatibleProvider({ apiKey: "k", model: "m", baseUrl: origin });
-    const error = await provider
-      .complete([{ role: "user", content: "hello" }])
-      .then(
-        () => { throw new Error("expected the request to fail"); },
-        (caught: unknown) => caught as ProviderError,
-      );
+    const error = await provider.complete([{ role: "user", content: "hello" }]).then(
+      () => {
+        throw new Error("expected the request to fail");
+      },
+      (caught: unknown) => caught as ProviderError,
+    );
     expect(error.code).toBe("REQUEST_FAILED");
     // 关键安全断言：请求绝不能到达跳转目标
     expect(targetHits).toBe(0);

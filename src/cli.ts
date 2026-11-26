@@ -1,22 +1,32 @@
-import {config as loadEnvConfig} from "dotenv";
-import {validateAnalysis} from "./core/analysis.js";
-import {validateMinutes} from "./core/minutes.js";
-import {MeetingInputSchema} from "./domain/schema.js";
-import type {MinutesDocument} from "./domain/minutes.js";
+import { config as loadEnvConfig } from "dotenv";
+import { validateAnalysis } from "./core/analysis.js";
+import { validateMinutes } from "./core/minutes.js";
+import { MeetingInputSchema } from "./domain/schema.js";
+import type { MinutesDocument } from "./domain/minutes.js";
 import { readFile, stat, writeFile } from "node:fs/promises";
 import { readFileSync } from "node:fs";
 import { resolve, basename } from "node:path";
 import { normalizeTranscript } from "./core/normalize.js";
 import { analyzeMeeting } from "./core/analyze.js";
 import { renderMarkdown } from "./render/markdown.js";
-import { isReadingMode, renderMinutesDocument, resolveReadingMode, type ReadingMode } from "./render/minutes.js";
+import {
+  isReadingMode,
+  renderMinutesDocument,
+  resolveReadingMode,
+  type ReadingMode,
+} from "./render/minutes.js";
 import { OpenAICompatibleProvider } from "./providers/openai-compatible.js";
 import { ProviderError } from "./providers/types.js";
-import { MAX_ANALYSIS_BYTES, MAX_CONTENT_BYTES, MAX_SEGMENTS, assertMeetingInputWithinLimits } from "./core/limits.js";
+import {
+  MAX_ANALYSIS_BYTES,
+  MAX_CONTENT_BYTES,
+  MAX_SEGMENTS,
+  assertMeetingInputWithinLimits,
+} from "./core/limits.js";
 import { assertSafePathForm } from "./core/path-guard.js";
 import { describeZodError } from "./core/zod-detail.js";
 
-const USAGE=[
+const USAGE = [
   "Usage:",
   "  meeting-to-action --version",
   "  meeting-to-action inspect <transcript.txt|transcript.md> [--out normalized.json]",
@@ -66,139 +76,173 @@ let minutesPath: string | undefined;
 let modeOption: ReadingMode | undefined;
 let envPath: string | undefined;
 let appendix = true;
-const seen=new Set<string>();
-for (let index=0;index<args.length;index++){
- const key=args[index]!;
- if(seen.has(key))usage();
- seen.add(key);
- if(key==="--no-appendix"){
-  if(command!=="report")usage();
-  appendix=false;
-  continue;
- }
- const value=args[index+1];
- if(!value||value.startsWith("--"))usage();
- index++;
- if(key==="--out")outputPath=value;
- else if(command==="report"&&key==="--analysis")analysisPath=value;
- else if(command==="report"&&key==="--minutes")minutesPath=value;
- else if(command==="report"&&key==="--mode"){
-  if(!isReadingMode(value))invalidMode(value);
-  modeOption=value;
- }
- else if(command==="analyze"&&key==="--env")envPath=value;
- else usage();
+const seen = new Set<string>();
+for (let index = 0; index < args.length; index++) {
+  const key = args[index]!;
+  if (seen.has(key)) usage();
+  seen.add(key);
+  if (key === "--no-appendix") {
+    if (command !== "report") usage();
+    appendix = false;
+    continue;
+  }
+  const value = args[index + 1];
+  if (!value || value.startsWith("--")) usage();
+  index++;
+  if (key === "--out") outputPath = value;
+  else if (command === "report" && key === "--analysis") analysisPath = value;
+  else if (command === "report" && key === "--minutes") minutesPath = value;
+  else if (command === "report" && key === "--mode") {
+    if (!isReadingMode(value)) invalidMode(value);
+    modeOption = value;
+  } else if (command === "analyze" && key === "--env") envPath = value;
+  else usage();
 }
-if(command==="report"&&!analysisPath)usage();
+if (command === "report" && !analysisPath) usage();
 // --out 是用户显式传入的输出路径，但 UNC/设备命名空间/ADS 形态可能触发 SMB 出站
 // 认证或设备访问（如误抄了不可信文档里的命令）：按形态在触碰文件系统前拒绝。
 // 正常的本地相对/绝对路径不受影响。
-if(outputPath!==undefined){
- try{
-  assertSafePathForm(outputPath,"OUT_PATH_INVALID");
- }catch{
-  const clipped=outputPath.length>120?outputPath.slice(0,120)+"…":outputPath;
-  console.error("OUT_PATH_INVALID: unsupported output path (network, device namespace, drive-relative and alternate-data-stream forms are rejected): "+clipped);
-  process.exit(1);
- }
+if (outputPath !== undefined) {
+  try {
+    assertSafePathForm(outputPath, "OUT_PATH_INVALID");
+  } catch {
+    const clipped = outputPath.length > 120 ? outputPath.slice(0, 120) + "…" : outputPath;
+    console.error(
+      "OUT_PATH_INVALID: unsupported output path (network, device namespace, drive-relative and alternate-data-stream forms are rejected): " +
+        clipped,
+    );
+    process.exit(1);
+  }
 }
 // 环境变量只在 analyze 显式给 --env 时从文件加载：工作目录里的 .env 可能来自
 // 不可信 clone，隐式加载会把逐字稿发到攻击者配置的端点（README 历史上推荐过复制
 // .env，这个习惯必须显式化）。
-if (envPath!==undefined) {
- const loaded=loadEnvConfig({path:envPath});
- if(loaded.error){
-  console.error("CONFIG_INVALID: cannot read --env (pass a readable file path)");
-  process.exit(1);
- }
+if (envPath !== undefined) {
+  const loaded = loadEnvConfig({ path: envPath });
+  if (loaded.error) {
+    console.error("CONFIG_INVALID: cannot read --env (pass a readable file path)");
+    process.exit(1);
+  }
 }
 /**
  * report 的 input/analysis 都来自本地文件：先按 stat 大小拒绝超大文件，绝不整读。
  * stat 与读取之间文件可能变化，按实际读到的 Buffer 字节数复核一次。
  */
-async function readJsonWithinLimit(path:string,maxBytes:number,label:string):Promise<unknown>{
- const assertSize=(bytes:number):void=>{
-  if(bytes>maxBytes)throw new Error(`INPUT_SIZE_LIMIT: ${label} ${path} is ${bytes} bytes, limit is ${maxBytes}`);
- };
- assertSize((await stat(path)).size);
- const raw=await readFile(path);
- assertSize(raw.byteLength);
- try{return JSON.parse(raw.toString("utf8").replace(/^\uFEFF/,""));}catch{throw new Error("INPUT_JSON_INVALID");}
+async function readJsonWithinLimit(
+  path: string,
+  maxBytes: number,
+  label: string,
+): Promise<unknown> {
+  const assertSize = (bytes: number): void => {
+    if (bytes > maxBytes)
+      throw new Error(`INPUT_SIZE_LIMIT: ${label} ${path} is ${bytes} bytes, limit is ${maxBytes}`);
+  };
+  assertSize((await stat(path)).size);
+  const raw = await readFile(path);
+  assertSize(raw.byteLength);
+  try {
+    return JSON.parse(raw.toString("utf8").replace(/^\uFEFF/, ""));
+  } catch {
+    throw new Error("INPUT_JSON_INVALID");
+  }
 }
 /** `--minutes` 是可选编辑稿：读取或 JSON 解析失败统一收敛，且不回显宿主路径。 */
-async function readMinutesJson(path:string):Promise<unknown>{
- try{return await readJsonWithinLimit(path,MAX_ANALYSIS_BYTES,"minutes");}
- catch(error){
-  // 大小限制保留原错误码；其余（读取失败/JSON 解析失败）统一收敛为 INPUT_JSON_INVALID。
-  if(error instanceof Error&&error.message.startsWith("INPUT_SIZE_LIMIT"))throw error;
-  throw new Error("INPUT_JSON_INVALID");
- }
+async function readMinutesJson(path: string): Promise<unknown> {
+  try {
+    return await readJsonWithinLimit(path, MAX_ANALYSIS_BYTES, "minutes");
+  } catch (error) {
+    // 大小限制保留原错误码；其余（读取失败/JSON 解析失败）统一收敛为 INPUT_JSON_INVALID。
+    if (error instanceof Error && error.message.startsWith("INPUT_SIZE_LIMIT")) throw error;
+    throw new Error("INPUT_JSON_INVALID");
+  }
 }
-function assertTranscriptSize(bytes:number,path:string):void{
- if(bytes>MAX_CONTENT_BYTES)throw new Error(`INPUT_SIZE_LIMIT: transcript ${path} is ${bytes} bytes, limit is ${MAX_CONTENT_BYTES}`);
+function assertTranscriptSize(bytes: number, path: string): void {
+  if (bytes > MAX_CONTENT_BYTES)
+    throw new Error(
+      `INPUT_SIZE_LIMIT: transcript ${path} is ${bytes} bytes, limit is ${MAX_CONTENT_BYTES}`,
+    );
 }
 /** analyze 会把整份逐字稿发给模型：先按 stat 大小拒绝，超大文件永远不读进内存。inspect 属于本地查看工具，保持无上限。 */
-async function readTranscriptForAnalyze(path:string):Promise<string>{
- assertTranscriptSize((await stat(path)).size,path);
- const raw=await readFile(path);
- // stat 与读取之间文件可能变化，按实际读到的 Buffer 字节数复核一次。
- assertTranscriptSize(raw.byteLength,path);
- // Windows 记事本等工具会写 UTF-8 BOM：剥掉，避免首行说话人被识别错。
- return raw.toString("utf8").replace(/^\uFEFF/,"");
+async function readTranscriptForAnalyze(path: string): Promise<string> {
+  assertTranscriptSize((await stat(path)).size, path);
+  const raw = await readFile(path);
+  // stat 与读取之间文件可能变化，按实际读到的 Buffer 字节数复核一次。
+  assertTranscriptSize(raw.byteLength, path);
+  // Windows 记事本等工具会写 UTF-8 BOM：剥掉，避免首行说话人被识别错。
+  return raw.toString("utf8").replace(/^\uFEFF/, "");
 }
 
 try {
   const absoluteInput = resolve(input);
-  if(command==="report"){
-    const mode=resolveReadingMode(modeOption,minutesPath!==undefined);
-    const meeting=MeetingInputSchema.parse(await readJsonWithinLimit(absoluteInput,MAX_CONTENT_BYTES,"meeting input"));
+  if (command === "report") {
+    const mode = resolveReadingMode(modeOption, minutesPath !== undefined);
+    const meeting = MeetingInputSchema.parse(
+      await readJsonWithinLimit(absoluteInput, MAX_CONTENT_BYTES, "meeting input"),
+    );
     // report 不调用模型，但仍要让病态输入（段数/总文本）在渲染与证据校验前被明确拒绝。
     assertMeetingInputWithinLimits(meeting);
-    const analysis=validateAnalysis(meeting,await readJsonWithinLimit(resolve(analysisPath!),MAX_ANALYSIS_BYTES,"analysis"));
-    let minutes:MinutesDocument|undefined;
-    if(minutesPath!==undefined)minutes=validateMinutes(meeting,analysis,await readMinutesJson(resolve(minutesPath)));
-    const report=minutes===undefined?renderMarkdown(analysis):renderMinutesDocument(meeting,analysis,minutes,{mode,appendix});
-    if(outputPath){await writeFile(resolve(outputPath),report,{encoding:"utf8",flag:"wx"});console.log("Wrote "+resolve(outputPath));}
-    else process.stdout.write(report);
-  }else{
-  const transcript = (command === "analyze" ? await readTranscriptForAnalyze(absoluteInput) : await readFile(absoluteInput, "utf8")).replace(/^\uFEFF/,"");
-  const meeting = normalizeTranscript(
-    transcript,
-    basename(absoluteInput),
-    command === "analyze" ? { maxSegments: MAX_SEGMENTS } : {},
-  );
-
-  let output: string;
-  if (command === "inspect") {
-    output = JSON.stringify(meeting, null, 2) + "\n";
+    const analysis = validateAnalysis(
+      meeting,
+      await readJsonWithinLimit(resolve(analysisPath!), MAX_ANALYSIS_BYTES, "analysis"),
+    );
+    let minutes: MinutesDocument | undefined;
+    if (minutesPath !== undefined)
+      minutes = validateMinutes(meeting, analysis, await readMinutesJson(resolve(minutesPath)));
+    const report =
+      minutes === undefined
+        ? renderMarkdown(analysis)
+        : renderMinutesDocument(meeting, analysis, minutes, { mode, appendix });
+    if (outputPath) {
+      await writeFile(resolve(outputPath), report, { encoding: "utf8", flag: "wx" });
+      console.log("Wrote " + resolve(outputPath));
+    } else process.stdout.write(report);
   } else {
-    const apiKey = process.env.OPENAI_API_KEY;
-    const model = process.env.OPENAI_MODEL;
-    if (!apiKey || !model) {
-      throw new Error("CONFIG_MISSING: set OPENAI_API_KEY and OPENAI_MODEL before running analyze");
-    }
-    const timeout = Number(process.env.OPENAI_TIMEOUT_MS ?? "60000");
-    if (!Number.isInteger(timeout) || timeout < 1000 || timeout > 300000) {
-      throw new Error("CONFIG_INVALID: OPENAI_TIMEOUT_MS must be an integer between 1000 and 300000");
-    }
-    const provider = new OpenAICompatibleProvider({
-      apiKey,
-      model,
-      ...(process.env.OPENAI_BASE_URL ? { baseUrl: process.env.OPENAI_BASE_URL } : {}),
-      timeoutMs: timeout,
-      // 显式 opt-in 才放行发往非 loopback 主机的明文 http。
-      ...(process.env.OPENAI_ALLOW_INSECURE === "1" ? { allowInsecureHttp: true } : {}),
-      // 默认不把上游响应体带进错误：错误响应可能回显会议逐字稿。
-      ...(process.env.OPENAI_VERBOSE_ERRORS === "1" ? { verboseErrors: true } : {}),
-    });
-    const analysis = await analyzeMeeting(meeting, provider);
-    output = renderMarkdown(analysis);
-  }
+    const transcript = (
+      command === "analyze"
+        ? await readTranscriptForAnalyze(absoluteInput)
+        : await readFile(absoluteInput, "utf8")
+    ).replace(/^\uFEFF/, "");
+    const meeting = normalizeTranscript(
+      transcript,
+      basename(absoluteInput),
+      command === "analyze" ? { maxSegments: MAX_SEGMENTS } : {},
+    );
 
-  if (outputPath) {
-    await writeFile(resolve(outputPath), output, { encoding: "utf8", flag: "wx" });
-    console.log("Wrote " + resolve(outputPath));
-  } else process.stdout.write(output);
+    let output: string;
+    if (command === "inspect") {
+      output = JSON.stringify(meeting, null, 2) + "\n";
+    } else {
+      const apiKey = process.env.OPENAI_API_KEY;
+      const model = process.env.OPENAI_MODEL;
+      if (!apiKey || !model) {
+        throw new Error(
+          "CONFIG_MISSING: set OPENAI_API_KEY and OPENAI_MODEL before running analyze",
+        );
+      }
+      const timeout = Number(process.env.OPENAI_TIMEOUT_MS ?? "60000");
+      if (!Number.isInteger(timeout) || timeout < 1000 || timeout > 300000) {
+        throw new Error(
+          "CONFIG_INVALID: OPENAI_TIMEOUT_MS must be an integer between 1000 and 300000",
+        );
+      }
+      const provider = new OpenAICompatibleProvider({
+        apiKey,
+        model,
+        ...(process.env.OPENAI_BASE_URL ? { baseUrl: process.env.OPENAI_BASE_URL } : {}),
+        timeoutMs: timeout,
+        // 显式 opt-in 才放行发往非 loopback 主机的明文 http。
+        ...(process.env.OPENAI_ALLOW_INSECURE === "1" ? { allowInsecureHttp: true } : {}),
+        // 默认不把上游响应体带进错误：错误响应可能回显会议逐字稿。
+        ...(process.env.OPENAI_VERBOSE_ERRORS === "1" ? { verboseErrors: true } : {}),
+      });
+      const analysis = await analyzeMeeting(meeting, provider);
+      output = renderMarkdown(analysis);
+    }
+
+    if (outputPath) {
+      await writeFile(resolve(outputPath), output, { encoding: "utf8", flag: "wx" });
+      console.log("Wrote " + resolve(outputPath));
+    } else process.stdout.write(output);
   }
 } catch (error) {
   // ProviderError 的 code 是稳定机器可读标识：打印出来，脚本排障时不必解析英文消息。
@@ -206,7 +250,10 @@ try {
     console.error(error.code ? `${error.code}: ${error.message}` : error.message);
   } else {
     // Zod 错误带上第一个字段路径：宿主/脚本能直接定位，不必猜「哪个字段错了」。
-    console.error(describeZodError(error,"INPUT_SCHEMA_INVALID") ?? (error instanceof Error ? error.message : String(error)));
+    console.error(
+      describeZodError(error, "INPUT_SCHEMA_INVALID") ??
+        (error instanceof Error ? error.message : String(error)),
+    );
   }
   process.exitCode = 1;
 }
