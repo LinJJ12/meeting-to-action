@@ -136,6 +136,27 @@ describe("transcript line-format detection (#26 P1)", () => {
     }
   });
 
+  it("does not treat document titles, paths or dates as inline speaker labels", () => {
+    const input = norm([
+      "4月20日 11:15 B1录音",
+      "说话人1 00:00 你去过那个地方吗？",
+      "《/tmp/jerry_zip_20260425/4月20日 11:15 B1录音09-转写结果.doc》",
+      "说话人2 00:02 重创是在西丽吗？",
+    ]);
+    expect(input.segments.every((s) => s.speaker !== "4月20日")).toBe(true);
+    expect(input.segments.every((s) => !/[《》/\\]/.test(s.speaker ?? ""))).toBe(true);
+    expect(
+      input.segments.filter((s) => s.speaker === "说话人1" || s.speaker === "说话人2"),
+    ).toHaveLength(2);
+  });
+
+  it("keeps real-name inline speaker labels", () => {
+    const input = norm(["张三 00:05:32 大家好", "李四 00:06:10 好的"]);
+    expect(input.segments).toHaveLength(2);
+    expect(input.segments[0]).toMatchObject({ speaker: "张三", timestamp: "00:05:32" });
+    expect(input.sources[0]?.transcriptFormat).toBe("speaker-inline");
+  });
+
   it("keeps legacy header format and does not report a detected format for plain text", () => {
     const legacy = normalizeTranscript("演示用户(00:01:37):\n我会复查。", "demo.md");
     expect(legacy.segments[0]).toMatchObject({ speaker: "演示用户", timestamp: "00:01:37" });
