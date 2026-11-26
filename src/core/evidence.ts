@@ -97,12 +97,17 @@ export function validateEvidenceWithIndex(
   index: EvidenceIndex,
   refs: EvidenceRef[],
   mode: EvidenceMode = "fragment",
+  deadline?: number,
 ): string[] {
   const errors: string[] = [];
   if (refs.length > MAX_EVIDENCE_REFS_PER_ENTRY) {
     return [`Too many evidence references: ${refs.length}, limit is ${MAX_EVIDENCE_REFS_PER_ENTRY}`];
   }
   for (const ref of refs) {
+    // 资源预算：调用方（MCP handler）传入绝对截止时间，超时立即终止而不是继续扫描。
+    if (deadline !== undefined && Date.now() > deadline) {
+      throw new Error("WORK_LIMIT_EXCEEDED");
+    }
     if (!EvidenceRefSchema.safeParse(ref).success) {
       errors.push("Invalid evidence reference");
       continue;

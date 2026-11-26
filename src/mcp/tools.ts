@@ -7,7 +7,7 @@ import {validateAnalysis} from "../core/analysis.js";
 import {validateMinutes} from "../core/minutes.js";
 import {renderMarkdown} from "../render/markdown.js";
 import {renderMinutesDocument,resolveReadingMode} from "../render/minutes.js";
-import {assertContentWithinLimit,assertMeetingInputWithinLimits,MAX_CONTENT_BYTES,MAX_REQUEST_BYTES,MAX_SEGMENTS} from "../core/limits.js";
+import {assertContentWithinLimit,assertMeetingInputWithinLimits,MAX_CONTENT_BYTES,MAX_REQUEST_BYTES,MAX_SEGMENTS,MAX_TOOL_WORK_MS} from "../core/limits.js";
 
 // 上限常量与 CLI 共用同一来源（src/core/limits.ts），这里保留导出以免破坏既有引用。
 export {MAX_CONTENT_BYTES,MAX_REQUEST_BYTES,MAX_SEGMENTS};
@@ -30,7 +30,7 @@ function boundedInput(value:unknown){
  return meeting;
 }
 const codes=new Set([
- "INPUT_EMPTY","INPUT_UNSUPPORTED","INPUT_SEGMENT_LIMIT","INPUT_SIZE_LIMIT","CHUNK_LINE_TOO_LONG","SEGMENT_LINE_COUNT_INVALID","ANALYSIS_MEETING_MISMATCH","ANALYSIS_DUPLICATE_ID","ANALYSIS_EVIDENCE_INVALID",
+ "INPUT_EMPTY","INPUT_UNSUPPORTED","INPUT_SEGMENT_LIMIT","INPUT_SIZE_LIMIT","CHUNK_LINE_TOO_LONG","SEGMENT_LINE_COUNT_INVALID","ANALYSIS_MEETING_MISMATCH","ANALYSIS_DUPLICATE_ID","ANALYSIS_EVIDENCE_INVALID","WORK_LIMIT_EXCEEDED",
  "MINUTES_MISSING","MINUTES_SCHEMA_INVALID","MINUTES_CONTRACT_UNSUPPORTED","MINUTES_MEETING_MISMATCH","MINUTES_REF_UNKNOWN","MINUTES_KIND_MISMATCH","MINUTES_ACTION_COVERAGE","RENDER_MODE_INVALID",
 ]);
 /** 把内部错误收敛成稳定的工具错误码；导出供接线测试固定未在入口暴露的渲染器错误码。 */
@@ -47,6 +47,8 @@ export function callTool(name:string,args:unknown):{content:{type:"text";text:st
  try{
   const requestBytes=Buffer.byteLength(JSON.stringify(args)??"","utf8");
   if(requestBytes>MAX_REQUEST_BYTES)throw new Error(`INPUT_SIZE_LIMIT: request is ${requestBytes} bytes, limit is ${MAX_REQUEST_BYTES}`);
+  // handler 级 CPU 预算：所有工具共享同一截止时间，异常输入不能长期占住事件循环。
+  const deadline=Date.now()+MAX_TOOL_WORK_MS;
   let result:unknown;
   switch(name){
    case "prepare_meeting":{
@@ -64,12 +66,12 @@ export function callTool(name:string,args:unknown):{content:{type:"text";text:st
    }
    case "validate_analysis":{
     const a=definitions.validate_analysis.schema.parse(args);
-    result={valid:true,analysis:validateAnalysis(boundedInput(a.input),a.analysis)};break;
+    result={valid:true,analysis:validateAnalysis(boundedInput(a.input),a.analysis,{deadline})};break;
    }
    case "render_report":{
     const a=definitions.render_report.schema.parse(args);
     const meeting=boundedInput(a.input);
-    const analysis=validateAnalysis(meeting,a.analysis);
+    const analysis=validateAnalysis(meeting,a.analysis,{deadline});
     let document:MinutesDocument|undefined;
     if(a.minutes!==undefined){
      assertContentWithinLimit(a.minutes);
@@ -80,6 +82,7 @@ export function callTool(name:string,args:unknown):{content:{type:"text";text:st
    }
    default:return {isError:true,content:[{type:"text",text:"TOOL_UNKNOWN"}]};
   }
+  if(Date.now()>deadline)throw new Error("WORK_LIMIT_EXCEEDED");
   return {content:[{type:"text",text:JSON.stringify(result)}]};
  }catch(error){
   return {isError:true,content:[{type:"text",text:toolErrorCode(error)}]};
