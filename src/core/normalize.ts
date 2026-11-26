@@ -73,7 +73,8 @@ export function normalizeTranscript(content:string,fileName:string,options:{titl
  };
  lines.forEach((line,index)=>{
   const lineNo=index+1;
-  if(!line.trim()){flush(index);start=lineNo+1;return;}
+  const isSeparator=/^[-=_*~\s]{3,}$/.test(line.trim());
+  if(!line.trim()||isSeparator){flush(index);start=lineNo+1;return;}
   const parsed=parseLineMeta(line);
   if(parsed){flush(index);start=lineNo;meta=parsed;}else if(!buffer.length){start=lineNo;}
   buffer.push(line);

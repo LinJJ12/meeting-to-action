@@ -72,6 +72,18 @@ describe("transcript line-format detection (#26 P1)",()=>{
   expect(input.sources[0]?.transcriptFormat).toBeUndefined();
  });
 
+ it("drops decorative separator lines without creating empty segments",()=>{
+  const input=norm([
+   "说话人1 00:00",
+   "第一段内容。",
+   "---",
+   "说话人2 00:30",
+   "第二段内容。",
+  ]);
+  expect(input.segments).toHaveLength(2);
+  expect(input.segments.map((s)=>s.text)).toEqual(["说话人1 00:00\n第一段内容。","说话人2 00:30\n第二段内容。"]);
+ });
+
  it("supports mixed line formats in one file and records it",()=>{
   const input=norm([
    "说话人1 00:00:05 第一段",
