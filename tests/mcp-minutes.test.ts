@@ -12,7 +12,8 @@ const evidenceMarkdown=renderMarkdown(validateAnalysis(input,analysis));
 const minutesText=()=>JSON.stringify(minutes);
 const renderReport=(extra:Record<string,unknown>={})=>callTool("render_report",{input,analysis,...extra});
 const parseOk=(result:ReturnType<typeof callTool>)=>{expect(result.isError).not.toBe(true);return JSON.parse(result.content[0]!.text);};
-const errorCode=(result:ReturnType<typeof callTool>)=>{expect(result.isError).toBe(true);return result.content[0]!.text;};
+// Zod 失败会附带字段路径（`CODE: <path> <reason>`），这里只固定稳定错误码部分。
+const errorCode=(result:ReturnType<typeof callTool>)=>{expect(result.isError).toBe(true);return result.content[0]!.text.split(": ")[0]!;};
 
 describe("render_report minutes wiring",()=>{
  it("keeps the evidence-default output byte-identical without minutes",()=>{
