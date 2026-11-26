@@ -16,9 +16,10 @@ export async function buildPlugin(output=join(repo,"dist","plugin-marketplace"))
  const pluginManifest=await json(join(repo,"plugin","plugin.json"));
  pluginManifest.version=appVersion;
  await writeFile(join(plugin,"plugin.json"),JSON.stringify(pluginManifest,null,2)+"\n");
- // 生成的 mcp.json 把裸 `node` 替换成当前解释器的绝对路径，避免插件运行时依赖 PATH
+ // mcp.json 的 `command` 必须保持裸 `node`：Codex app-server 不会启动绝对路径的 command
+ // （2026-11-26 实测：绝对 node 路径与无空格 junction 路径都会导致工具列表为空），
+ // 因此运行环境要求 node 在客户端 PATH 内，详见 docs/PLUGIN-INSTALL.md。
  const mcp=await json(join(repo,"plugin","mcp.json"));
- for(const server of Object.values(mcp.mcpServers??{}))if(server&&server.command==="node")server.command=process.execPath;
  await writeFile(join(plugin,"mcp.json"),JSON.stringify(mcp,null,2)+"\n");
  await cp(join(repo,"skills","meeting-to-action"),join(plugin,"skills","meeting-to-action"),{recursive:true});
  const result=await build({absWorkingDir:repo,entryPoints:["src/mcp/server.ts"],outfile:join(plugin,"server","mcp.mjs"),bundle:true,platform:"node",format:"esm",target:"node20",tsconfigRaw:{compilerOptions:{target:"ES2022"}},metafile:true,banner:{js:'import {createRequire as __createRequire} from "node:module"; const require = __createRequire(import.meta.url);'},logLevel:"silent"});
