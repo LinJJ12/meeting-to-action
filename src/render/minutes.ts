@@ -127,9 +127,21 @@ function renderSections(analysis: MeetingAnalysis, document: MinutesDocument): s
   const lines: string[] = ["## 按议题整理"];
   for (const section of document.sections) {
     lines.push("### " + text(section.heading));
+    // 同一小节内按标签聚合：进展/后续/待确认各成一个组，子项缩进列出。
+    // 组顺序 = 标签在 claim 序列中的首次出现顺序，渲染不重排语义。
+    const groups = new Map<string, MinutesClaim[]>();
     for (const claim of section.claims) {
-      lines.push("- **" + claimKindLabel(claim, facts) + "：**" + text(claim.text));
-      if (claim.detail !== undefined) lines.push("  - " + text(claim.detail));
+      const label = claimKindLabel(claim, facts);
+      const bucket = groups.get(label);
+      if (bucket) bucket.push(claim);
+      else groups.set(label, [claim]);
+    }
+    for (const [label, claims] of groups) {
+      lines.push("- **" + label + "：**");
+      for (const claim of claims) {
+        lines.push("  - " + text(claim.text));
+        if (claim.detail !== undefined) lines.push("    - " + text(claim.detail));
+      }
     }
   }
   return lines.join("\n");
@@ -363,15 +375,24 @@ function renderClaimEvidence(
       lines.push("  - " + text(ref) + "：未解析到分析条目（引用不可达）");
       continue;
     }
+    // 引用条目与首条证据合并为一行，压平附录层级；其余证据缩进续列。
+    const locator = fact.evidence.length
+      ? formatEvidenceLocator(fact.evidence[0]!, APPENDIX_QUOTE_LIMIT, true, segments)
+      : "—";
     lines.push(
-      "  - " + text(ref) + "（" + FACT_KIND_LABELS[fact.kind] + "）：" + text(fact.summary),
+      "  - " +
+        text(ref) +
+        "（" +
+        FACT_KIND_LABELS[fact.kind] +
+        "）：" +
+        text(fact.summary) +
+        " — 证据：" +
+        locator,
     );
-    if (fact.evidence.length)
-      for (const evidence of fact.evidence)
-        lines.push(
-          "    - 证据：" + formatEvidenceLocator(evidence, APPENDIX_QUOTE_LIMIT, true, segments),
-        );
-    else lines.push("    - 证据：—");
+    for (const evidence of fact.evidence.slice(1))
+      lines.push(
+        "    - 证据：" + formatEvidenceLocator(evidence, APPENDIX_QUOTE_LIMIT, true, segments),
+      );
   }
   return lines.join("\n");
 }
