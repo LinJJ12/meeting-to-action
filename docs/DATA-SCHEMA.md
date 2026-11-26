@@ -92,6 +92,7 @@ export type MeetingAnalysis = {
 | `sources[].transcriptFormat` | example line | speaker | timestamp |
 |---|---|---|---|
 | `speaker-header` | `张三 (00:05:32)：` on its own line; text on following lines | 张三 | `00:05:32` |
+| `speaker-time` | `说话人1 00:00` on its own line (optional role in parentheses, e.g. `说话人1（质量管理部部长） 00:25`); text on following lines | 说话人1 | `00:00:00` |
 | `speaker-inline` | `说话人1 00:05:32 内容` | 说话人1 | `00:05:32` |
 | `timestamp-first` | `00:05 说话人1 内容` | 说话人1 | `00:00:05` |
 | `speaker-colon` | `说话人1：内容` | 说话人1 | absent |
