@@ -242,7 +242,9 @@ it("renders the minutes title, meta line, highlights and topic sections", () => 
     ),
   ).toBe(true);
   expect(md).toContain("## 会议要点\n- 登录改造回归完成，准备小范围灰度\n- 支付回调监控待补充");
-  expect(md).toContain("## 按议题整理\n### 登录改造\n- **进展：**登录改造回归已完成，准备灰度");
+  expect(md).toContain(
+    "## 按议题整理\n### 登录改造\n- **进展：**\n  - 登录改造回归已完成，准备灰度",
+  );
   expect(md).toContain("### 发布安排");
   expect(md).toContain("### 待确认");
 });
@@ -257,8 +259,25 @@ it("labels all four claim kinds in reading order", () => {
 
 it("renders claim details as indented explanatory lines", () => {
   const md = render();
-  expect(md).toContain("- **进展：**登录改造回归已完成，准备灰度\n  - 灰度比例尚未确认");
-  expect(md).toContain("- **待确认：**灰度比例与监控缺口待确认\n  - 需要先补监控再决定放量比例");
+  expect(md).toContain("- **进展：**\n  - 登录改造回归已完成，准备灰度\n    - 灰度比例尚未确认");
+  expect(md).toContain(
+    "- **待确认：**\n  - 灰度比例与监控缺口待确认\n    - 需要先补监控再决定放量比例",
+  );
+});
+
+it("groups same-label claims under one bullet so a section reads as aggregated lists", () => {
+  const draft: any = structuredClone(minutesFixture());
+  draft.sections[0].claims.unshift({
+    id: "c0",
+    kind: "progress",
+    text: "登录链路压测通过",
+    refs: ["d1"],
+  });
+  const md = renderMinutesDocument(inputFixture(), analysisFixture(), draft);
+  const section = (md.split("### 登录改造")[1] ?? "").split("###")[0] ?? "";
+  expect(section).toContain("- **进展：**\n  - 登录链路压测通过\n  - 登录改造回归已完成，准备灰度");
+  expect(section.indexOf("- **进展：**")).toBeLessThan(section.indexOf("- **后续：**"));
+  expect(section.match(/- \*\*进展：\*\*/g) ?? []).toHaveLength(1);
 });
 
 it("omits empty highlight and open-question sections", () => {
@@ -484,7 +503,7 @@ it("escapes untrusted text so titles, headings and tables cannot be injected", (
   expect(md).toContain("\\`code\\` &amp; &lt;b&gt;bold&lt;/b&gt;");
   expect(md).toContain("### 登录\\|附录 伪造标题");
   expect(md).toContain("&lt;img src=x onerror=alert(1)&gt;");
-  expect(md).toContain("  - 第一行 第二行&lt;em&gt;");
+  expect(md).toContain("    - 第一行 第二行&lt;em&gt;");
   expect(md).toContain("| 整理\\|名单&lt;script&gt; | 甲\\|乙 | 周五 或下周 | 进行中 |");
   expect(md).not.toContain("<script");
   expect(md).not.toContain("<img");
@@ -585,20 +604,20 @@ it("keeps plain open questions out of the key-unresolved summary", () => {
   const unresolved = (md.split("## 关键未决事项")[1] ?? "").split("\n## ")[0] ?? "";
   expect(unresolved).toContain("灰度比例与监控缺口待确认");
   expect(unresolved).not.toContain("灰度比例数值待定");
-  expect(md).toContain("- **待确认：**灰度比例数值待定");
+  expect(md).toContain("  - 灰度比例数值待定");
 });
 
 it("labels a decision claim by the referenced decision status instead of always confirming it", () => {
   const proposed = analysisFixture();
   proposed.decisions[0]!.status = "proposed";
   const md = renderMinutesDocument(inputFixture(), proposed, minutesFixture());
-  expect(md).toContain("- **提议：**发布窗口定在下周三");
-  expect(md).not.toContain("- **已确认决定：**发布窗口定在下周三");
+  expect(md).toContain("- **提议：**\n  - 发布窗口定在下周三");
+  expect(md).not.toContain("已确认决定：");
 
   const unclear = analysisFixture();
   unclear.decisions[0]!.status = "unclear";
   expect(renderMinutesDocument(inputFixture(), unclear, minutesFixture())).toContain(
-    "- **待确认：**发布窗口定在下周三",
+    "- **待确认：**\n  - 发布窗口定在下周三",
   );
 });
 
