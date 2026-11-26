@@ -17,7 +17,7 @@
     "plugin:check-installed": "node scripts/check-installed-plugin.mjs",
     "format": "prettier --write src tests scripts",
     "format:check": "prettier --check src tests scripts",
-    "preflight": "npm run typecheck && npm run build && npm test && npm run mcp:smoke && npm run plugin:build"
+    "preflight": "npm run typecheck && npm run build && npm test && npm run mcp:smoke && npm run plugin:build && npm run format:check"
   },
   "engines": {
     "node": ">=20"
