@@ -21,7 +21,10 @@ it("ships a relocatable plugin with its Skill and a standalone MCP bundle",async
   const config=JSON.parse(await readFile(join(output.plugin,"mcp.json"),"utf8"));
   const server=config.mcpServers["meeting-to-action"];
   expect(server.type).toBe("stdio");expect(server.args[0]).toBe("${PLUGIN_ROOT}/server/mcp.mjs");
-  expect(server.command).toBe(process.execPath);
+  // command 必须保持裸 `node`：Codex app-server 不启动绝对路径 command（回归见 #24），
+  // 产物里出现盘符或路径分隔符会让插件装上了但工具不可见。
+  expect(server.command).toBe("node");
+  expect(server.command).not.toMatch(/[\\/]|^[A-Za-z]:/);
   expect(await readFile(join(output.plugin,"skills","meeting-to-action","SKILL.md"),"utf8")).toContain("name: meeting-to-action");
   expect(await readFile(join(output.plugin,"THIRD-PARTY-NOTICES.txt"),"utf8")).toContain("@modelcontextprotocol/sdk");
   expect(await readdir(output.plugin)).not.toContain("node_modules");

@@ -24,7 +24,7 @@ codex plugin add meeting-to-action@meeting-to-action-local
 两点需要知道：
 
 - 构建会**先清空**输出目录，上一轮残留的文件不会混进新产物。
-- 生成的 `mcp.json` 里 `command` 被替换成构建时 Node 解释器的绝对路径（不再依赖 PATH）。因此请按「本机构建、本机安装」的方式使用；如果要在另一台机器安装，请在那台机器上重新执行 `npm run plugin:build`。
+- 生成的 `mcp.json` 里 `command` 保持裸 `node`，由客户端从其 PATH 解析。这**不是**省略，而是兼容性要求：Codex app-server 不会启动使用绝对路径（含盘符或路径分隔符）的 command，实测会导致插件安装成功但五个 MCP 工具不可见。因此运行环境必须能解析 `node`。
 
 注册与安装命令会修改当前用户的客户端配置及插件缓存，请在你希望使用插件的账户下执行。若当前 CLI 不支持这些子命令，使用客户端提供的本地插件安装入口，或选择[项目级 Skill + MCP 安装](CLIENT-SETUP.md)。不要将缺少子命令当作构建失败。
 
