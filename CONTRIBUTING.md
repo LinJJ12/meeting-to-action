@@ -91,7 +91,7 @@ npm run preflight
 
 ## 分支、提交与 PR
 
-- 分支：`<type>/<短主题>`，常用 type：`feat` / `fix` / `docs` / `test` / `improve` / `integration` / `project`；一个分支只做一个主题
+- 分支：`<type>/<短主题>`，常用 type：`feat` / `fix` / `docs` / `style` / `test` / `improve` / `integration` / `project`；一个分支只做一个主题
 - 提交：`<type>(<scope>): <主题>`，scope 用模块名（`core` / `mcp` / `plugin` / `normalize` / `cli` 等）；模块级改动必须带 scope；跨模块行为修复带 issue 引用（如 `fix(mcp): ... (#24)`）
 - PR 使用四段结构：**做了什么 / 改动 / 验证 / 范围**；「范围」段明确「不做什么」
 - 至少一名维护者 approve 后合并；保持 merge commit 方式

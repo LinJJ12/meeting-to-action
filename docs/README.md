@@ -12,7 +12,7 @@
 | [ANALYSIS-ENGINE.md](ANALYSIS-ENGINE.md) | 可选独立 Provider 分析模式 |
 | [ARCHITECTURE.md](ARCHITECTURE.md) | 当前模块布局、数据流及信任边界 |
 | [DATA-SCHEMA.md](DATA-SCHEMA.md) | 契约说明；权威定义为 src/domain/schema.ts |
-| [MINUTES-CONTRACT.md](MINUTES-CONTRACT.md) | code minutes-contract@1.0 展示契约：阅读模式、claim 类型与校验规则；权威定义为 src/domain/minutes.ts |
+| [MINUTES-CONTRACT.md](MINUTES-CONTRACT.md) | minutes-contract@1.0 展示契约：阅读模式、claim 类型与校验规则；权威定义为 src/domain/minutes.ts |
 | [SECURITY.md](SECURITY.md) | 隐私、密钥、不可信内容与外部写入原则 |
 
 ## 产品与设计资料
@@ -60,6 +60,6 @@
 | `examples/` | 可公开的虚构数据：sample-meeting.md + agent-workflow 完整流程样例 | agent-workflow 是测试依赖，不是临时输出 |
 | `docs/` | 使用、架构、契约、安全与规划文档 | 索引与维护约定见本文件 |
 | `.github/workflows/ci.yml` | CI（Node 20/22 矩阵；因 billing 暂停，本地 preflight 为准） | 恢复计费后先手动 workflow_dispatch 一次，再启用自动触发 |
-| `.env.example`、`.gitignore`、`.gitattributes`、`.editorconfig`、`.prettierrc.json`、`vitest.config.ts`、`tsconfig.json`、`package-lock.json` | 环境占位 / 忽略规则 / LF 强制 / 格式配置 / 测试配置 / 严格编译 / 可复现安装 | `.env` 永不入库 |
+| `.env.example`、`.gitignore`、`.gitattributes`、`.editorconfig`、`.prettierrc.json`、`.prettierignore`、`.git-blame-ignore-revs`、`vitest.config.ts`、`tsconfig.json`、`package-lock.json` | 环境占位 / 忽略规则 / LF 强制 / 格式配置与忽略 / 格式提交的 blame 忽略 / 测试配置 / 严格编译 / 可复现安装 | `.env` 永不入库 |
 
 变更能力时同步 README、相关使用文档和路线图。客户端验证必须注明环境与验证范围，不把维护者机器的安装状态写成读者前置条件。历史测试数量不作为长期有效的质量声明，以当前验证结果为准。
