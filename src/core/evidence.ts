@@ -67,7 +67,10 @@ function rangeSelection(
   const selection: RangeSelection = {
     segments,
     texts: segments.map((candidate) =>
-      candidate.text.split("\n").slice(start - candidate.lineStart, end - candidate.lineStart + 1).join("\n"),
+      candidate.text
+        .split("\n")
+        .slice(start - candidate.lineStart, end - candidate.lineStart + 1)
+        .join("\n"),
     ),
     haystack: undefined,
   };
@@ -101,7 +104,9 @@ export function validateEvidenceWithIndex(
 ): string[] {
   const errors: string[] = [];
   if (refs.length > MAX_EVIDENCE_REFS_PER_ENTRY) {
-    return [`Too many evidence references: ${refs.length}, limit is ${MAX_EVIDENCE_REFS_PER_ENTRY}`];
+    return [
+      `Too many evidence references: ${refs.length}, limit is ${MAX_EVIDENCE_REFS_PER_ENTRY}`,
+    ];
   }
   for (const ref of refs) {
     // 资源预算：调用方（MCP handler）传入绝对截止时间，超时立即终止而不是继续扫描。
@@ -157,7 +162,9 @@ export function validateEvidenceWithIndex(
     let range: RangeSelection | undefined;
     if (segment) {
       selected =
-        start === undefined || end === undefined || (segment.lineStart <= start && segment.lineEnd >= end)
+        start === undefined ||
+        end === undefined ||
+        (segment.lineStart <= start && segment.lineEnd >= end)
           ? [segment]
           : [];
       if (start !== undefined && !selected.length) {

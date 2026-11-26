@@ -80,7 +80,12 @@ function evidenceVerdict(ref: unknown): boolean {
 
 describe("evidence 校验一致性（analyze / report / validateEvidence）", () => {
   it("三个入口对同一份 evidence 的结论必须一致", async () => {
-    const rows: Array<{ name: string; analyze: boolean; report: boolean; validateEvidence: boolean }> = [];
+    const rows: Array<{
+      name: string;
+      analyze: boolean;
+      report: boolean;
+      validateEvidence: boolean;
+    }> = [];
     for (const [name, ref] of Object.entries(variants)) {
       rows.push({
         name,
@@ -114,10 +119,18 @@ describe("evidence 校验一致性（analyze / report / validateEvidence）", ()
   it("strict 模式要求完整 segment 边界，但仍校验元数据", () => {
     expect(validateEvidence(input, [base], "strict")).toEqual([]);
     // 子区间 / 缺 segmentId / 缺行号 在 strict 下被拒
-    expect(validateEvidence(input, [variants.subRange as never], "strict").length).toBeGreaterThan(0);
-    expect(validateEvidence(input, [variants.lineOnly as never], "strict").length).toBeGreaterThan(0);
-    expect(validateEvidence(input, [variants.missingBounds as never], "strict").length).toBeGreaterThan(0);
+    expect(validateEvidence(input, [variants.subRange as never], "strict").length).toBeGreaterThan(
+      0,
+    );
+    expect(validateEvidence(input, [variants.lineOnly as never], "strict").length).toBeGreaterThan(
+      0,
+    );
+    expect(
+      validateEvidence(input, [variants.missingBounds as never], "strict").length,
+    ).toBeGreaterThan(0);
     // strict 同样拒绝伪造元数据
-    expect(validateEvidence(input, [variants.forgedSpeaker as never], "strict").length).toBeGreaterThan(0);
+    expect(
+      validateEvidence(input, [variants.forgedSpeaker as never], "strict").length,
+    ).toBeGreaterThan(0);
   });
 });

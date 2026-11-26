@@ -20,12 +20,19 @@ async function stubServer(body: string): Promise<string> {
 
 afterEach(async () => {
   await Promise.all(
-    servers.splice(0).map((server) => new Promise<void>((resolve) => server.close(() => resolve()))),
+    servers
+      .splice(0)
+      .map((server) => new Promise<void>((resolve) => server.close(() => resolve()))),
   );
 });
 
 function provider(baseUrl: string): OpenAICompatibleProvider {
-  return new OpenAICompatibleProvider({ apiKey: "test-key", model: "test-model", baseUrl, timeoutMs: 5_000 });
+  return new OpenAICompatibleProvider({
+    apiKey: "test-key",
+    model: "test-model",
+    baseUrl,
+    timeoutMs: 5_000,
+  });
 }
 
 /** 用 stub 返回给定 payload，断言得到 ProviderError 并返回它。 */
@@ -91,7 +98,9 @@ describe("provider 响应形状校验", () => {
     const error = await invalidResponse({ choices: [{ message: PRIVATE_TRANSCRIPT }] });
 
     expect(error.code).toBe("PROVIDER_RESPONSE_INVALID");
-    expect(error.message).toMatch(/choices\[0\]\.message is missing or not an object \(type=string\)/);
+    expect(error.message).toMatch(
+      /choices\[0\]\.message is missing or not an object \(type=string\)/,
+    );
     expectNoEcho(error);
   });
 
@@ -99,7 +108,9 @@ describe("provider 响应形状校验", () => {
     const error = await invalidResponse({ choices: [{ message: { content: 123 } }] });
 
     expect(error.code).toBe("PROVIDER_RESPONSE_INVALID");
-    expect(error.message).toMatch(/choices\[0\]\.message\.content is missing or not a string \(type=number\)/);
+    expect(error.message).toMatch(
+      /choices\[0\]\.message\.content is missing or not a string \(type=number\)/,
+    );
     expectNoEcho(error);
   });
 
@@ -112,7 +123,9 @@ describe("provider 响应形状校验", () => {
   });
 
   it("content 为对象时返回结构错误，且不回显对象内容", async () => {
-    const error = await invalidResponse({ choices: [{ message: { content: { transcript: PRIVATE_TRANSCRIPT } } }] });
+    const error = await invalidResponse({
+      choices: [{ message: { content: { transcript: PRIVATE_TRANSCRIPT } } }],
+    });
 
     expect(error.code).toBe("PROVIDER_RESPONSE_INVALID");
     expect(error.message).toMatch(/content is missing or not a string \(type=object\)/);
@@ -136,9 +149,13 @@ describe("provider 响应形状校验", () => {
   });
 
   it("正常 string content 原样返回", async () => {
-    const baseUrl = await stubServer(JSON.stringify({ choices: [{ message: { content: "{\"ok\":true}" } }] }));
+    const baseUrl = await stubServer(
+      JSON.stringify({ choices: [{ message: { content: '{"ok":true}' } }] }),
+    );
 
-    await expect(provider(baseUrl).complete([{ role: "user", content: "x" }])).resolves.toBe("{\"ok\":true}");
+    await expect(provider(baseUrl).complete([{ role: "user", content: "x" }])).resolves.toBe(
+      '{"ok":true}',
+    );
   });
 
   it("空字符串与纯空白 content 仍按 EMPTY_COMPLETION 处理", async () => {

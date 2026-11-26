@@ -1,17 +1,17 @@
-import {describe,it,expect} from "vitest";
-import {spawnSync} from "node:child_process";
-import {mkdtempSync,writeFileSync,rmSync} from "node:fs";
-import {tmpdir} from "node:os";
-import {join,resolve} from "node:path";
-import {callTool} from "../src/mcp/tools.js";
+import { describe, it, expect } from "vitest";
+import { spawnSync } from "node:child_process";
+import { mkdtempSync, writeFileSync, rmSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join, resolve } from "node:path";
+import { callTool } from "../src/mcp/tools.js";
 
 // 真实评测里多个宿主执行者都踩到「只报 INPUT_SCHEMA_INVALID，不知道哪个字段」。
 // 这两个用例固定「错误码 + 第一个字段路径」的对外契约（不泄露字段值）。
 const badInput = {
   schemaVersion: "1.0",
-  meeting: {id: "m1", title: "T"},
-  sources: [{id: "s1", kind: "transcript", format: "bogus"}],
-  segments: [{id: "x1", sourceId: "s1", text: "hello", lineStart: 1, lineEnd: 1}],
+  meeting: { id: "m1", title: "T" },
+  sources: [{ id: "s1", kind: "transcript", format: "bogus" }],
+  segments: [{ id: "x1", sourceId: "s1", text: "hello", lineStart: 1, lineEnd: 1 }],
 };
 
 describe("schema error detail", () => {

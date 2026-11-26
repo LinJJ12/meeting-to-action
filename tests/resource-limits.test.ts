@@ -23,7 +23,10 @@ const envWithoutApiKeys = () => {
   return env;
 };
 const cliRun = (args: string[]) =>
-  spawnSync(process.execPath, ["--import", "tsx", resolve("src/cli.ts"), ...args], { encoding: "utf8", env: envWithoutApiKeys() });
+  spawnSync(process.execPath, ["--import", "tsx", resolve("src/cli.ts"), ...args], {
+    encoding: "utf8",
+    env: envWithoutApiKeys(),
+  });
 
 /** 复用 normalizeTranscript 产出的合法 skeleton，只替换 segments，保持 schema 合法。 */
 function meetingWithSegments(count: number) {
@@ -143,7 +146,12 @@ describe("evidence 索引与单 entry 上限", () => {
       segments,
     };
     const refs = (count: number) =>
-      Array.from({ length: count }, () => ({ sourceId: "s1", lineStart: 1, lineEnd: 1, quote: "zzz" }));
+      Array.from({ length: count }, () => ({
+        sourceId: "s1",
+        lineStart: 1,
+        lineEnd: 1,
+        quote: "zzz",
+      }));
     const started = performance.now();
     const first = validateEvidence(input, refs(150));
     const second = validateEvidence(input, refs(150));
@@ -156,7 +164,8 @@ describe("evidence 索引与单 entry 上限", () => {
   it("单个 entry 最多 200 条 refs；超限被拒绝且消息含实际上限", () => {
     const input = normalizeTranscript("Team: Defer launch.", "x.txt");
     const sourceId = input.sources[0]!.id;
-    const refs = (count: number) => Array.from({ length: count }, () => ({ sourceId, segmentId: "seg-1" }));
+    const refs = (count: number) =>
+      Array.from({ length: count }, () => ({ sourceId, segmentId: "seg-1" }));
     expect(validateEvidence(input, refs(MAX_EVIDENCE_REFS_PER_ENTRY))).toEqual([]);
 
     const errors = validateEvidence(input, refs(MAX_EVIDENCE_REFS_PER_ENTRY + 1));
@@ -166,10 +175,20 @@ describe("evidence 索引与单 entry 上限", () => {
 
     const analysis = {
       ...validAnalysis(input),
-      decisions: [{ id: "d1", statement: "Defer launch.", status: "confirmed", confidence: "high", evidence: refs(MAX_EVIDENCE_REFS_PER_ENTRY + 1) }],
+      decisions: [
+        {
+          id: "d1",
+          statement: "Defer launch.",
+          status: "confirmed",
+          confidence: "high",
+          evidence: refs(MAX_EVIDENCE_REFS_PER_ENTRY + 1),
+        },
+      ],
     };
     expect(() => validateAnalysis(input, analysis)).toThrow(/ANALYSIS_EVIDENCE_INVALID/);
-    expect(() => validateAnalysis(input, analysis)).toThrow(new RegExp(String(MAX_EVIDENCE_REFS_PER_ENTRY)));
+    expect(() => validateAnalysis(input, analysis)).toThrow(
+      new RegExp(String(MAX_EVIDENCE_REFS_PER_ENTRY)),
+    );
   });
 
   it("quote 最多 4,000 字符；超长 quote 被拒绝且消息含实际上限", () => {
@@ -190,14 +209,19 @@ describe("evidence 索引与单 entry 上限", () => {
     const ref = evidenceForSegment(input, "seg-1");
     expect(validateEvidence(input, [ref])).toEqual([]);
     expect(validateEvidence(input, [ref], "strict")).toEqual([]);
-    expect(validateEvidence(input, [{ ...ref, quote: "fabricated" }])).toEqual(["Evidence quote does not match cited text"]);
+    expect(validateEvidence(input, [{ ...ref, quote: "fabricated" }])).toEqual([
+      "Evidence quote does not match cited text",
+    ]);
   });
 });
 
 describe("MCP validate_analysis 的资源上限", () => {
   it("拒绝超限 input（段数与总字节），返回稳定错误码", () => {
     const overSegments = meetingWithSegments(MAX_SEGMENTS + 1);
-    const segmentResult = callTool("validate_analysis", { input: overSegments, analysis: validAnalysis(overSegments) });
+    const segmentResult = callTool("validate_analysis", {
+      input: overSegments,
+      analysis: validAnalysis(overSegments),
+    });
     expect(segmentResult.isError).toBe(true);
     expect(segmentResult.content[0]!.text).toBe("INPUT_SEGMENT_LIMIT");
 
@@ -205,9 +229,18 @@ describe("MCP validate_analysis 的资源上限", () => {
     const hugeText = "a".repeat(800 * 1024);
     const overBytes = {
       ...tiny,
-      segments: [0, 1, 2].map((index) => ({ id: "seg-" + (index + 1), sourceId: tiny.sources[0]!.id, text: hugeText, lineStart: 1, lineEnd: 1 })),
+      segments: [0, 1, 2].map((index) => ({
+        id: "seg-" + (index + 1),
+        sourceId: tiny.sources[0]!.id,
+        text: hugeText,
+        lineStart: 1,
+        lineEnd: 1,
+      })),
     };
-    const byteResult = callTool("validate_analysis", { input: overBytes, analysis: validAnalysis(overBytes) });
+    const byteResult = callTool("validate_analysis", {
+      input: overBytes,
+      analysis: validAnalysis(overBytes),
+    });
     expect(byteResult.isError).toBe(true);
     expect(byteResult.content[0]!.text).toBe("INPUT_SIZE_LIMIT");
   }, 30_000);
@@ -215,10 +248,21 @@ describe("MCP validate_analysis 的资源上限", () => {
   it("拒绝超限 analysis（refs 数量与 quote 长度）", () => {
     const input = normalizeTranscript("Team: Defer launch.", "x.txt");
     const sourceId = input.sources[0]!.id;
-    const tooManyRefs = Array.from({ length: MAX_EVIDENCE_REFS_PER_ENTRY + 1 }, () => ({ sourceId, segmentId: "seg-1" }));
+    const tooManyRefs = Array.from({ length: MAX_EVIDENCE_REFS_PER_ENTRY + 1 }, () => ({
+      sourceId,
+      segmentId: "seg-1",
+    }));
     const analysis = {
       ...validAnalysis(input),
-      decisions: [{ id: "d1", statement: "Defer launch.", status: "confirmed", confidence: "high", evidence: tooManyRefs }],
+      decisions: [
+        {
+          id: "d1",
+          statement: "Defer launch.",
+          status: "confirmed",
+          confidence: "high",
+          evidence: tooManyRefs,
+        },
+      ],
     };
     const refsResult = callTool("validate_analysis", { input, analysis });
     expect(refsResult.isError).toBe(true);
@@ -226,7 +270,12 @@ describe("MCP validate_analysis 的资源上限", () => {
 
     const longQuote = {
       ...analysis,
-      decisions: [{ ...analysis.decisions[0]!, evidence: [{ sourceId, segmentId: "seg-1", quote: "a".repeat(MAX_QUOTE_CHARS + 1) }] }],
+      decisions: [
+        {
+          ...analysis.decisions[0]!,
+          evidence: [{ sourceId, segmentId: "seg-1", quote: "a".repeat(MAX_QUOTE_CHARS + 1) }],
+        },
+      ],
     };
     const quoteResult = callTool("validate_analysis", { input, analysis: longQuote });
     expect(quoteResult.isError).toBe(true);

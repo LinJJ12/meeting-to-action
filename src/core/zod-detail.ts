@@ -1,4 +1,4 @@
-import {ZodError} from "zod";
+import { ZodError } from "zod";
 
 /**
  * 把 ZodError 收敛成「稳定错误码 + 第一个字段路径」的单行文本。

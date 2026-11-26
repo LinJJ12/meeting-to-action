@@ -1,0 +1,17 @@
+# 范围约定见 issue #32：只统一代码文件（src / tests / scripts 的 .ts 与 .mjs）。
+# 以下排除项防止编辑器插件把范围外的文件误格式化。
+node_modules/
+dist/
+coverage/
+.local-client-check/
+.npm-cache/
+package-lock.json
+docs/
+examples/
+skills/
+plugin/
+.github/
+*.md
+*.json
+*.yaml
+*.yml

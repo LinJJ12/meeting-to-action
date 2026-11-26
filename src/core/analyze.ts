@@ -9,7 +9,11 @@ import { buildEvidenceIndex, validateEvidenceWithIndex } from "./evidence.js";
 import type { AnalysisProvider } from "../providers/types.js";
 import { ZodError } from "zod";
 
-const DraftSchema = MeetingAnalysisSchema.omit({ schemaVersion: true, meetingId: true, generatedAt: true });
+const DraftSchema = MeetingAnalysisSchema.omit({
+  schemaVersion: true,
+  meetingId: true,
+  generatedAt: true,
+});
 
 const DEFAULT_RETRIES = 1;
 const MAX_RETRIES = 5;
@@ -53,7 +57,11 @@ function balancedBraceCandidates(text: string): string[] {
   if (!text.includes("}")) return [];
   const candidates: string[] = [];
   let budget = MAX_BRACE_SCAN_CHARS;
-  outer: for (let start = 0; start < text.length && candidates.length < MAX_BRACE_CANDIDATES; start++) {
+  outer: for (
+    let start = 0;
+    start < text.length && candidates.length < MAX_BRACE_CANDIDATES;
+    start++
+  ) {
     if (text[start] !== "{") continue;
     let depth = 0;
     let inString = false;

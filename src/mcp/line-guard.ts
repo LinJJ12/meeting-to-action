@@ -1,4 +1,4 @@
-import {Transform, type TransformCallback} from "node:stream";
+import { Transform, type TransformCallback } from "node:stream";
 
 const LF = 0x0a;
 const CR = 0x0d;
@@ -7,14 +7,16 @@ const NEWLINE = Buffer.from("\n");
 /** JSON-RPC 2.0 error frame for a request line that exceeds the transport byte limit. */
 export function oversizeLineError(bytes: number, limit: number): string {
   const limitMiB = limit / (1024 * 1024);
-  return JSON.stringify({
-    jsonrpc: "2.0",
-    id: null,
-    error: {
-      code: -32600,
-      message: `INPUT_SIZE_LIMIT: request line exceeds ${limitMiB} MiB (bytes=${bytes})`,
-    },
-  }) + "\n";
+  return (
+    JSON.stringify({
+      jsonrpc: "2.0",
+      id: null,
+      error: {
+        code: -32600,
+        message: `INPUT_SIZE_LIMIT: request line exceeds ${limitMiB} MiB (bytes=${bytes})`,
+      },
+    }) + "\n"
+  );
 }
 
 export interface RequestLineGuardOptions {
@@ -115,11 +117,12 @@ export class RequestLineGuard extends Transform {
   }
 
   private emitLine(): void {
-    const joined = this.parts.length === 0
-      ? Buffer.alloc(0)
-      : this.parts.length === 1
-        ? this.parts[0]!
-        : Buffer.concat(this.parts);
+    const joined =
+      this.parts.length === 0
+        ? Buffer.alloc(0)
+        : this.parts.length === 1
+          ? this.parts[0]!
+          : Buffer.concat(this.parts);
     const payload = this.trailingCR ? joined.subarray(0, joined.length - 1) : joined;
     this.reset();
     if (payload.length === 0) {

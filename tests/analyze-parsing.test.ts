@@ -86,7 +86,9 @@ describe("analyzeMeeting 输出解析", () => {
   });
 
   it("接受前后带说明文字、但内部是完整 JSON 对象的响应", async () => {
-    const provider = new ScriptedProvider(["Here is the analysis:\n" + validJson + "\nHope this helps!"]);
+    const provider = new ScriptedProvider([
+      "Here is the analysis:\n" + validJson + "\nHope this helps!",
+    ]);
     await expect(analyzeMeeting(input, provider, { retries: 0 })).resolves.toBeTruthy();
   });
 
@@ -99,7 +101,9 @@ describe("analyzeMeeting 输出解析", () => {
 
   it("retries=0 时解析失败立即报错，不重复请求", async () => {
     const provider = new ScriptedProvider(["not json"]);
-    const error = await analyzeMeeting(input, provider, { retries: 0 }).catch((caught: unknown) => caught);
+    const error = await analyzeMeeting(input, provider, { retries: 0 }).catch(
+      (caught: unknown) => caught,
+    );
     expect(String((error as Error).message)).toContain("ANALYSIS_INVALID_JSON");
     expect(provider.calls).toBe(1);
   });
@@ -128,7 +132,8 @@ describe("analyzeMeeting 输出解析", () => {
 describe("analyzeMeeting 围栏与前言的容错提取", () => {
   it("前言含 {} 诱饵时仍取后面围栏里的真 JSON", async () => {
     const provider = new ScriptedProvider([
-      "Here is an example of an empty object: {}. The real analysis follows.\n\n" + fence(validJson),
+      "Here is an example of an empty object: {}. The real analysis follows.\n\n" +
+        fence(validJson),
     ]);
     const analysis = await analyzeMeeting(input, provider, { retries: 0 });
     expect(analysis.summary).toEqual(validDraft.summary);
@@ -145,16 +150,16 @@ describe("analyzeMeeting 围栏与前言的容错提取", () => {
   });
 
   it("围栏语言标签大小写不敏感（```JSON）", async () => {
-    const provider = new ScriptedProvider([
-      "Example shape: {}.\n\n" + fence(validJson, "JSON"),
-    ]);
+    const provider = new ScriptedProvider(["Example shape: {}.\n\n" + fence(validJson, "JSON")]);
     const analysis = await analyzeMeeting(input, provider, { retries: 0 });
     expect(analysis.meetingId).toBe(input.meeting.id);
   });
 
   it("围栏后还有尾巴文字时也能解析", async () => {
     const provider = new ScriptedProvider([
-      "Please see {the notes} first.\n\n" + fence(validJson) + "\n\nLet me know if you need changes.",
+      "Please see {the notes} first.\n\n" +
+        fence(validJson) +
+        "\n\nLet me know if you need changes.",
     ]);
     const analysis = await analyzeMeeting(input, provider, { retries: 0 });
     expect(analysis.meetingId).toBe(input.meeting.id);
@@ -167,9 +172,7 @@ describe("analyzeMeeting 围栏与前言的容错提取", () => {
   });
 
   it("多个围栏时跳过坏的第一个、采用第二个", async () => {
-    const provider = new ScriptedProvider([
-      fence('{"summary": [}') + "\n\n" + fence(validJson),
-    ]);
+    const provider = new ScriptedProvider([fence('{"summary": [}') + "\n\n" + fence(validJson)]);
     const analysis = await analyzeMeeting(input, provider, { retries: 0 });
     expect(analysis.meetingId).toBe(input.meeting.id);
     expect(provider.calls).toBe(1);

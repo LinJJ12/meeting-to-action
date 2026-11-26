@@ -1,0 +1,6 @@
+# git-blame-ignore-revs：大范围机械格式化提交不计入 blame。
+# 启用本地生效：git config blame.ignoreRevsFile .git-blame-ignore-revs
+# GitHub 网页端 blame 会自动应用本文件。
+
+# style: unify code formatting via prettier (#32)
+e1323624c258b05872645e5033157b87e495fe2b

@@ -1,86 +1,165 @@
-import {createHash} from "node:crypto";
-import {basename,extname} from "node:path";
-import {MeetingInputSchema,type MeetingInput} from "../domain/schema.js";
-import {MAX_SEGMENTS} from "./limits.js";
+import { createHash } from "node:crypto";
+import { basename, extname } from "node:path";
+import { MeetingInputSchema, type MeetingInput } from "../domain/schema.js";
+import { MAX_SEGMENTS } from "./limits.js";
 
 /** 能识别的源逐字稿行格式；mixed 表示同一份文件里混用了多种。 */
-export const TRANSCRIPT_FORMATS=["speaker-header","speaker-time","speaker-inline","timestamp-first","speaker-colon","speaker-bracket"] as const;
-export type TranscriptFormat=(typeof TRANSCRIPT_FORMATS)[number]|"mixed";
+export const TRANSCRIPT_FORMATS = [
+  "speaker-header",
+  "speaker-time",
+  "speaker-inline",
+  "timestamp-first",
+  "speaker-colon",
+  "speaker-bracket",
+] as const;
+export type TranscriptFormat = (typeof TRANSCRIPT_FORMATS)[number] | "mixed";
 
 /** 非有限数或小于 1 的 maxSegments 回落到 MAX_SEGMENTS，有限数向下取整。 */
-function resolveMaxSegments(value:number|undefined):number|undefined{
- if(value===undefined)return undefined;
- if(!Number.isFinite(value)||value<1)return MAX_SEGMENTS;
- return Math.floor(value);
+function resolveMaxSegments(value: number | undefined): number | undefined {
+  if (value === undefined) return undefined;
+  if (!Number.isFinite(value) || value < 1) return MAX_SEGMENTS;
+  return Math.floor(value);
 }
 
-interface LineMeta{speaker?:string;timestamp?:string;format:TranscriptFormat}
+interface LineMeta {
+  speaker?: string;
+  timestamp?: string;
+  format: TranscriptFormat;
+}
 
 /** 匿名说话人标签（说话人1/发言人2/Speaker 3），用于无时间戳行与时间戳在前行的保守识别。 */
-const ANON_LABEL=/^(?:说话人|发言人|参与者|嘉宾|主持人|speaker|Speaker|SPEAKER)\s*[_\-]?\s*\d{1,3}$/;
+const ANON_LABEL =
+  /^(?:说话人|发言人|参与者|嘉宾|主持人|speaker|Speaker|SPEAKER)\s*[_\-]?\s*\d{1,3}$/;
 
 /** MM:SS 补齐成 HH:MM:SS；已是 HH:MM:SS 的原样返回（不猜测缺失的小时/毫秒）。 */
-function normalizeClock(value:string):string{
- return /^[0-9]{2}:[0-5][0-9]$/.test(value)?`00:${value}`:value;
+function normalizeClock(value: string): string {
+  return /^[0-9]{2}:[0-5][0-9]$/.test(value) ? `00:${value}` : value;
 }
 
 /**
  * 判断一行是否开启一段新发言。
  * 只认完整表头、带时间戳的同行格式、匿名说话人标签；普通正文（含 "Decision: ..."）不猜。
  */
-function parseLineMeta(line:string):LineMeta|undefined{
- const text=line.trim();
- const header=/^([^()\r\n]{1,100})\(([0-9]{2}:[0-5][0-9]:[0-5][0-9])\)[:：]$/.exec(text);
- if(header)return{speaker:header[1]!.trim(),timestamp:header[2]!,format:"speaker-header"};
- // 独立成行的「说话人 + 时间码」表头，例如 `说话人1 00:00` / `说话人1（质量管理部部长） 00:25`。
- // 只认匿名说话人标签，避免把「会议时间 00:05」这类正文误判成新发言。
- const speakerTime=/^(.{1,120}?)\s+([0-9]{1,2}:[0-5][0-9](?::[0-5][0-9])?)$/.exec(text);
- if(speakerTime){
-  const label=speakerTime[1]!.replace(/[（(][^）)]*[）)]\s*$/,"").trim();
-  if(ANON_LABEL.test(label))return{speaker:label,timestamp:normalizeClock(speakerTime[2]!),format:"speaker-time"};
- }
- const inline=/^([^()\s:：]{1,50})\s+([0-9]{2}:[0-5][0-9](?::[0-5][0-9])?)\s+(\S.*)$/.exec(text);
- if(inline)return{speaker:inline[1]!.trim(),timestamp:normalizeClock(inline[2]!),format:"speaker-inline"};
- const timestampFirst=/^([0-9]{2}:[0-5][0-9](?::[0-5][0-9])?)\s+([^\s:：]{1,50})\s+(\S.*)$/.exec(text);
- if(timestampFirst&&ANON_LABEL.test(timestampFirst[2]!.trim()))return{speaker:timestampFirst[2]!.trim(),timestamp:normalizeClock(timestampFirst[1]!),format:"timestamp-first"};
- const bracketed=/^【([^】\r\n]{1,50})】\s*(.*)$/.exec(text);
- if(bracketed)return{speaker:bracketed[1]!.trim(),format:"speaker-bracket"};
- const colon=/^([^\s:：]{1,20})[：:]\s*(.+)$/.exec(text);
- if(colon&&ANON_LABEL.test(colon[1]!.trim()))return{speaker:colon[1]!.trim(),format:"speaker-colon"};
- return undefined;
+function parseLineMeta(line: string): LineMeta | undefined {
+  const text = line.trim();
+  const header = /^([^()\r\n]{1,100})\(([0-9]{2}:[0-5][0-9]:[0-5][0-9])\)[:：]$/.exec(text);
+  if (header)
+    return { speaker: header[1]!.trim(), timestamp: header[2]!, format: "speaker-header" };
+  // 独立成行的「说话人 + 时间码」表头，例如 `说话人1 00:00` / `说话人1（质量管理部部长） 00:25`。
+  // 只认匿名说话人标签，避免把「会议时间 00:05」这类正文误判成新发言。
+  const speakerTime = /^(.{1,120}?)\s+([0-9]{1,2}:[0-5][0-9](?::[0-5][0-9])?)$/.exec(text);
+  if (speakerTime) {
+    const label = speakerTime[1]!.replace(/[（(][^）)]*[）)]\s*$/, "").trim();
+    if (ANON_LABEL.test(label))
+      return { speaker: label, timestamp: normalizeClock(speakerTime[2]!), format: "speaker-time" };
+  }
+  const inline = /^([^()\s:：]{1,50})\s+([0-9]{2}:[0-5][0-9](?::[0-5][0-9])?)\s+(\S.*)$/.exec(text);
+  if (inline)
+    return {
+      speaker: inline[1]!.trim(),
+      timestamp: normalizeClock(inline[2]!),
+      format: "speaker-inline",
+    };
+  const timestampFirst = /^([0-9]{2}:[0-5][0-9](?::[0-5][0-9])?)\s+([^\s:：]{1,50})\s+(\S.*)$/.exec(
+    text,
+  );
+  if (timestampFirst && ANON_LABEL.test(timestampFirst[2]!.trim()))
+    return {
+      speaker: timestampFirst[2]!.trim(),
+      timestamp: normalizeClock(timestampFirst[1]!),
+      format: "timestamp-first",
+    };
+  const bracketed = /^【([^】\r\n]{1,50})】\s*(.*)$/.exec(text);
+  if (bracketed) return { speaker: bracketed[1]!.trim(), format: "speaker-bracket" };
+  const colon = /^([^\s:：]{1,20})[：:]\s*(.+)$/.exec(text);
+  if (colon && ANON_LABEL.test(colon[1]!.trim()))
+    return { speaker: colon[1]!.trim(), format: "speaker-colon" };
+  return undefined;
 }
 
-export function normalizeTranscript(content:string,fileName:string,options:{title?:string;maxSegments?:number}={}):MeetingInput {
- if(!content.trim())throw new Error("INPUT_EMPTY: transcript content is empty");
- const ext=extname(fileName).toLowerCase();
- if(![".txt",".md",".markdown"].includes(ext))throw new Error("INPUT_UNSUPPORTED: expected TXT or Markdown");
- const sourceId=createHash("sha256").update(fileName+"\0"+content).digest("hex").slice(0,16);
- const maxSegments=resolveMaxSegments(options.maxSegments);
- const lines=content.replace(/\r\n?/g,"\n").split("\n");
- const segments:MeetingInput["segments"]=[];
- const formats=new Set<TranscriptFormat>();
- let buffer:string[]=[],start=1,meta:LineMeta|undefined;
- const flush=(end:number)=>{
-  const text=buffer.join("\n").trim();
-  if(text){
-   // 到达上限立即停止：先拒绝，再构造 segment，避免超大输入先把内存吃完再报错。
-   if(maxSegments!==undefined&&segments.length>=maxSegments)throw new Error(`INPUT_SEGMENT_LIMIT: transcript has more than ${maxSegments} segments`);
-   if(meta?.format)formats.add(meta.format);
-   // Recognize only a complete export header. A label is not proof of a person's identity.
-   segments.push({id:"seg-"+(segments.length+1),sourceId,text,lineStart:start,lineEnd:end,...(meta?.speaker?{speaker:meta.speaker}:{}),...(meta?.timestamp?{timestamp:meta.timestamp}:{})});
-  }
-  buffer=[];meta=undefined;
- };
- lines.forEach((line,index)=>{
-  const lineNo=index+1;
-  const isSeparator=/^[-=_*~\s]{3,}$/.test(line.trim());
-  if(!line.trim()||isSeparator){flush(index);start=lineNo+1;return;}
-  const parsed=parseLineMeta(line);
-  if(parsed){flush(index);start=lineNo;meta=parsed;}else if(!buffer.length){start=lineNo;}
-  buffer.push(line);
- });
- flush(lines.length);
- const detected:TranscriptFormat|undefined=formats.size===0?undefined:formats.size===1?[...formats][0]:"mixed";
- const heading=lines.find(line=>/^#\s+/.test(line.trim()))?.trim().replace(/^#\s+/,"").trim();
- return MeetingInputSchema.parse({schemaVersion:"1.0",meeting:{id:"meeting-"+sourceId,title:options.title?.trim()||heading||basename(fileName,ext)},sources:[{id:sourceId,kind:"transcript",format:ext===".txt"?"txt":"markdown",fileName,checksum:createHash("sha256").update(content).digest("hex"),...(detected?{transcriptFormat:detected}:{})}],segments});
+export function normalizeTranscript(
+  content: string,
+  fileName: string,
+  options: { title?: string; maxSegments?: number } = {},
+): MeetingInput {
+  if (!content.trim()) throw new Error("INPUT_EMPTY: transcript content is empty");
+  const ext = extname(fileName).toLowerCase();
+  if (![".txt", ".md", ".markdown"].includes(ext))
+    throw new Error("INPUT_UNSUPPORTED: expected TXT or Markdown");
+  const sourceId = createHash("sha256")
+    .update(fileName + "\0" + content)
+    .digest("hex")
+    .slice(0, 16);
+  const maxSegments = resolveMaxSegments(options.maxSegments);
+  const lines = content.replace(/\r\n?/g, "\n").split("\n");
+  const segments: MeetingInput["segments"] = [];
+  const formats = new Set<TranscriptFormat>();
+  let buffer: string[] = [],
+    start = 1,
+    meta: LineMeta | undefined;
+  const flush = (end: number) => {
+    const text = buffer.join("\n").trim();
+    if (text) {
+      // 到达上限立即停止：先拒绝，再构造 segment，避免超大输入先把内存吃完再报错。
+      if (maxSegments !== undefined && segments.length >= maxSegments)
+        throw new Error(`INPUT_SEGMENT_LIMIT: transcript has more than ${maxSegments} segments`);
+      if (meta?.format) formats.add(meta.format);
+      // Recognize only a complete export header. A label is not proof of a person's identity.
+      segments.push({
+        id: "seg-" + (segments.length + 1),
+        sourceId,
+        text,
+        lineStart: start,
+        lineEnd: end,
+        ...(meta?.speaker ? { speaker: meta.speaker } : {}),
+        ...(meta?.timestamp ? { timestamp: meta.timestamp } : {}),
+      });
+    }
+    buffer = [];
+    meta = undefined;
+  };
+  lines.forEach((line, index) => {
+    const lineNo = index + 1;
+    const isSeparator = /^[-=_*~\s]{3,}$/.test(line.trim());
+    if (!line.trim() || isSeparator) {
+      flush(index);
+      start = lineNo + 1;
+      return;
+    }
+    const parsed = parseLineMeta(line);
+    if (parsed) {
+      flush(index);
+      start = lineNo;
+      meta = parsed;
+    } else if (!buffer.length) {
+      start = lineNo;
+    }
+    buffer.push(line);
+  });
+  flush(lines.length);
+  const detected: TranscriptFormat | undefined =
+    formats.size === 0 ? undefined : formats.size === 1 ? [...formats][0] : "mixed";
+  const heading = lines
+    .find((line) => /^#\s+/.test(line.trim()))
+    ?.trim()
+    .replace(/^#\s+/, "")
+    .trim();
+  return MeetingInputSchema.parse({
+    schemaVersion: "1.0",
+    meeting: {
+      id: "meeting-" + sourceId,
+      title: options.title?.trim() || heading || basename(fileName, ext),
+    },
+    sources: [
+      {
+        id: sourceId,
+        kind: "transcript",
+        format: ext === ".txt" ? "txt" : "markdown",
+        fileName,
+        checksum: createHash("sha256").update(content).digest("hex"),
+        ...(detected ? { transcriptFormat: detected } : {}),
+      },
+    ],
+    segments,
+  });
 }

@@ -10,7 +10,10 @@ import { callTool } from "../src/mcp/tools.js";
 const segmentsContent = (count: number) => "a\n\n".repeat(count);
 const contentAtLimit = "a".repeat(MAX_CONTENT_BYTES);
 const cliRun = (args: string[], env: NodeJS.ProcessEnv = process.env) =>
-  spawnSync(process.execPath, ["--import", "tsx", resolve("src/cli.ts"), ...args], { encoding: "utf8", env });
+  spawnSync(process.execPath, ["--import", "tsx", resolve("src/cli.ts"), ...args], {
+    encoding: "utf8",
+    env,
+  });
 const envWithoutApiKeys = () => {
   const env = { ...process.env };
   delete env.OPENAI_API_KEY;
@@ -22,7 +25,9 @@ const envWithoutApiKeys = () => {
 describe("输入上限", () => {
   it("normalizeTranscript 达到 maxSegments 时立即抛错", () => {
     const content = Array.from({ length: 5 }, (_, index) => `段落${index + 1}`).join("\n\n");
-    expect(() => normalizeTranscript(content, "x.md", { maxSegments: 3 })).toThrow("INPUT_SEGMENT_LIMIT");
+    expect(() => normalizeTranscript(content, "x.md", { maxSegments: 3 })).toThrow(
+      "INPUT_SEGMENT_LIMIT",
+    );
     expect(normalizeTranscript(content, "x.md", { maxSegments: 5 }).segments).toHaveLength(5);
   });
 
@@ -56,7 +61,9 @@ describe("输入上限", () => {
 describe("内容字节上限的精确边界", () => {
   it("恰好 2 MiB 通过，多 1 字节拒绝并在错误信息中给出实际字节数与上限", () => {
     expect(() => assertContentWithinLimit(contentAtLimit)).not.toThrow();
-    expect(() => assertContentWithinLimit(contentAtLimit + "a")).toThrow(/INPUT_SIZE_LIMIT: transcript is 2097153 bytes, limit is 2097152/);
+    expect(() => assertContentWithinLimit(contentAtLimit + "a")).toThrow(
+      /INPUT_SIZE_LIMIT: transcript is 2097153 bytes, limit is 2097152/,
+    );
   });
 
   it("MCP prepare_meeting 恰好 2 MiB 的 ASCII 内容仍可正常规范化", () => {
@@ -67,14 +74,22 @@ describe("内容字节上限的精确边界", () => {
 
 describe("段落数上限的精确边界", () => {
   it("恰好 10,000 段通过，10,001 段拒绝", () => {
-    expect(normalizeTranscript(segmentsContent(MAX_SEGMENTS), "x.md", { maxSegments: MAX_SEGMENTS }).segments).toHaveLength(MAX_SEGMENTS);
-    expect(() => normalizeTranscript(segmentsContent(MAX_SEGMENTS + 1), "x.md", { maxSegments: MAX_SEGMENTS })).toThrow("INPUT_SEGMENT_LIMIT");
+    expect(
+      normalizeTranscript(segmentsContent(MAX_SEGMENTS), "x.md", { maxSegments: MAX_SEGMENTS })
+        .segments,
+    ).toHaveLength(MAX_SEGMENTS);
+    expect(() =>
+      normalizeTranscript(segmentsContent(MAX_SEGMENTS + 1), "x.md", { maxSegments: MAX_SEGMENTS }),
+    ).toThrow("INPUT_SEGMENT_LIMIT");
   });
 });
 
 describe("MCP prepare_meeting 的超限口径", () => {
   it("ASCII 超限内容报 INPUT_SIZE_LIMIT，而不是 Zod 的 INPUT_INVALID", () => {
-    const result = callTool("prepare_meeting", { content: contentAtLimit + "a", fileName: "x.txt" });
+    const result = callTool("prepare_meeting", {
+      content: contentAtLimit + "a",
+      fileName: "x.txt",
+    });
     expect(result.isError).toBe(true);
     expect(result.content[0]!.text).toBe("INPUT_SIZE_LIMIT");
   });
@@ -94,14 +109,22 @@ describe("normalizeTranscript 的 maxSegments 归一化", () => {
 
   it("NaN、Infinity、-5 都回落到 MAX_SEGMENTS", () => {
     for (const value of [Number.NaN, Number.POSITIVE_INFINITY, -5]) {
-      expect(normalizeTranscript(atLimit, "x.md", { maxSegments: value }).segments).toHaveLength(MAX_SEGMENTS);
-      expect(() => normalizeTranscript(overLimit, "x.md", { maxSegments: value })).toThrow("INPUT_SEGMENT_LIMIT");
+      expect(normalizeTranscript(atLimit, "x.md", { maxSegments: value }).segments).toHaveLength(
+        MAX_SEGMENTS,
+      );
+      expect(() => normalizeTranscript(overLimit, "x.md", { maxSegments: value })).toThrow(
+        "INPUT_SEGMENT_LIMIT",
+      );
     }
   });
 
   it("有限小数向下取整", () => {
-    expect(normalizeTranscript(segmentsContent(3), "x.md", { maxSegments: 3.9 }).segments).toHaveLength(3);
-    expect(() => normalizeTranscript(segmentsContent(4), "x.md", { maxSegments: 3.9 })).toThrow("INPUT_SEGMENT_LIMIT");
+    expect(
+      normalizeTranscript(segmentsContent(3), "x.md", { maxSegments: 3.9 }).segments,
+    ).toHaveLength(3);
+    expect(() => normalizeTranscript(segmentsContent(4), "x.md", { maxSegments: 3.9 })).toThrow(
+      "INPUT_SEGMENT_LIMIT",
+    );
   });
 });
 
