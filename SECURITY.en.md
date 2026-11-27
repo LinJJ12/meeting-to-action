@@ -20,7 +20,7 @@ Use GitHub's private vulnerability reporting:
 1. Open the repository's **Security** tab → **Report a vulnerability**.
 2. If that entry point is unavailable, contact the maintainer [@LinJJ12](https://github.com/LinJJ12) via a private GitHub message.
 
-Private vulnerability reporting requires the repository to enable Private vulnerability reporting (Settings → Code security → Private vulnerability reporting).
+Private vulnerability reporting is available for **public repositories** only: once the repository is public, maintainers set **Private vulnerability reporting** to Enable on the repository's Code security (shown as Advanced Security in some UI versions) settings page. Not seeing the toggle on a private repository is expected.
 
 ### Please include in the report
 
