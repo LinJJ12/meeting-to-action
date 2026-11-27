@@ -2,6 +2,12 @@
 
 # Meeting-to-Action
 
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+
+**Turn meeting transcripts into traceable decisions, action items, and minutes — with evidence.**
+
+[Contributing](CONTRIBUTING.en.md) · [Security](SECURITY.en.md) · [Code of Conduct](CODE_OF_CONDUCT.en.md) · [Changelog](CHANGELOG.en.md)
+
 Turn existing TXT / Markdown meeting transcripts into traceable topics, decisions, action items, risks, disagreements, and open questions. Ships a portable Skill, five local MCP tools, and an optional standalone CLI analysis mode. No meeting recording or speech recognition is included.
 
 ## Choosing a usage mode
@@ -13,7 +19,7 @@ Turn existing TXT / Markdown meeting transcripts into traceable topics, decision
 | Skill only | You only need analysis guidance and citation-backed drafts | Uses the host model; without a runtime there is no programmatic validation |
 | CLI `analyze` | Calling a compatible model API without an assistant | You configure the API key, model, and optional service endpoint yourself |
 
-This repository is currently a source-code, locally distributed project: `package.json` is marked private. There is no published npm package or public marketplace release. Cloning the repo or building the plugin does not automatically install, register, or enable anything; an install state on another machine never means yours is configured.
+This repository is public source code under the MIT license, and `package.json` stays `private: true`: no npm package or public plugin marketplace is or will be published — installation always goes through cloning this repository, building locally, and the local plugin marketplace. Cloning the repo or building the plugin does not automatically install, register, or enable anything; an install state on another machine never means yours is configured.
 
 ## Getting started from source
 
@@ -124,6 +130,10 @@ Exit codes: `0` success; `1` runtime error (including an invalid `--mode` value)
 - MCP does not call a model, read/write arbitrary files, access GitHub, or create issues automatically. Whether the host model has network access and how data is processed depends on host settings.
 - Cross-meeting persistence, GitHub integration, and public distribution remain future plans; compact minutes rendering is already wired into CLI `report` and MCP `render_report` (see the [minutes display contract](docs/MINUTES-CONTRACT.md)).
 
+## Demo
+
+Screenshots and an end-to-end demo video will be added at the open-source release. For now, see the complete in-repo fictional sample: the [example walkthrough](examples/agent-workflow/README.md) contains the transcript, the analysis draft, and the generated [minutes](examples/agent-workflow/minutes.md) and [evidence report](examples/agent-workflow/report.md).
+
 ## Layout and documentation
 
 ```text
@@ -149,3 +159,19 @@ npm run plugin:build
 ```
 
 After contract changes run `npm run skill:schema` and inspect the diff. `npm run build` compiles the runtime only; `plugin:build` packages the plugin separately. `plugin:check-installed` is an optional local client-discovery check that requires the plugin to be built and installed first; it is not a general unit test.
+
+## Support
+
+For usage questions, start with this README and the [documentation index](docs/README.en.md); if that doesn't help, open an issue with the [bug template](.github/ISSUE_TEMPLATE/bug.yml) (feature suggestions use the [feature template](.github/ISSUE_TEMPLATE/feature.yml)). This project is maintained by an individual in their spare time; there is no live chat or email support channel, and reports must honor the privacy red line — no real meeting content.
+
+## Security
+
+Do **not** open public issues for security vulnerabilities; use the GitHub private vulnerability reporting channel described in the [security policy](SECURITY.en.md).
+
+## Contributing
+
+Issues and PRs are welcome. For the contribution process, code style, and verification gates see the [contributing guide](CONTRIBUTING.en.md) (condensed rules for AI assistants in [AGENTS.md](AGENTS.md)); PRs follow the template's four-part structure (What was done / Changes / Verification / Scope).
+
+## License
+
+Released under the [MIT license](LICENSE).

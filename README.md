@@ -2,6 +2,12 @@
 
 # Meeting-to-Action
 
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+
+**Turn meeting transcripts into traceable decisions, action items, and minutes — with evidence.**
+
+[贡献指南](CONTRIBUTING.md) · [安全政策](SECURITY.md) · [行为准则](CODE_OF_CONDUCT.md) · [更新日志](CHANGELOG.md)
+
 将已有的 TXT / Markdown 会议记录整理为可追溯的主题、决策、行动项、风险、分歧和待确认问题。提供便携 Skill、五个本地 MCP 工具，以及可选的独立 CLI 分析模式。不包含会议录音或语音识别。
 
 ## 选择使用方式
@@ -13,7 +19,7 @@
 | 仅 Skill | 只需要分析指引与引用式草稿 | 使用宿主模型；没有运行时就没有程序校验 |
 | CLI `analyze` | 脱离助手调用兼容模型接口 | 需要自行配置 API Key、模型与可选服务地址 |
 
-本仓库目前是源码和本地分发项目，`package.json` 标记为 private。没有公开 npm 包或公共插件市场发布。克隆仓库或构建插件不会自动安装、注册或启用插件；其他机器的安装状态也不代表你的机器已配置成功。
+本仓库以源码形式公开（MIT），`package.json` 保持 `private: true`：没有也不会发布 npm 包或公共插件市场，安装一律通过克隆本仓库、本地构建与本地插件市场完成。克隆仓库或构建插件不会自动安装、注册或启用插件；其他机器的安装状态也不代表你的机器已配置成功。
 
 ## 从源码开始
 
@@ -124,6 +130,10 @@ CLI 只在 `analyze --env <path>` 显式指定时读取环境文件，否则仅�
 - MCP 不调用模型、不读写任意文件、不访问 GitHub，也不自动创建 Issue。宿主模型是否联网及数据如何处理取决于宿主设置。
 - 跨会议持久化、GitHub 集成与公共发布仍属后续计划；简洁纪要渲染已接入 CLI `report` 与 MCP `render_report`（见[会议纪要展示契约](docs/MINUTES-CONTRACT.md)）。
 
+## 演示
+
+截图与端到端演示视频待开源发布时补充。当前可以先看仓库内的完整虚构样例：[示例说明](examples/agent-workflow/README.md)包含逐字稿、analysis 编辑稿与生成的[会议纪要](examples/agent-workflow/minutes.md)、[证据报告](examples/agent-workflow/report.md)。
+
 ## 目录与文档
 
 ```text
@@ -149,3 +159,19 @@ npm run plugin:build
 ```
 
 契约变更后执行 `npm run skill:schema` 并检查差异。`npm run build` 只编译运行时；`plugin:build` 独立打包插件。`plugin:check-installed` 是可选的本机客户端发现检查，需要先构建并安装插件，不是通用单元测试。
+
+## 支持
+
+使用问题先查本 README 与[文档索引](docs/README.md)；仍无法解决时，用 [bug 模板](.github/ISSUE_TEMPLATE/bug.yml)开 issue（功能建议用 [feature 模板](.github/ISSUE_TEMPLATE/feature.yml)）。本项目由个人维护者业余维护，暂无即时聊天或邮件支持渠道；报告务必遵守隐私红线——不带真实会议内容。
+
+## 安全
+
+发现安全漏洞**不要**公开 issue，请走[安全政策](SECURITY.md)中的 GitHub 私密漏洞报告渠道。
+
+## 贡献
+
+欢迎 issue 与 PR。贡献流程、代码风格与验证门禁见[贡献指南](CONTRIBUTING.md)（AI 协助者精简规则见 [AGENTS.md](AGENTS.md)）；PR 使用模板的四段结构（做了什么 / 改动 / 验证 / 范围）。
+
+## 许可证
+
+本项目以 [MIT](LICENSE) 许可证发布。

@@ -1,0 +1,46 @@
+name: "Bug 报告 / Bug Report"
+description: "工具行为与文档承诺不符，或程序校验/渲染出错 / Behavior contradicts documented promises, or validation/rendering fails"
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        感谢报告问题。**请勿在 issue 中粘贴真实会议内容、个人信息或凭据**——请使用仓库自带虚构样例（`examples/sample-meeting.md`、`examples/agent-workflow/`）复现。
+        Thanks for reporting. **Never paste real meeting content, personal information, or credentials in issues** — reproduce with the repository's fictional samples (`examples/sample-meeting.md`, `examples/agent-workflow/`).
+        安全漏洞请勿公开发布，改走 [SECURITY.md](https://github.com/LinJJ12/meeting-to-action/blob/main/SECURITY.md) 的私密漏洞报告渠道。
+        For security vulnerabilities, do not publish publicly — use the private reporting channel in [SECURITY.md](https://github.com/LinJJ12/meeting-to-action/blob/main/SECURITY.md).
+  - type: textarea
+    id: environment
+    attributes:
+      label: "环境 / Environment"
+      description: "操作系统、Node 版本（`node -v`）、客户端与版本（Codex CLI / Cursor / 桌面端）、本工具版本（`npm run dev -- --version`）/ OS, Node version, client and version, tool version"
+      placeholder: "Windows 10, Node 22.x, Codex CLI 0.171.x, meeting-to-action 0.1.1"
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: "复现步骤 / Reproduction steps"
+      description: "从哪个入口（CLI / MCP / Skill）执行了什么命令或操作 / Which entry point (CLI / MCP / Skill), which commands or actions"
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: "期望行为与实际行为 / Expected vs actual behavior"
+      description: "如有文档依据，请引用对应文档位置（README / docs/xxx.md）/ If documented behavior is involved, cite the doc location"
+    validations:
+      required: true
+  - type: textarea
+    id: errors
+    attributes:
+      label: "错误码与日志 / Error codes and logs"
+      description: "粘贴稳定错误码（如 INPUT_SIZE_LIMIT、SETUP_PATH_ESCAPE）与 stderr 摘要，脱敏后粘贴 / Paste stable error codes and a redacted stderr summary"
+  - type: checkboxes
+    id: checklist
+    attributes:
+      label: "提交前确认 / Pre-submit checklist"
+      options:
+        - label: "已搜索现有 issue，无重复 / searched existing issues, no duplicates"
+        - label: "复现内容不含真实会议数据 / reproduction contains no real meeting data"
+        - label: "已在本地跑过 `npm run preflight`（涉及代码时）/ ran `npm run preflight` locally (when code is involved)"

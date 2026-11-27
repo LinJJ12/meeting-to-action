@@ -1,0 +1,34 @@
+name: "功能建议 / Feature Request"
+description: "提出新能力或改进建议 / Propose a new capability or improvement"
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        产品方向类讨论请先关联相关 issue（#4 / #26 / #32）再提新想法，避免与既有范围决议冲突；先读 [docs/ROADMAP.md](https://github.com/LinJJ12/meeting-to-action/blob/main/docs/ROADMAP.md) 了解当前阶段边界。
+        For product-direction topics, first check the related issues (#4 / #26 / #32) and [docs/ROADMAP.md](https://github.com/LinJJ12/meeting-to-action/blob/main/docs/ROADMAP.md) to avoid conflicting with existing scope decisions.
+  - type: textarea
+    id: problem
+    attributes:
+      label: "要解决的问题 / Problem to solve"
+      description: "描述场景与痛点，而不是直接给方案 / Describe the scenario and pain point, not just the solution"
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: "建议方案 / Proposed solution"
+      description: "你期望的行为；涉及契约（analysis-schema / minutes-contract）时请说明兼容性影响 / Expected behavior; note contract compatibility impact if involved"
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: "考虑过的替代方案 / Alternatives considered"
+  - type: checkboxes
+    id: checklist
+    attributes:
+      label: "提交前确认 / Pre-submit checklist"
+      options:
+        - label: "已搜索现有 issue 与 ROADMAP，无重复 / searched existing issues and ROADMAP, no duplicates"
+        - label: "理解当前为本地分发、无公共 npm / 市场发布的边界 / understand the local-distribution, no-public-marketplace boundary"

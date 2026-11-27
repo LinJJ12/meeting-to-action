@@ -6,10 +6,10 @@
 
 ## 文档语言规范
 
-- 中文是项目主语言：核心文档主版为中文、无后缀；英文变体加 `.en.md` 后缀（如 `MCP.md` 与 `MCP.en.md`），两份并排存放、顶部有语言切换链接。
+- 中文是项目主语言：核心文档主版为中文、无后缀；英文变体加 `.en.md` 后缀（如 `MCP.md` 与 `MCP.en.md`），两份并排存放、顶部有语言切换链接。双语对现覆盖：README、CONTRIBUTING、docs/ 索引、PLUGIN-INSTALL、CLIENT-SETUP、MCP、CHANGELOG、SECURITY（根目录报告政策）、CODE_OF_CONDUCT。
 - 英文变体在页首注明中文主版为权威版本；两份内容不一致时，以中文主版为准。
 - **改动主版内容必须同步对应英文变体**；契约类变更仍按 [CONTRIBUTING.md](../CONTRIBUTING.md) 的流程同步契约文档。
-- 面向 AI 协助者的内容（`skills/meeting-to-action/`、`AGENTS.md`）保持单语言，不做翻译；其余单语言文档在下表「语言」列标注。
+- 面向 AI 协助者的内容（`skills/meeting-to-action/`、`AGENTS.md`）保持单语言，不做翻译；`LICENSE` 为法律文本不做变体；`.github/` 模板内部直接双语。其余单语言文档在下表「语言」列标注。
 
 ## 使用与维护
 
@@ -40,6 +40,16 @@
 |---|---|---|
 | [CONTRIBUTING.md](../CONTRIBUTING.md) / [English](../CONTRIBUTING.en.md) | 双语 | 多人协作唯一权威来源：环境、代码风格、测试与验证、提交与 PR 流程 |
 | [AGENTS.md](../AGENTS.md) | 中文 | 面向 Codex / Cursor 等 AI 协助者的精简规则，指向 CONTRIBUTING.md；面向 AI，不翻译 |
+
+## 社区与合规
+
+| 文档 | 语言 | 用途 |
+|---|---|---|
+| [LICENSE](../LICENSE) | English | MIT 许可证文本（法律文本，无变体） |
+| [CHANGELOG.md](../CHANGELOG.md) / [English](../CHANGELOG.en.md) | 双语 | Keep a Changelog 格式的版本变更记录，版本号与 `APP_VERSION` 有测试防漂移 |
+| [SECURITY.md](../SECURITY.md) / [English](../SECURITY.en.md) | 双语 | 根目录漏洞报告政策：GitHub 私密漏洞报告渠道与隐私红线；产品安全原则另见上表 docs/SECURITY.md |
+| [CODE_OF_CONDUCT.md](../CODE_OF_CONDUCT.md) / [English](../CODE_OF_CONDUCT.en.md) | 双语 | Contributor Covenant v2.1 行为准则 |
+| `.github/ISSUE_TEMPLATE/` 与 `.github/PULL_REQUEST_TEMPLATE.md` | 内部双语 | bug / feature 表单式 issue 模板与 PR 四段结构模板；不入 docs 索引逐份登记 |
 
 ## 文件结构约定
 

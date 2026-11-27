@@ -1,0 +1,5 @@
+blank_issues_enabled: true
+contact_links:
+  - name: "使用文档 / Documentation"
+    url: https://github.com/LinJJ12/meeting-to-action#readme
+    about: "先查 README 与 docs/ 索引，多数安装与使用问题已有说明 / Most installation and usage questions are already covered by the README and the docs index"

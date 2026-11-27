@@ -1,6 +1,7 @@
 import { it, expect } from "vitest";
 import { readFileSync } from "node:fs";
 import { toolErrorCodes } from "../src/mcp/tools.js";
+import { APP_VERSION } from "../src/version.js";
 
 /**
  * #22 防漂移：文档里承诺的错误码集合必须与代码一致。
@@ -40,4 +41,14 @@ it("README（含英文变体）与 ANALYSIS-ENGINE 不再出现“无自动重�
 it("docs/PRD.md 不再声称 CI 运行", () => {
   const text = readFileSync(new URL("../docs/PRD.md", import.meta.url), "utf8");
   expect(text.includes("run in CI.")).toBe(false);
+});
+
+/** CHANGELOG 双语对必须包含当前包版本对应的发布小节（Keep a Changelog 标题格式）。 */
+it("CHANGELOG.md 与 CHANGELOG.en.md 都包含 APP_VERSION 的发布小节", () => {
+  for (const file of ["CHANGELOG.md", "CHANGELOG.en.md"]) {
+    const text = readFileSync(new URL("../" + file, import.meta.url), "utf8");
+    expect(text.includes(`## [${APP_VERSION}]`), `${file} 缺少 ${APP_VERSION} 的发布小节`).toBe(
+      true,
+    );
+  }
 });
