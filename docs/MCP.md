@@ -68,6 +68,7 @@ JSON Schema describes shape only; cross-field identity, duplicate IDs, source re
 
 - Maximum size of one request line (UTF-8 bytes, CRLF terminator excluded) and of serialized tool arguments: 4 MiB.
 - Transcript/combined segment text: 2 MiB UTF-8; at most 10,000 segments. Limits are counted in UTF-8 bytes, so oversized ASCII and CJK content is rejected consistently as INPUT_SIZE_LIMIT with the actual bytes and limit.
+- Segment line ranges must be non-overlapping within one source: segments are canonical, disjoint timeline turns, so partially overlapping, nested and identical ranges are rejected at the schema stage (schema-error code) before evidence validation runs.
 - Local `report` files are checked with `stat` before reading: normalized input JSON against 2 MiB and analysis JSON against 4 MiB. Oversized files are rejected as INPUT_SIZE_LIMIT without loading them; a parsed input is also held to the 2 MiB / 10,000-segment rule above.
 - Evidence resource caps: at most 200 references per analysis entry and at most 4,000 characters per quote. Exceeding either returns ANALYSIS_EVIDENCE_INVALID with the actual limit in the message. Evidence checks build one per-source index per analysis instead of rescanning every segment for every reference.
 - Every tool call shares a 5,000 ms CPU budget (`MAX_TOOL_WORK_MS`). Exceeding it ends the call with WORK_LIMIT_EXCEEDED instead of blocking the event loop; normal and oversized-but-bounded inputs finish far below the budget.

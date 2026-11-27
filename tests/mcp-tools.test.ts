@@ -33,6 +33,8 @@ describe("bounded meeting tools", () => {
     x.segments = Array.from({ length: MAX_SEGMENTS + 1 }, (_, i) => ({
       ...x.segments[0]!,
       id: String(i),
+      lineStart: i + 1, // 顺序不重叠区间，确保失败发生在段数检查而非 schema 互斥检查
+      lineEnd: i + 1,
     }));
     expect(callTool("split_transcript", { input: x, maxChars: 10 }).content[0]!.text).toBe(
       "INPUT_SEGMENT_LIMIT",
