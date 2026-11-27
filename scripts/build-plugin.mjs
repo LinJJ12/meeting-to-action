@@ -1,9 +1,12 @@
 import { build } from "esbuild";
-import { mkdir, cp, readFile, writeFile, readdir, rm } from "node:fs/promises";
-import { resolve, join, dirname } from "node:path";
+import { execFile } from "node:child_process";
+import { mkdir, cp, readFile, writeFile, readdir, rm, mkdtemp, rename } from "node:fs/promises";
+import { resolve, join, dirname, basename } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
+import { promisify } from "node:util";
 const repo = fileURLToPath(new URL("../", import.meta.url));
 const json = async (path) => JSON.parse((await readFile(path, "utf8")).replace(/^\uFEFF/, ""));
+const run = promisify(execFile);
 export async function buildPlugin(output = join(repo, "dist", "plugin-marketplace")) {
   const plugin = join(output, "plugins", "meeting-to-action");
   // 重建前先清空输出目录，避免上一轮残留文件被一起安装（旧产物/已删除的引用会存活）
@@ -76,7 +79,23 @@ export async function buildPlugin(output = join(repo, "dist", "plugin-marketplac
     join(output, ".agents", "plugins", "marketplace.json"),
     JSON.stringify(marketplace, null, 2) + "\n",
   );
-  return { marketplace: resolve(output), plugin: resolve(plugin) };
+  // Codex 上传入口只接受单插件归档，市场清单仅用于本地市场注册。
+  const archive = resolve(dirname(output), `meeting-to-action-v${appVersion}.tar.gz`);
+  const staging = await mkdtemp(join(dirname(archive), ".plugin-archive-"));
+  try {
+    const temporaryArchive = join(staging, basename(archive));
+    // GNU tar 会把含盘符冒号的 -f 值当作远程主机（Windows 上报 "Cannot connect to C:"），
+    // 因此以 staging 为工作目录、用相对文件名落盘，再改名为最终产物，兼容 GNU/bsdtar。
+    await run(
+      "tar",
+      ["-czf", basename(archive), "-C", resolve(dirname(plugin)), basename(plugin)],
+      { cwd: staging },
+    );
+    await rename(temporaryArchive, archive);
+  } finally {
+    await rm(staging, { recursive: true, force: true });
+  }
+  return { marketplace: resolve(output), plugin: resolve(plugin), archive };
 }
 if (process.argv[1] && import.meta.url === pathToFileURL(resolve(process.argv[1])).href)
   console.log(JSON.stringify(await buildPlugin(), null, 2));

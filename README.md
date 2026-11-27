@@ -28,7 +28,7 @@ npm run build
 npm run plugin:build
 ```
 
-构建输出为 `dist/plugin-marketplace/`，包含 Skill、MCP bundle 和第三方许可证。接下来按[本地插件安装与使用](docs/PLUGIN-INSTALL.md)注册市场、安装并验证。该方式依赖支持相关命令的本地 Codex 客户端；构建成功不等于客户端兼容或模型分析质量已经验证。
+构建输出包含供 Codex「创建插件」上传的 `dist/meeting-to-action-v<版本>.tar.gz`，以及供 CLI 注册的 `dist/plugin-marketplace/`。两者都包含 Skill、MCP bundle 和第三方许可证。安装与验证步骤见[本地插件安装与使用](docs/PLUGIN-INSTALL.md)。
 
 ### 项目级安装
 
