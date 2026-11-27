@@ -34,6 +34,22 @@ it("rejects overlapping segment line ranges within one source", () => {
   x.segments[0]!.lineEnd = 1;
   x.segments[1]!.lineStart = 1; // 嵌套包含：1–1 被 1–3 覆盖
   expect(MeetingInputSchema.safeParse(x).success).toBe(false);
+  // 数组乱序提供（sort 归一后仍须检出）与同起点不同终点。
+  const y = normalizeTranscript("A: a\n\nB: b\n\nC: c\n\nD: d", "x.md");
+  const [s0, s1, s2, s3] = [y.segments[0]!, y.segments[1]!, y.segments[2]!, y.segments[3]!];
+  y.segments = [s2!, s0!, s3!, s1!]; // 乱序但互不重叠 → 通过
+  expect(MeetingInputSchema.safeParse(y).success).toBe(true);
+  y.segments = [s0!, { ...s3!, lineStart: 1, lineEnd: 1 }]; // 乱序且首尾重叠
+  expect(MeetingInputSchema.safeParse(y).success).toBe(false);
+  y.segments = [s0!, { ...s1!, lineStart: 1, lineEnd: 9 }]; // 同起点不同终点
+  expect(MeetingInputSchema.safeParse(y).success).toBe(false);
+  y.segments = [
+    { ...s0!, lineEnd: 2 },
+    { ...s1!, lineStart: 2, lineEnd: 3 },
+    { ...s2!, lineStart: 3, lineEnd: 4 },
+    s3!,
+  ]; // 链式：排序后相邻两两重叠（1–2, 2–3, 3–4）
+  expect(MeetingInputSchema.safeParse(y).success).toBe(false);
 });
 it("allows adjacent and gapped ranges, and isolates the check per source", () => {
   const x = normalizeTranscript("Alice: a\n\nBob: b", "x.md"); // seg-1: 1–1, seg-2: 3–3
