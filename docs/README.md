@@ -20,7 +20,7 @@
 | 文档 | 状态与用途 |
 |---|---|
 | [PRD.md](PRD.md) | 产品目标与验收要求，含未实现的集成目标 |
-| [ROADMAP.md](ROADMAP.md) | 已完成能力与后续计划 |
+| [ROADMAP.md](ROADMAP.md) | Roadmap 3.0 对齐、第一期收尾状态、范围决议与公开数据集政策 |
 | [AGENT-TOOLKIT.md](AGENT-TOOLKIT.md) | Agent 工作流设计与分阶段交付要求 |
 | [MEETING-REPORT-DESIGN.md](MEETING-REPORT-DESIGN.md) | 简洁纪要设计稿，未改变当前默认渲染器 |
 | [MEETING-MINUTES-RESEARCH.md](MEETING-MINUTES-RESEARCH.md) | 上述设计的一手调研依据 |
