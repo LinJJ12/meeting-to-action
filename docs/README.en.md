@@ -8,7 +8,7 @@ Start with the [project README](../README.en.md) on first use. This index separa
 
 - Chinese is the project's primary language: core documents have a Chinese main version with no suffix; English variants carry the `.en.md` suffix (e.g., `MCP.md` and `MCP.en.md`), stored side by side with a language switcher at the top. Bilingual pairs currently cover: the README, CONTRIBUTING, the docs index, PLUGIN-INSTALL, CLIENT-SETUP, MCP, the CHANGELOG, SECURITY (the root reporting policy), and the CODE_OF_CONDUCT.
 - English variants note at the top that the Chinese main version is authoritative; when the two copies disagree, the Chinese main version wins.
-- **Changes to a main version must be synced to the corresponding English variant**; contract-type changes still follow the process in [CONTRIBUTING.md](../CONTRIBUTING.en.md).
+- **Changes to a main version must be synced to the corresponding English variant**; contract-type changes still follow the process in [CONTRIBUTING.en.md](../CONTRIBUTING.en.md).
 - Content aimed at AI assistants (`skills/meeting-to-action/`, `AGENTS.md`) stays single-language and is not translated; `LICENSE` is a legal text with no variant; `.github/` templates are bilingual inline. Other single-language documents are labeled in the "Language" column below.
 
 ## Usage and maintenance

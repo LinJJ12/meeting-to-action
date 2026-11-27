@@ -40,4 +40,4 @@
 
 ## 安全设计基线
 
-本工具的安全与隐私设计原则（本地 stdio、不监听网络、不持久化、逐字稿内容不回显等）见 [docs/SECURITY.md](docs/SECURITY.md)；工具边界的权威描述见 [docs/MCP.md](docs/MCP.md)。这些原则本身是设计承诺，不是漏洞；对它们的建议属于功能讨论，请用普通 issue。
+本工具的安全与隐私设计原则（本地 stdio、不监听网络、不持久化、日志默认不含原始逐字稿文本等）见 [docs/SECURITY.md](docs/SECURITY.md)；工具边界的权威描述见 [docs/MCP.md](docs/MCP.md)。这些原则本身是设计承诺，不是漏洞；对它们的建议属于功能讨论，请用普通 issue。

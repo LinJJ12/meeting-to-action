@@ -40,4 +40,4 @@ Private vulnerability reporting requires the repository to enable Private vulner
 
 ## Security design baseline
 
-The product's security and privacy design principles (local stdio, no network listeners, no persistence, transcript content never echoed) are documented in [docs/SECURITY.md](docs/SECURITY.md); the authoritative description of tool boundaries is [docs/MCP.en.md](docs/MCP.en.md). Those principles are design commitments, not vulnerabilities; suggestions about them belong in ordinary issues as feature discussions.
+The product's security and privacy design principles (local stdio, no network listeners, no persistence, no raw transcript text in logs by default) are documented in [docs/SECURITY.md](docs/SECURITY.md); the authoritative description of tool boundaries is [docs/MCP.en.md](docs/MCP.en.md). Those principles are design commitments, not vulnerabilities; suggestions about them belong in ordinary issues as feature discussions.
