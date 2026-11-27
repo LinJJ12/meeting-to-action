@@ -6,7 +6,7 @@
 
 **Turn meeting transcripts into traceable decisions, action items, and minutes — with evidence.**
 
-[Contributing](CONTRIBUTING.en.md) · [Security](SECURITY.en.md) · [Code of Conduct](CODE_OF_CONDUCT.en.md) · [Changelog](CHANGELOG.en.md)
+[Contributing](CONTRIBUTING.en.md) · [Security](SECURITY.en.md) · [Code of Conduct](docs/CODE_OF_CONDUCT.en.md) · [Changelog](CHANGELOG.en.md)
 
 Turn existing TXT / Markdown meeting transcripts into traceable topics, decisions, action items, risks, disagreements, and open questions. Ships a portable Skill, five local MCP tools, and an optional standalone CLI analysis mode. No meeting recording or speech recognition is included.
 

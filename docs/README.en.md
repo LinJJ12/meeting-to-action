@@ -7,6 +7,7 @@ Start with the [project README](../README.en.md) on first use. This index separa
 ## Documentation language rules
 
 - Chinese is the project's primary language: core documents have a Chinese main version with no suffix; English variants carry the `.en.md` suffix (e.g., `MCP.md` and `MCP.en.md`), stored side by side with a language switcher at the top. Bilingual pairs currently cover: the README, CONTRIBUTING, the docs index, PLUGIN-INSTALL, CLIENT-SETUP, MCP, the CHANGELOG, SECURITY (the root reporting policy), and the CODE_OF_CONDUCT.
+- Exception: the code of conduct's English variant lives at `docs/CODE_OF_CONDUCT.en.md`, not side by side with the main version in the root. GitHub's community standards search picks the first matching file in `.github/` → root → `docs/` order; with both `CODE_OF_CONDUCT.md` and `CODE_OF_CONDUCT.en.md` in the root, GitHub identified the English variant as the sole code of conduct (confirmed via the API). With the variant in docs/, only the Chinese main version remains in the root, so GitHub displays the Chinese one.
 - English variants note at the top that the Chinese main version is authoritative; when the two copies disagree, the Chinese main version wins.
 - **Changes to a main version must be synced to the corresponding English variant**; contract-type changes still follow the process in [CONTRIBUTING.en.md](../CONTRIBUTING.en.md).
 - Content aimed at AI assistants (`skills/meeting-to-action/`, `AGENTS.md`) stays single-language and is not translated; `LICENSE` is a legal text with no variant; `.github/` templates are bilingual inline. Other single-language documents are labeled in the "Language" column below.
@@ -48,7 +49,7 @@ Start with the [project README](../README.en.md) on first use. This index separa
 | [LICENSE](../LICENSE) | English | MIT license text (legal text, no variant) |
 | [CHANGELOG.en.md](../CHANGELOG.en.md) / [中文](../CHANGELOG.md) | Bilingual | Keep a Changelog–format release notes; version numbers are drift-guarded against `APP_VERSION` by a test |
 | [SECURITY.en.md](../SECURITY.en.md) / [中文](../SECURITY.md) | Bilingual | The root vulnerability reporting policy: GitHub private vulnerability reporting and the privacy red line; product security principles are in docs/SECURITY.md (table above) |
-| [CODE_OF_CONDUCT.en.md](../CODE_OF_CONDUCT.en.md) / [中文](../CODE_OF_CONDUCT.md) | Bilingual | Contributor Covenant v2.1 code of conduct |
+| [CODE_OF_CONDUCT.en.md](CODE_OF_CONDUCT.en.md) / [中文](../CODE_OF_CONDUCT.md) | Bilingual | Contributor Covenant v2.1 code of conduct; the English variant lives in docs/ (exception, see the documentation language rules) |
 | `.github/ISSUE_TEMPLATE/` and `.github/PULL_REQUEST_TEMPLATE.md` | Bilingual inline | Form-based bug / feature issue templates and the four-part PR template; not registered individually in the docs index |
 
 ## File structure conventions
