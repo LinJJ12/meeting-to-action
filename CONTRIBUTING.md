@@ -1,4 +1,4 @@
-简体中文（主版） | [English](CONTRIBUTING.en.md)
+简体中文（主版） | [English](docs/CONTRIBUTING.en.md)
 
 # 贡献指南
 
@@ -88,9 +88,9 @@ npm run preflight
 
 - 区分「当前已实现」与「未来计划」，不把计划写成现有功能
 - 行为或契约变化必须同步对应文档（DATA-SCHEMA / MINUTES-CONTRACT / MCP / PLUGIN-INSTALL / CLIENT-SETUP 等，按影响范围选择）
-- 用户向核心文档为中英双语对：中文主版（无后缀）+ 英文变体（`.en.md`），**改动主版内容必须同步英文变体**；命名与权威版本约定见 [docs/README.md](docs/README.md) 的「文档语言规范」
-- 新增文档必须登记进 [docs/README.md](docs/README.md) 索引
-- 目录职责见 [docs/README.md](docs/README.md) 的「文件结构约定」；架构与交付计划见 [docs/AGENT-TOOLKIT.md](docs/AGENT-TOOLKIT.md)
+- 用户向核心文档为中英双语对：中文主版（无后缀）+ 英文变体（`.en.md`），**改动主版内容必须同步英文变体**；命名与权威版本约定见 [docs/INDEX.md](docs/INDEX.md) 的「文档语言规范」
+- 新增文档必须登记进 [docs/INDEX.md](docs/INDEX.md) 索引
+- 目录职责见 [docs/INDEX.md](docs/INDEX.md) 的「文件结构约定」；架构与交付计划见 [docs/AGENT-TOOLKIT.md](docs/AGENT-TOOLKIT.md)
 
 ## 分支、提交与 PR
 

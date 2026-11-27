@@ -1,4 +1,4 @@
-简体中文（主版） | [English](README.en.md)
+简体中文（主版） | [English](docs/README.en.md)
 
 # Meeting-to-Action
 
@@ -147,7 +147,7 @@ docs/        安装、技术契约、设计与路线图
 .github/     CI 工作流
 ```
 
-完整导航与维护约定见[文档索引](docs/README.md)。`dist/` 为构建输出，`node_modules/` 为依赖，均不纳入版本控制。包版本单一来源是 `src/version.ts` 的 `APP_VERSION`（CLI `--version`、MCP `serverInfo.version` 与插件清单一致，`node scripts/version-sync.mjs <ver>` 一键同步）；数据契约 `schemaVersion` 独立演进，与包版本无关。
+完整导航与维护约定见[文档索引](docs/INDEX.md)。`dist/` 为构建输出，`node_modules/` 为依赖，均不纳入版本控制。包版本单一来源是 `src/version.ts` 的 `APP_VERSION`（CLI `--version`、MCP `serverInfo.version` 与插件清单一致，`node scripts/version-sync.mjs <ver>` 一键同步）；数据契约 `schemaVersion` 独立演进，与包版本无关。
 
 ## 开发验证
 
@@ -162,7 +162,7 @@ npm run plugin:build
 
 ## 支持
 
-使用问题先查本 README 与[文档索引](docs/README.md)；仍无法解决时，用 [bug 模板](.github/ISSUE_TEMPLATE/bug.yml)开 issue（功能建议用 [feature 模板](.github/ISSUE_TEMPLATE/feature.yml)）。本项目由个人维护者业余维护，暂无即时聊天或邮件支持渠道；报告务必遵守隐私红线——不带真实会议内容。
+使用问题先查本 README 与[文档索引](docs/INDEX.md)；仍无法解决时，用 [bug 模板](.github/ISSUE_TEMPLATE/bug.yml)开 issue（功能建议用 [feature 模板](.github/ISSUE_TEMPLATE/feature.yml)）。本项目由个人维护者业余维护，暂无即时聊天或邮件支持渠道；报告务必遵守隐私红线——不带真实会议内容。
 
 ## 安全
 

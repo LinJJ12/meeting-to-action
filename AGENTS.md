@@ -4,7 +4,7 @@
 
 ## 开始前
 
-1. 读 [docs/README.md](docs/README.md)（文档索引与目录职责）与相关契约文档：`docs/DATA-SCHEMA.md`、`docs/MINUTES-CONTRACT.md`、`docs/MCP.md`。
+1. 读 [docs/INDEX.md](docs/INDEX.md)（文档索引与目录职责）与相关契约文档：`docs/DATA-SCHEMA.md`、`docs/MINUTES-CONTRACT.md`、`docs/MCP.md`。
 2. 涉及产品方向的问题先看相关 issue（#4 / #26 / #32），不要自行扩大范围。
 3. 不确定的需求先问，不把猜测写成实现。
 

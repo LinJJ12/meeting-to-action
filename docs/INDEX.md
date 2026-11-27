@@ -1,4 +1,4 @@
-简体中文（主版） | [English](README.en.md)
+简体中文（主版） | [English](INDEX.en.md)
 
 # 文档索引与维护约定
 
@@ -6,8 +6,8 @@
 
 ## 文档语言规范
 
-- 中文是项目主语言：核心文档主版为中文、无后缀；英文变体加 `.en.md` 后缀（如 `MCP.md` 与 `MCP.en.md`），两份并排存放、顶部有语言切换链接。双语对现覆盖：README、CONTRIBUTING、docs/ 索引、PLUGIN-INSTALL、CLIENT-SETUP、MCP、CHANGELOG、SECURITY（根目录报告政策）、CODE_OF_CONDUCT。
-- 例外：行为准则英文变体位于 `docs/CODE_OF_CONDUCT.en.md`，不在根目录与主版并排。原因是 GitHub 社区标准按 `.github/` → 根目录 → `docs/` 顺序取第一个命中的文件，根目录同时存在 `CODE_OF_CONDUCT.md` 与 `CODE_OF_CONDUCT.en.md` 时，GitHub 会把英文变体识别为唯一行为准则（实测 API 返回）。移入 docs/ 后根目录只剩中文主版，GitHub 展示中文版。
+- 中文是项目主语言：核心文档主版为中文、无后缀；英文变体加 `.en.md` 后缀并**统一存放于 `docs/`**（变体文件名 = 主版文件名 + `.en.md`），顶部有语言切换链接。双语对现覆盖：README、CONTRIBUTING、INDEX（本文件）、PLUGIN-INSTALL、CLIENT-SETUP、MCP、CHANGELOG、SECURITY（根目录报告政策）、CODE_OF_CONDUCT。
+- 变体统一放 `docs/` 的原因：GitHub 社区标准按 `.github/` → 根目录 → `docs/` 顺序取第一个命中的文件，其中行为准则类文件匹配宽松——根目录若同时存在 `CODE_OF_CONDUCT.md` 与 `CODE_OF_CONDUCT.en.md`，GitHub 会把英文变体识别为唯一行为准则（实测 API 返回）。根目录只保留中文主版后，GitHub 社区标准全部展示中文版。
 - 英文变体在页首注明中文主版为权威版本；两份内容不一致时，以中文主版为准。
 - **改动主版内容必须同步对应英文变体**；契约类变更仍按 [CONTRIBUTING.md](../CONTRIBUTING.md) 的流程同步契约文档。
 - 面向 AI 协助者的内容（`skills/meeting-to-action/`、`AGENTS.md`）保持单语言，不做翻译；`LICENSE` 为法律文本不做变体；`.github/` 模板内部直接双语。其余单语言文档在下表「语言」列标注。
@@ -39,7 +39,7 @@
 
 | 文档 | 语言 | 用途 |
 |---|---|---|
-| [CONTRIBUTING.md](../CONTRIBUTING.md) / [English](../CONTRIBUTING.en.md) | 双语 | 多人协作唯一权威来源：环境、代码风格、测试与验证、提交与 PR 流程 |
+| [CONTRIBUTING.md](../CONTRIBUTING.md) / [English](CONTRIBUTING.en.md) | 双语 | 多人协作唯一权威来源：环境、代码风格、测试与验证、提交与 PR 流程 |
 | [AGENTS.md](../AGENTS.md) | 中文 | 面向 Codex / Cursor 等 AI 协助者的精简规则，指向 CONTRIBUTING.md；面向 AI，不翻译 |
 
 ## 社区与合规
@@ -47,9 +47,9 @@
 | 文档 | 语言 | 用途 |
 |---|---|---|
 | [LICENSE](../LICENSE) | English | MIT 许可证文本（法律文本，无变体） |
-| [CHANGELOG.md](../CHANGELOG.md) / [English](../CHANGELOG.en.md) | 双语 | Keep a Changelog 格式的版本变更记录，版本号与 `APP_VERSION` 有测试防漂移 |
-| [SECURITY.md](../SECURITY.md) / [English](../SECURITY.en.md) | 双语 | 根目录漏洞报告政策：GitHub 私密漏洞报告渠道与隐私红线；产品安全原则另见上表 docs/SECURITY.md |
-| [CODE_OF_CONDUCT.md](../CODE_OF_CONDUCT.md) / [English](CODE_OF_CONDUCT.en.md) | 双语 | Contributor Covenant v2.1 行为准则；英文变体存放于 docs/（例外，见文档语言规范） |
+| [CHANGELOG.md](../CHANGELOG.md) / [English](CHANGELOG.en.md) | 双语 | Keep a Changelog 格式的版本变更记录，版本号与 `APP_VERSION` 有测试防漂移 |
+| [SECURITY.md](../SECURITY.md) / [English](SECURITY.en.md) | 双语 | 根目录漏洞报告政策：GitHub 私密漏洞报告渠道与隐私红线；产品安全原则另见上表 docs/SECURITY.md |
+| [CODE_OF_CONDUCT.md](../CODE_OF_CONDUCT.md) / [English](CODE_OF_CONDUCT.en.md) | 双语 | Contributor Covenant v2.1 行为准则 |
 | `.github/ISSUE_TEMPLATE/` 与 `.github/PULL_REQUEST_TEMPLATE.md` | 内部双语 | bug / feature 表单式 issue 模板与 PR 四段结构模板；不入 docs 索引逐份登记 |
 
 ## 文件结构约定
