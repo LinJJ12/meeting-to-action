@@ -1,3 +1,5 @@
+简体中文（主版） | [English](PLUGIN-INSTALL.en.md)
+
 # 本地插件安装与使用
 
 本仓库可将 Skill 和五个 MCP 工具打包为单插件上传包和本地插件市场。

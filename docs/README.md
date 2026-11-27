@@ -1,36 +1,45 @@
+简体中文（主版） | [English](README.en.md)
+
 # 文档索引与维护约定
 
 首次使用从[项目 README](../README.md)开始。以下区分当前使用说明与未来设计，避免将计划当作现有功能。
 
+## 文档语言规范
+
+- 中文是项目主语言：核心文档主版为中文、无后缀；英文变体加 `.en.md` 后缀（如 `MCP.md` 与 `MCP.en.md`），两份并排存放、顶部有语言切换链接。
+- 英文变体在页首注明中文主版为权威版本；两份内容不一致时，以中文主版为准。
+- **改动主版内容必须同步对应英文变体**；契约类变更仍按 [CONTRIBUTING.md](../CONTRIBUTING.md) 的流程同步契约文档。
+- 面向 AI 协助者的内容（`skills/meeting-to-action/`、`AGENTS.md`）保持单语言，不做翻译；其余单语言文档在下表「语言」列标注。
+
 ## 使用与维护
 
-| 文档 | 用途 |
-|---|---|
-| [PLUGIN-INSTALL.md](PLUGIN-INSTALL.md) | 本地插件构建、安装、检查与更新 |
-| [CLIENT-SETUP.md](CLIENT-SETUP.md) | 项目级 Skill + MCP 安装、冲突处理及客户端验收 |
-| [MCP.md](MCP.md) | 当前五个工具、手动配置、限制与错误 |
-| [ANALYSIS-ENGINE.md](ANALYSIS-ENGINE.md) | 可选独立 Provider 分析模式 |
-| [ARCHITECTURE.md](ARCHITECTURE.md) | 当前模块布局、数据流及信任边界 |
-| [DATA-SCHEMA.md](DATA-SCHEMA.md) | 契约说明；权威定义为 src/domain/schema.ts |
-| [MINUTES-CONTRACT.md](MINUTES-CONTRACT.md) | minutes-contract@1.0 展示契约：阅读模式、claim 类型与校验规则；权威定义为 src/domain/minutes.ts |
-| [SECURITY.md](SECURITY.md) | 隐私、密钥、不可信内容与外部写入原则 |
+| 文档 | 语言 | 用途 |
+|---|---|---|
+| [PLUGIN-INSTALL.md](PLUGIN-INSTALL.md) / [English](PLUGIN-INSTALL.en.md) | 双语 | 本地插件构建、安装、检查与更新 |
+| [CLIENT-SETUP.md](CLIENT-SETUP.md) / [English](CLIENT-SETUP.en.md) | 双语 | 项目级 Skill + MCP 安装、冲突处理及客户端验收 |
+| [MCP.md](MCP.md) / [English](MCP.en.md) | 双语 | 当前五个工具、手动配置、限制与错误 |
+| [ANALYSIS-ENGINE.md](ANALYSIS-ENGINE.md) | English | 可选独立 Provider 分析模式 |
+| [ARCHITECTURE.md](ARCHITECTURE.md) | English | 当前模块布局、数据流及信任边界 |
+| [DATA-SCHEMA.md](DATA-SCHEMA.md) | English | 契约说明；权威定义为 src/domain/schema.ts |
+| [MINUTES-CONTRACT.md](MINUTES-CONTRACT.md) | 中文 | minutes-contract@1.0 展示契约：阅读模式、claim 类型与校验规则；权威定义为 src/domain/minutes.ts |
+| [SECURITY.md](SECURITY.md) | English | 隐私、密钥、不可信内容与外部写入原则 |
 
 ## 产品与设计资料
 
-| 文档 | 状态与用途 |
-|---|---|
-| [PRD.md](PRD.md) | 产品目标与验收要求，含未实现的集成目标 |
-| [ROADMAP.md](ROADMAP.md) | Roadmap 3.0 对齐、第一期收尾状态、范围决议与公开数据集政策 |
-| [AGENT-TOOLKIT.md](AGENT-TOOLKIT.md) | Agent 工作流设计与分阶段交付要求 |
-| [MEETING-REPORT-DESIGN.md](MEETING-REPORT-DESIGN.md) | 简洁纪要的设计依据、实现分工和读者验收目标 |
-| [MEETING-MINUTES-RESEARCH.md](MEETING-MINUTES-RESEARCH.md) | 上述设计的一手调研依据 |
+| 文档 | 语言 | 状态与用途 |
+|---|---|---|
+| [PRD.md](PRD.md) | English | 产品目标与验收要求，含未实现的集成目标 |
+| [ROADMAP.md](ROADMAP.md) | 中文 | Roadmap 3.0 对齐、第一期收尾状态、范围决议与公开数据集政策 |
+| [AGENT-TOOLKIT.md](AGENT-TOOLKIT.md) | English | Agent 工作流设计与分阶段交付要求 |
+| [MEETING-REPORT-DESIGN.md](MEETING-REPORT-DESIGN.md) | 中文 | 简洁纪要的设计依据、实现分工和读者验收目标 |
+| [MEETING-MINUTES-RESEARCH.md](MEETING-MINUTES-RESEARCH.md) | 中文 | 上述设计的一手调研依据 |
 
 ## 协作规范
 
-| 文档 | 用途 |
-|---|---|
-| [CONTRIBUTING.md](../CONTRIBUTING.md) | 多人协作唯一权威来源：环境、代码风格、测试与验证、提交与 PR 流程 |
-| [AGENTS.md](../AGENTS.md) | 面向 Codex / Cursor 等 AI 协助者的精简规则，指向 CONTRIBUTING.md |
+| 文档 | 语言 | 用途 |
+|---|---|---|
+| [CONTRIBUTING.md](../CONTRIBUTING.md) / [English](../CONTRIBUTING.en.md) | 双语 | 多人协作唯一权威来源：环境、代码风格、测试与验证、提交与 PR 流程 |
+| [AGENTS.md](../AGENTS.md) | 中文 | 面向 Codex / Cursor 等 AI 协助者的精简规则，指向 CONTRIBUTING.md；面向 AI，不翻译 |
 
 ## 文件结构约定
 
@@ -62,4 +71,4 @@
 | `.github/workflows/ci.yml` | CI（Node 20/22 矩阵；因 billing 暂停，本地 preflight 为准） | 恢复计费后先手动 workflow_dispatch 一次，再启用自动触发 |
 | `.env.example`、`.gitignore`、`.gitattributes`、`.editorconfig`、`.prettierrc.json`、`.prettierignore`、`.git-blame-ignore-revs`、`vitest.config.ts`、`tsconfig.json`、`package-lock.json` | 环境占位 / 忽略规则 / LF 强制 / 格式配置与忽略 / 格式提交的 blame 忽略 / 测试配置 / 严格编译 / 可复现安装 | `.env` 永不入库 |
 
-变更能力时同步 README、相关使用文档和路线图。客户端验证必须注明环境与验证范围，不把维护者机器的安装状态写成读者前置条件。历史测试数量不作为长期有效的质量声明，以当前验证结果为准。
+变更能力时同步 README、相关使用文档和路线图。使用文档为双语对的，主版变更必须同步英文变体。客户端验证必须注明环境与验证范围，不把维护者机器的安装状态写成读者前置条件。历史测试数量不作为长期有效的质量声明，以当前验证结果为准。

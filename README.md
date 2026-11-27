@@ -1,3 +1,5 @@
+简体中文（主版） | [English](README.en.md)
+
 # Meeting-to-Action
 
 将已有的 TXT / Markdown 会议记录整理为可追溯的主题、决策、行动项、风险、分歧和待确认问题。提供便携 Skill、五个本地 MCP 工具，以及可选的独立 CLI 分析模式。不包含会议录音或语音识别。

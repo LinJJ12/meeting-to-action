@@ -1,8 +1,10 @@
-# Local stdio MCP
+简体中文（主版） | [English](MCP.en.md)
 
-This checkout provides five stateless tools using the official [TypeScript MCP SDK](https://github.com/modelcontextprotocol/typescript-sdk/tree/v1.x). Node.js 20+ is required. No model credentials or server deployment are needed. This MCP does not call the standalone provider.
+# 本地 stdio MCP
 
-## Build and verify
+本仓库提供五个无状态工具，基于官方 [TypeScript MCP SDK](https://github.com/modelcontextprotocol/typescript-sdk/tree/v1.x)。需要 Node.js 20+。不需要模型凭据，也不需要部署服务端。本 MCP 不调用独立模型 Provider。
+
+## 构建与验证
 
 ```sh
 npm ci
@@ -11,15 +13,15 @@ npm test
 npm run mcp:smoke
 ```
 
-The smoke command builds the runtime and launches `dist/mcp/server.js` with the SDK client, discovers all five tools and exercises the full workflow including rejection. It does not alter client configuration or call a model. Use `node /absolute/path/to/meeting-to-action/dist/mcp/server.js` as the client subprocess command. Running it directly waits for protocol input; it is not an interactive CLI.
+冒烟命令会构建运行时产物，用 SDK 客户端启动 `dist/mcp/server.js`，发现全部五个工具并演练完整流程（含拒绝路径）。它不修改客户端配置，也不调用模型。客户端子进程命令使用 `node /absolute/path/to/meeting-to-action/dist/mcp/server.js`。直接运行该文件只会等待协议输入，不是交互式 CLI。
 
-Avoid using `npm run mcp` as a client command: npm may print banners to stdout. Launch Node directly. Development-only entrypoint: `npm run mcp:dev`.
+不要把 `npm run mcp` 用作客户端命令：npm 可能向 stdout 打印横幅。请直接启动 Node。仅开发用入口：`npm run mcp:dev`。
 
-## Client configuration examples
+## 客户端配置示例
 
-These are examples, not an assertion that this checkout has been enabled in the user's clients. Replace the absolute runtime path. If Node is not on the client's PATH, use its actual executable path. No shell, npx download or credentials are needed.
+以下是示例，不代表本仓库已在你的客户端中启用。请替换其中的运行时绝对路径；若客户端 PATH 中没有 Node，改用 Node 可执行文件的实际路径。无需 shell、npx 下载或任何凭据。
 
-Codex MCP configuration entry:
+Codex MCP 配置条目：
 
 ```toml
 [mcp_servers.meeting_to_action]
@@ -27,7 +29,7 @@ command = "node"
 args = ["C:/path/to/meeting-to-action/dist/mcp/server.js"]
 ```
 
-Cursor project `.cursor/mcp.json` entry:
+Cursor 项目 `.cursor/mcp.json` 条目：
 
 ```json
 {
@@ -40,45 +42,45 @@ Cursor project `.cursor/mcp.json` entry:
 }
 ```
 
-Merge entries with existing configuration rather than replace it. Follow the current [Codex MCP documentation](https://developers.openai.com/codex/mcp) and [Cursor MCP documentation](https://cursor.com/docs/mcp) for your installed client. Record client/version and confirm five discovered tools before claiming client compatibility. These manual examples do not themselves change user-wide settings. Plugin registration is a separate installation method described in [PLUGIN-INSTALL.md](PLUGIN-INSTALL.md).
+将条目合并进现有配置，不要整体替换。请以你安装的客户端对应的最新 [Codex MCP 文档](https://developers.openai.com/codex/mcp)与 [Cursor MCP 文档](https://cursor.com/docs/mcp)为准。在宣称客户端兼容之前，先记录客户端/版本并确认五个工具都能被发现。这些手工示例本身不会修改用户级全局设置。插件注册是另一种安装方式，见[本地插件安装](PLUGIN-INSTALL.md)。
 
-## Tools and flow
+## 工具与流程
 
-All arguments are inline JSON, not filesystem paths. Objects reject unknown fields.
+所有参数均为内联 JSON，不接受文件系统路径。对象遇到未知字段会拒绝。
 
-| Tool | Arguments | Result in JSON text |
+| 工具 | 参数 | JSON 文本结果 |
 |---|---|---|
-| prepare_meeting | content, fileName, optional title | Normalized MeetingInput |
+| prepare_meeting | content, fileName, 可选 title | 规范化后的 MeetingInput |
 | split_transcript | input, maxChars | `{chunks: [{fragments, charCount}]}` |
-| get_meeting_schema | contractVersion: "1.0" | contractVersion, input JSON Schema, analysis JSON Schema |
+| get_meeting_schema | contractVersion: "1.0" | contractVersion、输入 JSON Schema、analysis JSON Schema |
 | validate_analysis | input, analysis | `{valid: true, analysis}` |
-| render_report | input, analysis; optional minutes, mode ("minutes"\|"actions"\|"evidence"), appendix (boolean) | `{markdown}` after full validation; with `minutes` the minutes-contract reading mode is rendered, otherwise the evidence report |
+| render_report | input, analysis；可选 minutes、mode（"minutes"\|"actions"\|"evidence"）、appendix（布尔） | 完整校验通过后返回 `{markdown}`；提供 `minutes` 时按 minutes-contract 阅读模式渲染，否则输出证据报告 |
 
-1. The host reads the user-selected file and calls prepare_meeting with its text and a supported TXT/Markdown filename.
-2. Get the contract; the host model authors full analysis JSON using the returned IDs. No second model invocation occurs in MCP.
-3. For long content, split_transcript returns line-preserving fragments. Every fragment retains the original sourceId and segmentId; do not normalize chunks separately or invent new IDs. maxChars counts UTF-16 characters including a newline separator between fragments. A single line exceeding that budget is rejected. The full original input is still needed for validation.
-4. Call validate_analysis or render_report with original input and analysis. The latter validates independently, so rendering cannot bypass validation. A result with isError is a failure, not a report. `render_report` accepts an optional `minutes` argument as a JSON-encoded minutes-contract document (see [the minutes contract](MINUTES-CONTRACT.md)); `mode` defaults to "minutes" when minutes are supplied and to "evidence" otherwise, and `appendix: false` omits the trace appendix. Supplying `mode: "minutes"` or `"actions"` without `minutes` is rejected with MINUTES_MISSING, and any supplied minutes document is validated even in evidence mode.
-5. The host saves Markdown only at the user's selected destination. This MCP has no write tool.
+1. 宿主读取用户选择的文件，将其文本与受支持的 TXT/Markdown 文件名传给 prepare_meeting。
+2. 先获取契约；宿主模型使用返回的 ID 编写完整 analysis JSON。MCP 内不发生第二次模型调用。
+3. 内容较长时，split_transcript 返回按行切分的片段。每个片段都保留原 sourceId 与 segmentId；不要对各片段单独做规范化，也不要新造 ID。maxChars 按 UTF-16 字符计数，片段之间的换行分隔符计入其中。超过该预算的单行会被拒绝。校验仍需完整原始输入。
+4. 以原始输入与 analysis 调用 validate_analysis 或 render_report。后者独立完成校验，因此渲染无法绕过校验。`isError` 结果代表失败，不是报告。`render_report` 接受可选 `minutes` 参数（JSON 编码的 minutes-contract 文档，见[纪要展示契约](MINUTES-CONTRACT.md)）；提供 `minutes` 时 `mode` 默认为 "minutes"，否则默认为 "evidence"；`appendix: false` 表示省略溯源附录。提供 `mode: "minutes"` 或 `"actions"` 但缺 `minutes` 会以 MINUTES_MISSING 拒绝；即使处于 evidence 模式，提供的 minutes 文档仍会被校验。
+5. 宿主只把 Markdown 保存到用户指定的位置。本 MCP 没有写入工具。
 
-For a briefing with no decisions, actions, risks, open questions, or conflicts, pass a minutes draft with `sections: []`. The renderer uses the analysis topics or summary for the body. Claim IDs must be unique across the document. Empty sections with referable facts and duplicate claim IDs return `MINUTES_SCHEMA_INVALID`. The minutes appendix includes topic evidence and analysis facts left out of the editorial body.
+对于没有决策、行动项、风险、待确认问题或分歧的简报，传 `sections: []` 的 minutes 草稿即可。渲染器会用 analysis 的主题或摘要填充正文。claim ID 必须在全文档内唯一。空小节但存在可引用事实、以及重复的 claim ID，都会返回 `MINUTES_SCHEMA_INVALID`。纪要附录包含未进入编辑正文的主题证据与 analysis 事实。
 
-JSON Schema describes shape only; cross-field identity, duplicate IDs, source relationships and quotes are checked by runtime code. The normalized input itself is supplied by the client; matching evidence is not proof that an input or interpretation is authentic.
+JSON Schema 只描述形状；跨字段身份、重复 ID、来源关系与引文由运行时代码校验。规范化输入本身由客户端提供；证据匹配成功并不证明输入或解读真实可信。
 
-## Limits and errors
+## 限制与错误
 
-- Maximum size of one request line (UTF-8 bytes, CRLF terminator excluded) and of serialized tool arguments: 4 MiB.
-- Transcript/combined segment text: 2 MiB UTF-8; at most 10,000 segments. Limits are counted in UTF-8 bytes, so oversized ASCII and CJK content is rejected consistently as INPUT_SIZE_LIMIT with the actual bytes and limit.
-- Segment line ranges must be non-overlapping within one source: segments are canonical, disjoint timeline turns, so partially overlapping, nested and identical ranges are rejected at the schema stage (schema-error code) before evidence validation runs.
-- Local `report` files are checked with `stat` before reading: normalized input JSON against 2 MiB and analysis JSON against 4 MiB. Oversized files are rejected as INPUT_SIZE_LIMIT without loading them; a parsed input is also held to the 2 MiB / 10,000-segment rule above.
-- Evidence resource caps: at most 200 references per analysis entry and at most 4,000 characters per quote. Exceeding either returns ANALYSIS_EVIDENCE_INVALID with the actual limit in the message. Evidence checks build one per-source index per analysis instead of rescanning every segment for every reference.
-- Every tool call shares a 5,000 ms CPU budget (`MAX_TOOL_WORK_MS`). Exceeding it ends the call with WORK_LIMIT_EXCEEDED instead of blocking the event loop; normal and oversized-but-bounded inputs finish far below the budget.
-- maxChars: integer 1 through 2,097,152. An inconsistent segment line count is rejected by splitting.
-- A request line above 4 MiB receives JSON-RPC error `-32600` with message `INPUT_SIZE_LIMIT: request line exceeds 4 MiB (bytes=N)`; the rest of that line is discarded and the server keeps serving later requests. Transport stdin/stdout failures log `MCP_STDIN_ERROR`/`MCP_STDOUT_ERROR` to stderr and close gracefully. Other tool validation failures return `isError: true` with a stable code and do not expose arguments.
-- The optional `minutes` argument is a JSON-encoded minutes document and counts against the same 2 MiB UTF-8 content limit; malformed JSON is rejected as INPUT_INVALID. Rendering a minutes draft never skips analysis validation.
+- 单条请求行（UTF-8 字节，不含 CRLF 结尾）与序列化工具参数的最大体积：4 MiB。
+- 逐字稿/合并段文本：2 MiB UTF-8，最多 10,000 段。限额按 UTF-8 字节计数，因此超限的 ASCII 与中日韩内容都会一致地以 INPUT_SIZE_LIMIT 拒绝，并报告实际字节数与限额。
+- 同一来源内的段行区间不得重叠：段是规范、互斥的时间线发言，部分重叠、嵌套与完全相同的区间会在证据校验之前的 schema 阶段（schema 错误码）被拒绝。
+- 本地 `report` 命令读取文件前先 `stat` 检查：normalized 输入 JSON 按 2 MiB、analysis JSON 按 4 MiB 限制。超限文件以 INPUT_SIZE_LIMIT 直接拒绝、不加载；解析后的输入同样受上述 2 MiB / 10,000 段约束。
+- 证据资源上限：每个 analysis 条目最多 200 条引用，每条引文最多 4,000 字符。任一超限返回 ANALYSIS_EVIDENCE_INVALID，消息中包含实际限额。证据校验为每个 analysis 按来源各建一个索引，而不是对每条引用重扫全部段。
+- 所有工具调用共享 5,000 ms CPU 预算（`MAX_TOOL_WORK_MS`）。超限会以 WORK_LIMIT_EXCEEDED 结束调用，而不是阻塞事件循环；正常与超大有界输入的完成时间远低于该预算。
+- maxChars：1 到 2,097,152 的整数。段行数不一致会被切分阶段拒绝。
+- 超过 4 MiB 的请求行会收到 JSON-RPC 错误 `-32600`，消息为 `INPUT_SIZE_LIMIT: request line exceeds 4 MiB (bytes=N)`；该行剩余内容被丢弃，服务器继续处理后续请求。传输层 stdin/stdout 失败会向 stderr 记录 `MCP_STDIN_ERROR`/`MCP_STDOUT_ERROR` 并优雅关闭。其他工具校验失败返回 `isError: true` 与稳定错误码，不回显参数。
+- 可选的 `minutes` 参数是 JSON 编码的纪要文档，同样受 2 MiB UTF-8 内容限额约束；JSON 不合法以 INPUT_INVALID 拒绝。渲染 minutes 草稿永远不会跳过 analysis 校验。
 - Known codes include INPUT_EMPTY, INPUT_UNSUPPORTED, INPUT_INVALID, INPUT_SIZE_LIMIT, INPUT_SEGMENT_LIMIT, CHUNK_LINE_TOO_LONG, SEGMENT_LINE_COUNT_INVALID, ANALYSIS_MEETING_MISMATCH, ANALYSIS_DUPLICATE_ID, ANALYSIS_EVIDENCE_INVALID, WORK_LIMIT_EXCEEDED, MINUTES_MISSING, MINUTES_SCHEMA_INVALID, MINUTES_CONTRACT_UNSUPPORTED, MINUTES_MEETING_MISMATCH, MINUTES_REF_UNKNOWN, MINUTES_KIND_MISMATCH, MINUTES_ACTION_COVERAGE, RENDER_MODE_INVALID and TOOL_UNKNOWN. Schema-level failures (for example an unknown enum value or a non-string `minutes`) are reported as `INPUT_INVALID` followed by the first field path and a short reason; the path lets the host correct arguments without guessing, and field values are never echoed. The CLI prints the same detail behind its schema-error code.
 
-No default persistence, arbitrary disk reads/writes, GitHub access, model calls or network listeners. Stdout is protocol-only; stderr contains only generic diagnostic codes (`MCP_PROTOCOL_ERROR`, `MCP_STDIN_ERROR`, `MCP_STDOUT_ERROR`). Transcript content is returned to the calling host as requested, so host privacy settings still apply. No npm package, historical store, HTTP transport or client plugin is published by this stage.
+默认不持久化、不任意读写磁盘、不访问 GitHub、不调用模型、不开网络监听。stdout 只承载协议；stderr 只包含通用诊断码（`MCP_PROTOCOL_ERROR`、`MCP_STDIN_ERROR`、`MCP_STDOUT_ERROR`）。逐字稿内容按请求返回给调用方宿主，因此宿主的隐私设置仍然适用。本阶段不发布 npm 包、历史存储、HTTP 传输或客户端插件。
 
-## Verification status
+## 验证状态
 
-Local SDK source/compiled subprocess tests are passing. Actual Codex CLI/App Server Skill and five-tool discovery has also passed; [acceptance details and project setup](CLIENT-SETUP.md) distinguish invocation overrides from trusted project config loading. Cursor UI verification is deferred by the 2026-11-27 phase-1 scope decision (Codex only); model-level behavior remains a separate release check. The server and local plugin bundle are implemented. Public package distribution and full client/model acceptance remain pending.
+本地 SDK 源码/编译产物子进程测试全部通过。真实的 Codex CLI/App Server Skill 与五工具发现也已通过；[验收细节与项目级安装](CLIENT-SETUP.md)区分了调用级覆盖与受信任的项目配置加载。Cursor UI 验证按 2026-11-27 第一期范围决议（仅 Codex）延后；模型层行为是独立的发布检查项。服务端与本地插件包均已实现。公开发布与完整的客户端/模型验收仍未完成。
