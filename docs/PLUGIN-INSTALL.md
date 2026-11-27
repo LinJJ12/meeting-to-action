@@ -1,6 +1,14 @@
 # 本地插件安装与使用
 
-本仓库可将 Skill 和五个 MCP 工具打包为本地插件市场。构建、注册市场、安装插件和客户端加载是独立步骤。以下步骤面向新用户，不假定本机已经安装。
+本仓库可将 Skill 和五个 MCP 工具打包为单插件上传包和本地插件市场。
+
+## 在 Codex 中上传
+
+在支持本地 MCP 的 Codex 桌面端打开「创建插件」，选择 `meeting-to-action-v<版本>.tar.gz`，然后点「添加插件」。如已有此单插件包，可直接上传。用源码生成时，在仓库根目录运行 `npm ci` 和 `npm run plugin:build`，单插件包位于 `dist/`。构建需要系统 `tar`。
+
+GitHub 上名为 `meeting-to-action-marketplace-v<版本>.zip` 的旧附件用于本地市场注册。把该附件上传到「创建插件」会触发 `Expected a single plugin archive`。若使用旧附件，请解压后将包含 `.agents/plugins/marketplace.json` 的目录传给下方的 `codex plugin marketplace add`。
+
+启用五个本地 MCP 工具需要 Codex 能从 PATH 找到 Node.js 20+。若上传入口所在环境不支持本地 MCP，使用下方的本地市场安装方式。
 
 ## 前提
 
@@ -19,7 +27,7 @@ codex plugin marketplace add ./dist/plugin-marketplace
 codex plugin add meeting-to-action@meeting-to-action-local
 ```
 
-`plugin:build` 从 `skills/meeting-to-action/`、`src/mcp/` 和 `plugin/` 构建 `dist/plugin-marketplace/`。输出包含市场清单、插件清单、MCP 配置、Skill、独立服务 bundle 和第三方许可证信息；不打包 .env、会议记录或用户配置，不执行安装钩子。
+`plugin:build` 从 `skills/meeting-to-action/`、`src/mcp/` 和 `plugin/` 构建 `dist/plugin-marketplace/` 和单插件上传包。插件包含清单、MCP 配置、Skill、独立服务 bundle 和第三方许可证信息。市场目录另外包含市场清单。
 
 两点需要知道：
 
@@ -61,6 +69,6 @@ npm run plugin:check-installed
 
 ## 验证范围
 
-仓库测试覆盖独立临时目录内的插件构建、无 node_modules 启动及工具请求。维护者曾于 2026-11-24 在 Windows、Codex CLI 0.171.0-alpha.13 上验证安装状态、Skill 与工具发现；这只是特定环境的验证记录，不代表其他用户已经安装，也不保证其他版本兼容。桌面 UI、Cursor 插件兼容和真实模型分析质量需另行验收。
+仓库测试覆盖独立临时目录内的插件构建、无 node_modules 启动及工具请求。维护者曾于 2026-11-24 在 Windows、Codex CLI 0.171.0-alpha.13 上验证安装状态、Skill 与工具发现；这只是特定环境的验证记录，不代表其他用户已经安装，也不保证其他版本兼容。桌面 UI 和真实模型分析质量需另行验收；Cursor 插件兼容按 2026-11-27 范围决议延后，不在当前阶段验收范围内。
 
 插件没有文件读写、网络访问或自动创建 Issue 的 MCP 功能；文件由宿主读取和保存。本地工具不代表宿主模型离线，会议隐私仍取决于所选助手及模型配置。该流程仅用于本地分发，不会自动发布到公共市场或其他账户。

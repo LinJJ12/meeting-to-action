@@ -32,7 +32,7 @@ Codex may require project trust before loading project-level configuration; inst
 - Codex CLI `0.171.0-alpha.13`: installed into an isolated project under ignored `.local-client-check/`. A fresh local App Server accepted initialization. `skills/list` with that project cwd returned `meeting-to-action`, enabled, with no errors for that Skill.
 - Codex `mcpServerStatus/list` returned all five tool names for the local server. This check supplied the same Node/args via invocation-scoped overrides so it did not change persisted user configuration or project trust. It establishes actual Codex MCP protocol discovery, not automatic trust/loading of project config in the desktop UI.
 - No thread/model turn was created. Interpretation quality and desktop UI invocation are not proven by this discovery check. The existing SDK compiled-process smoke test verifies actual tool responses separately.
-- Cursor CLI `3.28.7` is installed. Project Skill and MCP configuration generation was exercised. Actual Cursor UI discovery and model invocation have **not** been verified.
+- Cursor CLI `3.28.7` is installed. Project Skill and MCP configuration generation was exercised. Actual Cursor UI discovery and model invocation have **not** been verified. Cursor verification is deferred by the 2026-11-27 phase-1 scope decision (Codex only); revisit when there is an actual need.
 
 The temporary checks do not change user-wide client files. Their generated absolute paths and generated protocol schemas are ignored by Git. The App Server protocol was obtained from the installed CLI via `codex app-server generate-json-schema`, not guessed from another version.
 

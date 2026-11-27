@@ -1,66 +1,68 @@
 # Roadmap
 
-## Phase 0 — Project baseline
-- [x] Establish product scope, architecture, data contract, and security principles.
-- [x] Create an isolated feature branch and preserve the existing project baseline.
+规划以 [Roadmap 3.0（issue #39）](https://github.com/LinJJ12/meeting-to-action/issues/39) 为准，本文件记录各阶段状态、验收结果与范围决议。旧版 Phase 0–4 基线保留在文末，仅作历史记录。
 
-## Phase 1 — Local foundation
-- [x] TypeScript project configuration.
-- [x] TXT/Markdown transcript normalization with source checksums and line references.
-- [x] Versioned Zod input/output schemas.
-- [x] Evidence reference helpers and validation.
-- [x] Markdown report renderer and local inspect CLI.
-- [x] Initial normalization tests and sample fixture.
-- [x] Run typecheck, tests and build locally in Node.js; Actions intentionally not triggered.
-- [x] Bundle the portable Meeting-to-Action Skill in this repository.
+## 三阶段概览
 
-## Phase 2 — Agent analysis
-- [x] Define a model-neutral AnalysisProvider interface.
-- [x] Add an OpenAI-compatible Chat Completions provider.
-- [x] Build a Skill-guided analysis prompt.
-- [x] Validate structured output and evidence source/segment/line/quote integrity.
-- [x] Add analyze CLI command and Markdown evidence report.
-- [x] Add analysis and prompt-injection regression tests.
-- [ ] Validate extraction quality with a human-reviewed golden dataset.
-- [ ] Add long-transcript chunking, token budgeting, retries, and rate-limit handling.
-- [ ] Add provider-specific structured-output adapters as needed.
+| 阶段 | 建议版本 | 状态 | 核心目标 |
+|---|---|---|---|
+| 第一期：完善基础 | `v0.2.0` | 收尾（2026-11-27） | 分析准确、输出可信 |
+| 第二期：行动转化 | `v0.3.0` | 未启动 | 会议内容 → Issue 草稿 / 技术方案 |
+| 第三期：安装发布 | `v1.0.0` | 未启动 | 可安装、可使用、可持续维护 |
 
-## Phase 3 — Local MCP and future external integrations
-- [x] Local stdio MCP server using the stable TypeScript SDK.
-- [x] Five meeting tools: prepare, split, schema, validate and render.
-- [x] Input size limits, best-effort redacted errors and source-preserving splitting.
-- [x] SDK client integration and compiled subprocess smoke tests.
-- [x] Add project-local installer with preview, conflict checks and repeatable application.
-- [x] Verify actual Codex CLI/App Server Skill and five-tool discovery without a model turn.
-- [ ] Verify trusted project-config loading and model-level usage in Codex desktop and Cursor.
-- [ ] Publish an installable runtime package after client acceptance.
-- [ ] Read-only repository and issue search.
-- [ ] Evidence-backed issue proposals and duplicate candidates.
-- [ ] Explicitly approved issue creation.
-- [ ] Permission and failure-path tests.
+## 第一期：完善基础（2026-11 收尾）
 
-## Phase 4 — Continuity and integrations
-- [ ] Cross-meeting decision/action tracking.
-- [ ] Stale and superseded decision suggestions.
-- [ ] Markdown document adapter.
-- [ ] Additional transcript formats and source adapters.
+阶段目标：让已有功能在真实会议记录中稳定工作，重点是检查、修复和优化，不重新搭建工程基础。
 
-A phase is complete only with tests, documentation, a reproducible demo, and known limitations. External writes remain approval-gated.
+### 任务状态
 
-## Agent toolkit delivery
+| 编号 | 任务 | 状态 | 说明 |
+|---|---|---|---|
+| P1-01 | 现有功能回归 | 完成 | `npm run preflight` 全绿（typecheck → build → 307 tests → mcp:smoke → plugin:build → format:check）；插件打包的 Windows tar 盘符问题在本期收尾修复 |
+| P1-02 | 逐字稿解析完善 | 完成 | 行内发言人+时间戳、MM:SS 时间头、发言人+时间独立行、装饰分隔线与混合格式检测（PR #27/#29/#35）；真实腾讯会议导出样本完成两轮解析验证（2026-11-24、2026-11-26） |
+| P1-03 | 会议分析优化 | 完成 | analysis-rules 固化诚实性规则：confirmed 决策需明确决策语言、负责人不推断、相对期限保真、逐字稿内容按不可信数据处理 |
+| P1-04 | 证据校验完善 | 完成 | 引句精确子串校验与行号/片段定位；修复双语义 evidence 实现（#7）与校验放大攻击（#13）；真实样本上 7 项负向探针（伪造引句/会议 ID/行号/时间码/发言标签等）全部拒绝 |
+| P1-05 | 会议纪要优化 | 完成 | minutes-contract@1.0；正文按标签分组 claims、附录扁平化（PR #37），经未参会读者走查反馈修正并重新渲染 |
+| P1-06 | 小规模测试样本 | 完成（轻量口径） | 以纯虚构 fixture + 307 个自动化测试承担回归，不建设语料库、Benchmark 平台或知识库（见下方范围决议） |
+| P1-07 | 客户端验证 | 基本完成（范围收窄） | Codex CLI：2026-11-24 Skill 与五工具发现通过；ZCode 桌面端：2026-11-26 模型级全流程（含负向探针与未参会读者走查）通过；Cursor 与 Codex 桌面端 UI 验收按决议延后 |
 
-See [the product architecture and acceptance plan](AGENT-TOOLKIT.md). Agent JSON ingestion/report is implemented locally with regression coverage. Skill source is maintained in this repository. Local MCP and plugin packaging are implemented; Codex protocol discovery has been checked in a maintainer environment. Desktop model invocation, Cursor UI acceptance and public distribution remain pending. Verification can be run locally.
+### 验收结果（对照 issue #39 §4.4）
 
-Installer and client acceptance details: [CLIENT-SETUP.md](CLIENT-SETUP.md). Codex CLI discovery passed on 2026-11-24; Cursor UI remains pending.
+- [x] `npm run preflight` 通过（2026-11-26 main 基线全绿；本期收尾修复插件打包 Windows tar 问题后保持全绿）
+- [x] 数份真实、获准使用的腾讯会议导出样本完成解析验证（两轮，样本与记录仅保留在本地）
+- [x] 常见输入格式正确解析；异常输入以稳定错误码明确拒绝
+- [x] 会议纪要、决策和行动项不把建议误判为已确认结论（真实样本 0 项 confirmed 误判，proposed 渲染为提议）
+- [x] 关键分析结果能定位到原始会议证据（引句精确子串 + sourceId/segmentId/行号）
+- [x] 不确定的负责人、日期和决策状态不被编造（负责人统一标注未指定，相对期限按原文保留）
+- [x] Codex 基本工作流完成实际验证（范围决议：一期仅 Codex 系；模型级全流程在 ZCode 桌面端完成）
+- [x] 形成简明测试记录（按决议保留在 gitignored 的 `.local-client-check/`，不入仓库，对外仅汇总数字）
 
-## Local plugin distribution milestone
+### 范围决议（2026-11-27）
 
-- [x] Portable plugin manifest and MCP configuration.
-- [x] Build Skill and standalone MCP bundle into one local marketplace.
-- [x] Test the package in a relocated directory without node_modules.
-- [x] Register and install the plugin locally; confirm enabled state, namespaced Skill and five MCP tools in a fresh Codex process.
-- [ ] User confirms desktop plugin UI after restart and a new local chat.
-- [ ] Model-driven end-to-end meeting quality check.
-- [ ] Public distribution and Cursor plugin verification.
+1. **客户端验证范围**：一期只验 Codex；Cursor 验证延后，待有实际需要再排期。Cursor 的安装文档与配置示例（`--client cursor`）保留不变。
+2. **测试与验证记录**：全部保留在 `.local-client-check/`（已 gitignore），不入仓库、不入 issue/PR；对外只允许汇总数字。
+3. **回归策略（轻量口径）**：以虚构 fixture + 自动化测试承担回归，由真实使用中的 bug 驱动逐个回收（脱敏为虚构 fixture + 测试）；不建设语料库、Benchmark 平台、RAG 或任何持久化知识库。
+4. **公开数据集**：只采用下方两个数据集，且仅用于本地评测，不入仓库。
 
-See [PLUGIN-INSTALL.md](PLUGIN-INSTALL.md). No public publication or Actions run is part of this milestone.
+## 公开数据集（仅本地评测用，不入仓库）
+
+以下两个公开数据集作为一期认可的本地评测参考。按隐私红线，任何数据内容（含衍生片段）不进入仓库、不进入测试 fixture；`examples/` 仅保留虚构数据。
+
+| 数据集 | 许可证 | 内容 | 预期用法 |
+|---|---|---|---|
+| [meeting_minutes_dataset](https://github.com/jww6190/meeting_minutes_dataset) | CC BY-NC 4.0（非商业） | 1600 条脱敏公文会议记录，含转写与标准纪要对照（JSON，五类会议） | 本地抽样对照纪要质量；使用需署名；非商业限制 |
+| [VCSum](https://github.com/hahahawu/VCSum) | MIT（仓库许可） | 239 场真实中文会议、230+ 小时；主题分段/标题/摘要/显著句标注 | 本地评测长会议与摘要质量；引用 ACL 2023 论文 |
+
+使用限制：
+
+- meeting_minutes_dataset 为非商业许可：仅用于本地个人评测，不得再分发数据内容，不得用于商业用途。
+- 两个数据集都不作为自动化测试或 preflight 的依赖（测试只用虚构 fixture），仓库不引入对第三方数据的下载或再分发。
+- 无人工标注真值的样本不用于宣称模型准确率。
+
+## 历史基线（旧版 Phase 0–4，仅作记录）
+
+- 已完成：工程与契约基线（TXT/Markdown 规范化、版本化 Zod 契约、证据校验、Markdown 渲染、本地 CLI）；模型中立的 Provider 接口与 OpenAI 兼容适配器；五个 stdio MCP 工具与限额；项目安装器；本地插件市场与单插件上传包；Codex CLI 发现验证（2026-11-24）。
+- 未完成项去向：长文分块、token 预算与限流退避 → 后续按需评估；只读仓库与 Issue 检索、证据版 Issue 草稿、经批准的 Issue 创建及失败路径测试 → 并入第二期（P2）；跨会议追踪与额外转写格式适配 → 按 issue #39 §7 暂不纳入。
+- 验收细节见 [CLIENT-SETUP.md](CLIENT-SETUP.md) 与 [PLUGIN-INSTALL.md](PLUGIN-INSTALL.md)；交付设计见 [AGENT-TOOLKIT.md](AGENT-TOOLKIT.md)。
+
+原则不变：阶段完成必须有测试、文档、可复现演示与已知限制说明；外部写入保持确认门禁。

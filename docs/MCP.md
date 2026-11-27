@@ -79,4 +79,4 @@ No default persistence, arbitrary disk reads/writes, GitHub access, model calls 
 
 ## Verification status
 
-Local SDK source/compiled subprocess tests are passing. Actual Codex CLI/App Server Skill and five-tool discovery has also passed; [acceptance details and project setup](CLIENT-SETUP.md) distinguish invocation overrides from trusted project config loading. Cursor UI and model-level behavior remain separate release checks. The server and local plugin bundle are implemented. Public package distribution and full client/model acceptance remain pending.
+Local SDK source/compiled subprocess tests are passing. Actual Codex CLI/App Server Skill and five-tool discovery has also passed; [acceptance details and project setup](CLIENT-SETUP.md) distinguish invocation overrides from trusted project config loading. Cursor UI verification is deferred by the 2026-11-27 phase-1 scope decision (Codex only); model-level behavior remains a separate release check. The server and local plugin bundle are implemented. Public package distribution and full client/model acceptance remain pending.

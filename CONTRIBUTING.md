@@ -7,7 +7,7 @@
 ## 环境要求
 
 - Node.js ≥ 20（与 `package.json` 的 `engines` 一致），npm
-- 不需要额外的全局工具；格式化与测试都由仓库内依赖提供
+- 插件打包及其回归测试需要系统 `tar`；格式化及其他测试由仓库内依赖提供
 
 ## 快速开始
 
@@ -24,7 +24,7 @@ npm run preflight
 | 2 | `npm run build` | 构建 `dist/` |
 | 3 | `npm test` | vitest 全量测试 |
 | 4 | `npm run mcp:smoke` | 编译产物上的 stdio MCP 冒烟 |
-| 5 | `npm run plugin:build` | 构建本地插件市场产物 |
+| 5 | `npm run plugin:build` | 构建单插件上传包和本地插件市场 |
 | 6 | `npm run format:check` | Prettier 格式检查（`src tests scripts`） |
 
 提交前必须跑完整 preflight。CI 恢复后以 CI 通过为准；当前 CI 因 GitHub Actions 计费问题无法运行，因此 PR 的「验证」段需要贴本地 preflight 结果。
