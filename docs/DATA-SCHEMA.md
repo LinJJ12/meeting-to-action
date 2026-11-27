@@ -118,7 +118,9 @@ Rules:
 
 ## Runtime validation
 
-`src/domain/schema.ts` is the authoritative runtime contract. Material claim arrays require at least one evidence reference per item; unknown nested fields are rejected. Input source and segment IDs must be unique, segment sources must exist, and line ranges must be ordered.
+`src/domain/schema.ts` is the authoritative runtime contract. Material claim arrays require at least one evidence reference per item; unknown nested fields are rejected. Input source and segment IDs must be unique, segment sources must exist, and line ranges must be ordered and pairwise non-overlapping within one source: segments are canonical, disjoint timeline turns, so partially overlapping, nested and identical ranges are rejected. `normalizeTranscript` output satisfies this by construction.
+
+> History: 2026-11 — as the closing item of the #13 resource-amplification fix, same-source segment line ranges must now be disjoint, enforced at the schema stage and surfaced as a schema error (`INPUT_INVALID` on MCP, the CLI schema-error code). Inputs produced by `normalizeTranscript` were already compliant, so only hand-crafted inputs can be affected. Rejection cases are covered by `tests/integrity.test.ts`, and the normalizer invariant is pinned by `tests/normalize.test.ts`.
 
 **There is exactly one evidence validator: `validateEvidence(input, refs, mode)` in `src/core/evidence.ts`.** Every entry point calls it — the standalone `analyze` provider path, the `report` CLI command, and the MCP `validate_analysis` / `render_report` tools. It checks source and segment relationships, paired line bounds, exact quotes within the cited text, and speaker/timestamp metadata against the cited segment. Validation builds one per-source segment index per analysis and reuses it across entries, so cost grows with segments plus references rather than their product.
 

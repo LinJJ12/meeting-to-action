@@ -17,7 +17,7 @@ Required item fields:
 
 Decision status: confirmed, proposed, rejected, superseded, unclear. Action status: proposed, accepted, in_progress, done, blocked, unknown. Confidence: high, medium, low. Severity: low, medium, high, critical, unknown. IDs must be unique within each item category.
 
-Each item's evidence array must be nonempty. Prefer `{sourceId, segmentId, lineStart, lineEnd, quote}` copied from the normalized input. Bounds are positive integers inclusive, must be supplied together and fall within the cited segment. A quote must occur within the cited lines. Segment and source must match. Unknown optional values are omitted, never null or invented.
+Each item's evidence array must be nonempty. Prefer `{sourceId, segmentId, lineStart, lineEnd, quote}` copied from the normalized input. Bounds are positive integers inclusive, must be supplied together and fall within the cited segment. Segments are canonical, non-overlapping timeline turns, so cited bounds always fall within exactly one segment. A quote must occur within the cited lines. Segment and source must match. Unknown optional values are omitted, never null or invented.
 
 **One validator, every entry point.** The standalone `analyze` provider path, the `report` CLI command and the MCP `validate_analysis` / `render_report` tools all call the same `validateEvidence` implementation. A reference accepted by one path is accepted by all of them, and a reference rejected by one is rejected by all. Do not assume a rule is enforced on only one path.
 

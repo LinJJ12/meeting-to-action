@@ -28,7 +28,7 @@ const cliRun = (args: string[]) =>
     env: envWithoutApiKeys(),
   });
 
-/** 复用 normalizeTranscript 产出的合法 skeleton，只替换 segments，保持 schema 合法。 */
+/** 复用 normalizeTranscript 产出的合法 skeleton，只替换 segments（顺序不重叠区间），保持 schema 合法。 */
 function meetingWithSegments(count: number) {
   const base = normalizeTranscript("seed", "x.txt");
   const sourceId = base.sources[0]!.id;
@@ -38,8 +38,8 @@ function meetingWithSegments(count: number) {
       id: "seg-" + (index + 1),
       sourceId,
       text: "a",
-      lineStart: 1,
-      lineEnd: 1,
+      lineStart: index + 1,
+      lineEnd: index + 1,
     })),
   };
 }
@@ -136,8 +136,8 @@ describe("evidence 索引与单 entry 上限", () => {
       id: "seg-" + (index + 1),
       sourceId: "s1",
       text: "a",
-      lineStart: 1,
-      lineEnd: 1,
+      lineStart: index + 1,
+      lineEnd: index + 1,
     }));
     const input = {
       schemaVersion: "1.0" as const,
@@ -145,11 +145,12 @@ describe("evidence 索引与单 entry 上限", () => {
       sources: [{ id: "s1", kind: "transcript" as const, format: "txt" as const }],
       segments,
     };
+    // 行区间互不重叠后，每条 ref 指向不同的唯一区间，压测逐区间的候选过滤仍保持线性。
     const refs = (count: number) =>
-      Array.from({ length: count }, () => ({
+      Array.from({ length: count }, (_, index) => ({
         sourceId: "s1",
-        lineStart: 1,
-        lineEnd: 1,
+        lineStart: index + 1,
+        lineEnd: index + 1,
         quote: "zzz",
       }));
     const started = performance.now();
@@ -233,8 +234,8 @@ describe("MCP validate_analysis 的资源上限", () => {
         id: "seg-" + (index + 1),
         sourceId: tiny.sources[0]!.id,
         text: hugeText,
-        lineStart: 1,
-        lineEnd: 1,
+        lineStart: index + 1,
+        lineEnd: index + 1,
       })),
     };
     const byteResult = callTool("validate_analysis", {

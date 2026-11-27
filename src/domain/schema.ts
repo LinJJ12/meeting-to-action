@@ -65,7 +65,8 @@ const MeetingInputShape = z
   .strict();
 export const MeetingInputSchema = MeetingInputShape.superRefine((value, ctx) => {
   const sourceIds = new Set<string>(),
-    segmentIds = new Set<string>();
+    segmentIds = new Set<string>(),
+    segmentsBySource = new Map<string, MeetingInput["segments"]>();
   for (const source of value.sources) {
     if (sourceIds.has(source.id))
       ctx.addIssue({ code: "custom", message: "Duplicate source id: " + source.id });
@@ -79,6 +80,30 @@ export const MeetingInputSchema = MeetingInputShape.superRefine((value, ctx) => 
       ctx.addIssue({ code: "custom", message: "Unknown segment source: " + segment.sourceId });
     if (segment.lineEnd < segment.lineStart)
       ctx.addIssue({ code: "custom", message: "Segment lineEnd precedes lineStart" });
+    const group = segmentsBySource.get(segment.sourceId);
+    if (group) group.push(segment);
+    else segmentsBySource.set(segment.sourceId, [segment]);
+  }
+  // 同一 source 的行区间必须互不重叠：段是时间线上的规范轮次，部分重叠、嵌套包含与
+  // 完全相同的区间都视为非法，保证行区间寻址至多命中一个段。
+  for (const [sourceId, group] of segmentsBySource) {
+    let prev: MeetingInput["segments"][number] | undefined;
+    for (const segment of [...group].sort(
+      (a, b) => a.lineStart - b.lineStart || a.lineEnd - b.lineEnd,
+    )) {
+      if (prev && segment.lineStart <= prev.lineEnd)
+        ctx.addIssue({
+          code: "custom",
+          message:
+            "Overlapping segment ranges in source " +
+            sourceId +
+            ": " +
+            prev.id +
+            " and " +
+            segment.id,
+        });
+      prev = segment;
+    }
   }
 });
 export const MeetingAnalysisSchema = z
