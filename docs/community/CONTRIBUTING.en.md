@@ -1,8 +1,8 @@
-[简体中文（主版）](../CONTRIBUTING.md) | English
+[简体中文（主版）](../../CONTRIBUTING.md) | English
 
 # Contributing Guide
 
-This document is the single authoritative source for collaboration: code style, directory responsibilities, testing and verification, and commit/PR processes all defer to it. For the condensed version aimed at AI assistants see [AGENTS.md](../AGENTS.md); in case of conflict this document wins.
+This document is the single authoritative source for collaboration: code style, directory responsibilities, testing and verification, and commit/PR processes all defer to it. For the condensed version aimed at AI assistants see [AGENTS.md](../../AGENTS.md); in case of conflict this document wins.
 
 This project's collaboration conventions originate from issue #32. The conventions take effect for new code from the moment that issue was finalized; changes to this document go through a PR, not verbal changes in comments.
 
@@ -88,9 +88,9 @@ For individual scripts: `npm run format` auto-formats, `npm run skill:schema` re
 
 - Distinguish "currently implemented" from "future plans"; never present plans as existing features
 - Behavior or contract changes must sync the corresponding documents (DATA-SCHEMA / MINUTES-CONTRACT / MCP / PLUGIN-INSTALL / CLIENT-SETUP, etc., chosen by scope of impact)
-- Core user-facing documents exist as bilingual pairs: Chinese main version (no suffix) + English variant (`.en.md`); **changes to a main version must be synced to the English variant**. Naming and authority conventions are in the "documentation language rules" section of [INDEX.md](INDEX.md)
-- New documents must be registered in the [INDEX.md](INDEX.md) index
-- Directory responsibilities are in the "file structure conventions" section of [INDEX.md](INDEX.md); architecture and delivery plans are in [AGENT-TOOLKIT.md](AGENT-TOOLKIT.md)
+- Core user-facing documents exist as bilingual pairs: Chinese main version (no suffix) + English variant (`.en.md`); **changes to a main version must be synced to the English variant**. Naming and authority conventions are in the "documentation language rules" section of [INDEX.md](../INDEX.md)
+- New documents must be registered in the [INDEX.md](../INDEX.md) index
+- Directory responsibilities are in the "file structure conventions" section of [INDEX.md](../INDEX.md); architecture and delivery plans are in [AGENT-TOOLKIT.md](../design/AGENT-TOOLKIT.md)
 
 ## Branches, commits, and PRs
 

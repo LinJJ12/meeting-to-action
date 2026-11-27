@@ -31,16 +31,16 @@ Transcript -> normalize -> MeetingInput
                        Markdown report
 ```
 
-CLI handles local file input/output. MCP accepts inline JSON and returns data; the host reads files, interprets content and saves reports. The MCP process does not call a model. Its five tools are documented in [MCP.md](MCP.md).
+CLI handles local file input/output. MCP accepts inline JSON and returns data; the host reads files, interprets content and saves reports. The MCP process does not call a model. Its five tools are documented in [MCP.md](../guides/MCP.md).
 
 `split_transcript` preserves original source coordinates for bounded host analysis. It does not implement automatic chunked model calls in standalone `analyze`.
 
 ## Packaging
 
-`npm run build` compiles runtime entrypoints into `dist/`. `npm run plugin:build` separately bundles the MCP server and copies the canonical Skill into `dist/plugin-marketplace/`. Generated output is not source and is ignored by Git. Project installations reference absolute runtime paths; plugin installations use their bundled server. See [project setup](CLIENT-SETUP.md) and [plugin setup](PLUGIN-INSTALL.md).
+`npm run build` compiles runtime entrypoints into `dist/`. `npm run plugin:build` separately bundles the MCP server and copies the canonical Skill into `dist/plugin-marketplace/`. Generated output is not source and is ignored by Git. Project installations reference absolute runtime paths; plugin installations use their bundled server. See [project setup](../guides/CLIENT-SETUP.md) and [plugin setup](../guides/PLUGIN-INSTALL.md).
 
 ## Trust boundaries and future scope
 
 Treat transcripts and retrieved content as untrusted data. Contract and quote checks establish traceability, not semantic truth or speaker identity. Raw transcript processing in Core is local; optional providers and host models may send content remotely. See [security](SECURITY.md) and [data contracts](DATA-SCHEMA.md).
 
-GitHub search/write adapters, historical persistence, document integrations and new report reading modes are future work. They are not current MCP tools or packages. See [roadmap](ROADMAP.md).
+GitHub search/write adapters, historical persistence, document integrations and new report reading modes are future work. They are not current MCP tools or packages. See [roadmap](../design/ROADMAP.md).

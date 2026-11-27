@@ -1,4 +1,4 @@
-简体中文（主版） | [English](docs/SECURITY.en.md)
+简体中文（主版） | [English](docs/community/SECURITY.en.md)
 
 # 安全政策
 
@@ -40,4 +40,4 @@
 
 ## 安全设计基线
 
-本工具的安全与隐私设计原则（本地 stdio、不监听网络、不持久化、日志默认不含原始逐字稿文本等）见 [docs/SECURITY.md](docs/SECURITY.md)；工具边界的权威描述见 [docs/MCP.md](docs/MCP.md)。这些原则本身是设计承诺，不是漏洞；对它们的建议属于功能讨论，请用普通 issue。
+本工具的安全与隐私设计原则（本地 stdio、不监听网络、不持久化、日志默认不含原始逐字稿文本等）见 [docs/contracts/SECURITY.md](docs/contracts/SECURITY.md)；工具边界的权威描述见 [docs/guides/MCP.md](docs/guides/MCP.md)。这些原则本身是设计承诺，不是漏洞；对它们的建议属于功能讨论，请用普通 issue。

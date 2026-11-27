@@ -59,7 +59,7 @@ Cursor 项目 `.cursor/mcp.json` 条目：
 1. 宿主读取用户选择的文件，将其文本与受支持的 TXT/Markdown 文件名传给 prepare_meeting。
 2. 先获取契约；宿主模型使用返回的 ID 编写完整 analysis JSON。MCP 内不发生第二次模型调用。
 3. 内容较长时，split_transcript 返回按行切分的片段。每个片段都保留原 sourceId 与 segmentId；不要对各片段单独做规范化，也不要新造 ID。maxChars 按 UTF-16 字符计数，片段之间的换行分隔符计入其中。超过该预算的单行会被拒绝。校验仍需完整原始输入。
-4. 以原始输入与 analysis 调用 validate_analysis 或 render_report。后者独立完成校验，因此渲染无法绕过校验。`isError` 结果代表失败，不是报告。`render_report` 接受可选 `minutes` 参数（JSON 编码的 minutes-contract 文档，见[纪要展示契约](MINUTES-CONTRACT.md)）；提供 `minutes` 时 `mode` 默认为 "minutes"，否则默认为 "evidence"；`appendix: false` 表示省略溯源附录。提供 `mode: "minutes"` 或 `"actions"` 但缺 `minutes` 会以 MINUTES_MISSING 拒绝；即使处于 evidence 模式，提供的 minutes 文档仍会被校验。
+4. 以原始输入与 analysis 调用 validate_analysis 或 render_report。后者独立完成校验，因此渲染无法绕过校验。`isError` 结果代表失败，不是报告。`render_report` 接受可选 `minutes` 参数（JSON 编码的 minutes-contract 文档，见[纪要展示契约](../contracts/MINUTES-CONTRACT.md)）；提供 `minutes` 时 `mode` 默认为 "minutes"，否则默认为 "evidence"；`appendix: false` 表示省略溯源附录。提供 `mode: "minutes"` 或 `"actions"` 但缺 `minutes` 会以 MINUTES_MISSING 拒绝；即使处于 evidence 模式，提供的 minutes 文档仍会被校验。
 5. 宿主只把 Markdown 保存到用户指定的位置。本 MCP 没有写入工具。
 
 对于没有决策、行动项、风险、待确认问题或分歧的简报，传 `sections: []` 的 minutes 草稿即可。渲染器会用 analysis 的主题或摘要填充正文。claim ID 必须在全文档内唯一。空小节但存在可引用事实、以及重复的 claim ID，都会返回 `MINUTES_SCHEMA_INVALID`。纪要附录包含未进入编辑正文的主题证据与 analysis 事实。

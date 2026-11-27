@@ -64,7 +64,7 @@ References checked 2026-11-24: [OpenAI customization](https://learn.chatgpt.com/
 
 ## MCP v0.2 local implementation (release pending)
 
-Implemented using the stable official TypeScript SDK and stdio; see [setup, limits and verification](MCP.md). Stdout carries protocol messages only. No secrets or raw meeting text in diagnostics. Initial tools accept inline data; no arbitrary filesystem read tool is required.
+Implemented using the stable official TypeScript SDK and stdio; see [setup, limits and verification](../guides/MCP.md). Stdout carries protocol messages only. No secrets or raw meeting text in diagnostics. Initial tools accept inline data; no arbitrary filesystem read tool is required.
 
 | Tool | Input | Output / validation |
 |---|---|---|
@@ -82,7 +82,7 @@ No default persistence/network access or model calls. If later adding path-based
 
 Core owns contract versions and fixtures. Skill declares supported contract version plus a tested Core commit/release. Generate the bundled Skill JSON Schema with `npm run skill:schema`; verify it against Core in local tests before a release. Skill and Core ship from the same repository revision. Breaking contract changes require a new schema version and explicit migration. Skill content must still work without Core installed.
 
-Keep the existing runtime private until package names, bin entrypoints and packaged file contents are verified. Future client MCP configuration should reference a real released package, never a placeholder that users might execute. Pin releases for reproducibility. Local plugin packaging is available; see [plugin installation](PLUGIN-INSTALL.md). Public publishing remains a separate release step.
+Keep the existing runtime private until package names, bin entrypoints and packaged file contents are verified. Future client MCP configuration should reference a real released package, never a placeholder that users might execute. Pin releases for reproducibility. Local plugin packaging is available; see [plugin installation](../guides/PLUGIN-INSTALL.md). Public publishing remains a separate release step.
 
 ## Milestones and acceptance
 

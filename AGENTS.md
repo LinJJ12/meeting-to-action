@@ -1,6 +1,6 @@
 # AGENTS.md — 面向 AI 协助者的规则
 
-本文件是给 Codex / Cursor 等 AI 协助者的精简规则；完整规范见 [CONTRIBUTING.md](CONTRIBUTING.md)，两者冲突时以 CONTRIBUTING.md 为准。架构与交付计划见 [docs/AGENT-TOOLKIT.md](docs/AGENT-TOOLKIT.md)，不要在这里重复。
+本文件是给 Codex / Cursor 等 AI 协助者的精简规则；完整规范见 [CONTRIBUTING.md](CONTRIBUTING.md)，两者冲突时以 CONTRIBUTING.md 为准。架构与交付计划见 [docs/design/AGENT-TOOLKIT.md](docs/design/AGENT-TOOLKIT.md)，不要在这里重复。
 
 ## 开始前
 

@@ -1,4 +1,4 @@
-[简体中文（主版）](../SECURITY.md) | English
+[简体中文（主版）](../../SECURITY.md) | English
 
 # Security Policy
 
@@ -40,4 +40,4 @@ Private vulnerability reporting is available for **public repositories** only: o
 
 ## Security design baseline
 
-The product's security and privacy design principles (local stdio, no network listeners, no persistence, no raw transcript text in logs by default) are documented in [docs/SECURITY.md](SECURITY.md); the authoritative description of tool boundaries is [docs/MCP.en.md](MCP.en.md). Those principles are design commitments, not vulnerabilities; suggestions about them belong in ordinary issues as feature discussions.
+The product's security and privacy design principles (local stdio, no network listeners, no persistence, no raw transcript text in logs by default) are documented in [docs/SECURITY.md](../contracts/SECURITY.md); the authoritative description of tool boundaries is [docs/MCP.en.md](../guides/MCP.en.md). Those principles are design commitments, not vulnerabilities; suggestions about them belong in ordinary issues as feature discussions.

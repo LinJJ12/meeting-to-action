@@ -1,6 +1,6 @@
 # 会议纪要阅读设计
 
-当前实现和兼容规则见[会议纪要展示契约](MINUTES-CONTRACT.md)。本页保留设计依据和读者验收目标。调研来源见 [MEETING-MINUTES-RESEARCH.md](MEETING-MINUTES-RESEARCH.md)。
+当前实现和兼容规则见[会议纪要展示契约](../contracts/MINUTES-CONTRACT.md)。本页保留设计依据和读者验收目标。调研来源见 [MEETING-MINUTES-RESEARCH.md](MEETING-MINUTES-RESEARCH.md)。
 
 ## 问题
 

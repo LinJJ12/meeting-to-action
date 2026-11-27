@@ -1,4 +1,4 @@
-[简体中文（主版）](../CODE_OF_CONDUCT.md) | English
+[简体中文（主版）](../../CODE_OF_CONDUCT.md) | English
 
 # Contributor Covenant Code of Conduct
 

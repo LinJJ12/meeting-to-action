@@ -1,4 +1,4 @@
-简体中文（主版） | [English](docs/CHANGELOG.en.md)
+简体中文（主版） | [English](docs/community/CHANGELOG.en.md)
 
 # 更新日志
 

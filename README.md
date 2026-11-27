@@ -1,4 +1,4 @@
-简体中文（主版） | [English](docs/README.en.md)
+简体中文（主版） | [English](docs/community/README.en.md)
 
 # Meeting-to-Action
 
@@ -10,6 +10,13 @@
 
 将已有的 TXT / Markdown 会议记录整理为可追溯的主题、决策、行动项、风险、分歧和待确认问题。提供便携 Skill、五个本地 MCP 工具，以及可选的独立 CLI 分析模式。不包含会议录音或语音识别。
 
+## 特性
+
+- **溯源优先**：SHA-256 校验和、行号、片段 ID、发言标签与时间码全程保留，每条结论都能回查原文
+- **版本化契约**：`analysis-schema@1.0` 与 `minutes-contract@1.0`，一套校验器，CLI 与 MCP 共用
+- **多种接入形态**：本地桌面插件 / 项目级 Skill + MCP / 仅 Skill / 独立 CLI，按环境选择
+- **隐私红线**：MCP 不调用模型、不读写任意文件、不访问 GitHub、不持久化；记录内嵌指令按不可信数据处理
+
 ## 选择使用方式
 
 | 方式 | 适用场景 | 模型与凭据 |
@@ -19,43 +26,34 @@
 | 仅 Skill | 只需要分析指引与引用式草稿 | 使用宿主模型；没有运行时就没有程序校验 |
 | CLI `analyze` | 脱离助手调用兼容模型接口 | 需要自行配置 API Key、模型与可选服务地址 |
 
-本仓库以源码形式公开（MIT），`package.json` 保持 `private: true`：没有也不会发布 npm 包或公共插件市场，安装一律通过克隆本仓库、本地构建与本地插件市场完成。克隆仓库或构建插件不会自动安装、注册或启用插件；其他机器的安装状态也不代表你的机器已配置成功。
+插件安装与项目安装是两种替代方案，通常选择一种即可。`package.json` 保持 `private: true`：没有也不会发布 npm 包或公共插件市场；克隆仓库或构建插件不会自动安装、注册或启用任何插件，其他机器的安装状态也不代表你的机器已配置成功。
 
-## 从源码开始
+## 快速开始
 
-需要 Node.js 20+ 和 npm（Windows 上使用项目级安装器时推荐 Node.js 22+，原因见[项目级安装](#项目级安装)）。在仓库根目录执行：
+需要 Node.js 20+ 和 npm（Windows 上使用项目级安装器推荐 Node.js 22+，原因见[项目级安装文档](docs/guides/CLIENT-SETUP.md)）。克隆并构建：
 
 ```sh
+git clone https://github.com/LinJJ12/meeting-to-action.git
+cd meeting-to-action
 npm ci
 npm run build
 ```
 
-### 本地桌面插件
+按所选方式安装：
 
-```sh
-npm run plugin:build
-```
-
-构建输出包含供 Codex「创建插件」上传的 `dist/meeting-to-action-v<版本>.tar.gz`，以及供 CLI 注册的 `dist/plugin-marketplace/`。两者都包含 Skill、MCP bundle 和第三方许可证。安装与验证步骤见[本地插件安装与使用](docs/PLUGIN-INSTALL.md)。
-
-### 项目级安装
-
-先预览，再应用（目标项目必须已存在，路径含空格时加引号）：
+- **本地桌面插件**：`npm run plugin:build` 生成上传包与本地市场，安装步骤见[本地插件安装与使用](docs/guides/PLUGIN-INSTALL.md)
+- **项目级 Skill + MCP**：先预览再应用（目标项目必须已存在，路径含空格加引号），Cursor 改用 `--client cursor`：
 
 ```sh
 npm run setup:client -- --client codex --project /absolute/path/to/project
 npm run setup:client -- --client codex --project /absolute/path/to/project --apply
 ```
 
-Cursor 改用 `--client cursor`。已有不同配置会报告冲突，不会自动合并。参见[项目安装说明](docs/CLIENT-SETUP.md)和[手工 MCP 配置](docs/MCP.md)。插件安装与项目安装是两种替代方案，通常选择一种即可，避免重复加载工具。
+- **仅安装 Skill**：把整个 `skills/meeting-to-action/`（含 references 和 agents）复制到目标项目的 `.agents/skills/`（Codex）或 `.cursor/skills/`（Cursor），只复制 SKILL.md 不完整
 
-安装器在预检和每次写入前都用 `realpath` 对项目根和目标路径做包含性校验：`..` 越界、UNC/设备路径/ADS 形式分别以 `SETUP_PATH_ESCAPE`、`SETUP_PATH_INVALID` 拒绝，解析后指向项目外的 junction/symlink 以 `SETUP_LINK_REJECTED` 拒绝，预检失败不会产生部分写入。该防护不再依赖 `lstat` 的符号链接判断，因此 Node 20 与 Node 22 行为一致；Windows 上仍推荐 Node 22+，因为 Node 20 的 `lstat` 会把目录 junction 误报为普通目录（Node 22 已修正），其他依赖该标记的脚本可能因此误判。
+### 第一次分析（无需任何 API Key）
 
-仅安装 Skill 时，将整个 `skills/meeting-to-action/`（包括 references 和 agents）复制到目标项目的 `.agents/skills/`（Codex）或 `.cursor/skills/`（Cursor）。仅复制 SKILL.md 不完整。发现行为取决于客户端版本；也可明确要求助手读取该文件。
-
-### 无额外 API Key 的分析流程
-
-让已安装 Skill 的助手分析你授权读取的记录，例如：
+让已安装 Skill 的助手分析你授权读取的记录：
 
 ```text
 请使用 Meeting-to-Action 分析 examples/agent-workflow/edge-cases.md。
@@ -63,7 +61,7 @@ Cursor 改用 `--client cursor`。已有不同配置会报告冲突，不会自�
 负责人和日期不确定时保持未知，保留矛盾，不创建 GitHub Issue。
 ```
 
-也可使用 CLI，由助手在两步之间生成符合契约的 analysis.json：
+或使用 CLI 两步流程，由助手在中间生成符合契约的 analysis.json：
 
 ```sh
 npm run dev -- inspect examples/sample-meeting.md --out normalized.json
@@ -71,54 +69,17 @@ npm run dev -- inspect examples/sample-meeting.md --out normalized.json
 npm run dev -- report normalized.json --analysis analysis.json --out report.md
 ```
 
-不调用模型的现成校验示例（输出到终端）：
+需要更紧凑的中文纪要或行动清单时，在已校验的 analysis 之上追加 `--minutes minutes.json`（契约见[会议纪要展示契约](docs/contracts/MINUTES-CONTRACT.md)）；`--mode` 可选 `minutes` / `actions` / `evidence`。可对照[虚构会议示例](examples/agent-workflow/README.md)。
 
-```sh
-npm run dev -- report examples/agent-workflow/normalized.json --analysis examples/agent-workflow/analysis.json
-```
+## 可选：独立模型分析
 
-可对照[虚构会议示例](examples/agent-workflow/README.md)中的逐字稿、编辑稿和生成的纪要。
-
-`inspect` 和 `report` 不调用模型。`report` 校验会议 ID、结构、分类内重复 ID 及证据后再渲染。带 `--out` 的 CLI 命令拒绝覆盖已有文件。
-
-需要更紧凑的中文纪要或行动清单时，在已校验的 analysis 之上再提供一份 minutes 编辑稿（`minutes-contract@1.0`，见[会议纪要展示契约](docs/MINUTES-CONTRACT.md)）：
-
-```sh
-npm run dev -- report normalized.json --analysis analysis.json --minutes minutes.json --out minutes.md
-```
-
-`--minutes` 存在时默认渲染 minutes 模式（主稿 + 溯源附录）；`--mode` 可选 `minutes`、`actions`（仅行动清单）、`evidence`（原证据报告）；`--no-appendix` 去掉溯源附录。缺 `--minutes` 时仍输出原来的 evidence 报告，既有脚本行为不变；要求 `minutes`/`actions` 模式却没给编辑稿会以 `MINUTES_MISSING` 失败。MCP 的 `render_report` 接受同样的可选参数（`minutes` 为 JSON 字符串），详见 [MCP 文档](docs/MCP.md)。
-
-### 可选：独立模型分析
-
-复制 `.env.example` 为 `.env`，填写 `OPENAI_API_KEY` 和 `OPENAI_MODEL`，按需配置 `OPENAI_BASE_URL`，然后执行：
+复制 `.env.example` 为 `.env`，填写 `OPENAI_API_KEY` 与 `OPENAI_MODEL`，按需配置 `OPENAI_BASE_URL`：
 
 ```sh
 npm run dev -- analyze examples/sample-meeting.md --out report.md
 ```
 
-CLI 只在 `analyze --env <path>` 显式指定时读取环境文件，否则仅使用 shell 环境变量——工作目录下的 `.env` 不会被隐式加载。此模式会将记录发送给所配置的模型服务，可能产生费用；不要提交密钥或私有会议资料。当前适配器使用兼容 Chat Completions 的 JSON 模式：JSON/schema 解析失败默认自动重试 1 次（`0-5` 次可调，`0` 关闭），每次重试都会把逐字稿再次发送给 provider；证据校验失败不重试；尚无长文分块、限流退避和 token 预算。`analyze` 对逐字稿有 2 MiB UTF-8 上限：文件超过上限时在读入内存前以 `INPUT_SIZE_LIMIT` 拒绝；`report` 虽然不调用模型，但同样按文件大小先行拒绝超过 2 MiB 的 normalized JSON 与超过 4 MiB 的 analysis JSON，解析后的输入还要满足 2 MiB / 10,000 段上限；`inspect` 不设该上限。详见[分析引擎](docs/ANALYSIS-ENGINE.md)。
-
-### CLI 错误码与退出码
-
-退出码：`0` 成功；`1` 运行错误（含非法 `--mode` 取值）；`2` 用法错误（未知参数、缺参数、非 analyze 命令使用 analyze 专属旗标）。
-
-| 错误码 | 含义 |
-|---|---|
-| `CONFIG_MISSING` | `analyze` 缺 `OPENAI_API_KEY` / `OPENAI_MODEL` |
-| `CONFIG_INVALID` | 环境文件不可读、`OPENAI_TIMEOUT_MS` 越界、`OPENAI_BASE_URL` scheme 不合法（非 https 且非 loopback 明文 http） |
-| `INPUT_UNSUPPORTED` / `INPUT_EMPTY` | 逐字稿扩展名不支持 / 内容为空 |
-| `INPUT_SIZE_LIMIT` | 输入超过 2 MiB（analysis 4 MiB）或超过 10,000 段 |
-| `INPUT_SEGMENT_LIMIT` | 归一化时段数超限 |
-| `INPUT_JSON_INVALID` | normalized / analysis / minutes JSON 文件读取或解析失败 |
-| `OUT_PATH_INVALID` | `--out` 为 UNC/设备命名空间/盘符相对/备用数据流形态 |
-| `INPUT_SCHEMA_INVALID` | normalized JSON 不符合 schema（report 输入） |
-| `ANALYSIS_MEETING_MISMATCH` / `ANALYSIS_DUPLICATE_ID` / `ANALYSIS_EVIDENCE_INVALID` | analysis 与输入会议身份不符 / 条目 ID 重复 / 证据校验失败 |
-| `ANALYSIS_INVALID_JSON` / `ANALYSIS_SCHEMA_INVALID` | 模型输出不可解析为 JSON / JSON 合法但不符合 schema（重试耗尽后） |
-| `MINUTES_MISSING` / `MINUTES_*` / `RENDER_MODE_INVALID` | minutes 契约与渲染模式错误（见[展示契约](docs/MINUTES-CONTRACT.md)） |
-| `HTTP_ERROR` / `REQUEST_FAILED` / `REQUEST_TIMEOUT` / `REQUEST_ABORTED` | provider 返回非 2xx / 网络失败 / 超时 / 外部中止 |
-| `RESPONSE_TOO_LARGE` / `BODY_READ_FAILED` / `INVALID_JSON` / `EMPTY_COMPLETION` / `PROVIDER_RESPONSE_INVALID` | provider 响应体超限 / 读取失败 / 非 JSON / 空 completion / 形状不合法 |
-| `SETUP_*` | `setup:client` 安装器错误（路径形态、越界、冲突、缺构建产物等） |
+环境文件仅在 `analyze --env <path>` 显式指定时读取，工作目录下的 `.env` 不会被隐式加载。该模式会把记录发送给所配置的模型服务并可能产生费用，不要提交密钥或私有会议资料。重试策略、输入限额与 Provider 适配细节见[分析引擎](docs/guides/ANALYSIS-ENGINE.md)。
 
 ## 能力与边界
 
@@ -128,26 +89,33 @@ CLI 只在 `analyze --env <path>` 显式指定时读取环境文件，否则仅�
 - 未知负责人/日期保持未知；记录内的指令作为不可信数据处理。
 - 校验通过证明结构与引用符合规则，不能证明解释正确。摘要目前没有逐项证据字段，报告仍需人工审阅。
 - MCP 不调用模型、不读写任意文件、不访问 GitHub，也不自动创建 Issue。宿主模型是否联网及数据如何处理取决于宿主设置。
-- 跨会议持久化、GitHub 集成与公共发布仍属后续计划；简洁纪要渲染已接入 CLI `report` 与 MCP `render_report`（见[会议纪要展示契约](docs/MINUTES-CONTRACT.md)）。
+- 跨会议持久化、GitHub 集成与公共发布仍属后续计划；简洁纪要渲染已接入 CLI `report` 与 MCP `render_report`。
 
 ## 演示
 
 截图与端到端演示视频待开源发布时补充。当前可以先看仓库内的完整虚构样例：[示例说明](examples/agent-workflow/README.md)包含逐字稿、analysis 编辑稿与生成的[会议纪要](examples/agent-workflow/minutes.md)、[证据报告](examples/agent-workflow/report.md)。
 
-## 目录与文档
+## 仓库结构
 
 ```text
-src/         TypeScript Core、CLI、MCP、Provider 与项目安装器
-skills/      权威 Skill 源码、工作流引用及生成的 JSON Schema
-plugin/      本地插件清单与 MCP 配置模板
-scripts/     构建、schema 导出及验证脚本
-tests/       自动化测试
-examples/    可公开的虚构输入及完整分析/报告样例
-docs/        安装、技术契约、设计与路线图
-.github/     CI 工作流
+meeting-to-action/
+├── src/                 # TypeScript 核心：core / domain / render / mcp / providers / cli / setup
+├── skills/              # 便携 Skill 源（SKILL.md + references + agents）
+├── plugin/              # 插件源清单（plugin.json / mcp.json）
+├── scripts/             # 构建、schema 导出、冒烟与版本同步脚本
+├── tests/               # vitest 单元 / 集成 / 打包测试
+├── examples/            # 可公开的虚构样例（sample-meeting + agent-workflow 全流程）
+├── docs/                # 全部文档：INDEX.md 为导航，按 guides / contracts / design / community 分组
+└── .github/             # CI 工作流与 issue / PR 模板
 ```
 
-完整导航与维护约定见[文档索引](docs/INDEX.md)。`dist/` 为构建输出，`node_modules/` 为依赖，均不纳入版本控制。包版本单一来源是 `src/version.ts` 的 `APP_VERSION`（CLI `--version`、MCP `serverInfo.version` 与插件清单一致，`node scripts/version-sync.mjs <ver>` 一键同步）；数据契约 `schemaVersion` 独立演进，与包版本无关。
+文档按主题分组：`docs/guides/`（安装与使用）、`docs/contracts/`（契约与技术参考）、`docs/design/`（产品与设计资料）、`docs/community/`（根目录文件的英文变体）。完整导航与维护约定见[文档索引](docs/INDEX.md)。
+
+## CLI 错误码与退出码
+
+退出码：`0` 成功；`1` 运行错误（含非法 `--mode` 取值）；`2` 用法错误（未知参数、缺参数、非 analyze 命令使用 analyze 专属旗标）。
+
+`CONFIG_MISSING`、`INPUT_SIZE_LIMIT`、`SETUP_*` 等全部错误码的完整含义见 [CLI 错误码参考](docs/guides/CLI-ERRORS.md)。
 
 ## 开发验证
 

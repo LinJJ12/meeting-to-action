@@ -1,4 +1,4 @@
-[简体中文（主版）](../CHANGELOG.md) | English
+[简体中文（主版）](../../CHANGELOG.md) | English
 
 # Changelog
 

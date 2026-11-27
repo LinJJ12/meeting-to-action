@@ -63,6 +63,6 @@
 
 - 已完成：工程与契约基线（TXT/Markdown 规范化、版本化 Zod 契约、证据校验、Markdown 渲染、本地 CLI）；模型中立的 Provider 接口与 OpenAI 兼容适配器；五个 stdio MCP 工具与限额；项目安装器；本地插件市场与单插件上传包；Codex CLI 发现验证（2026-11-24）。
 - 未完成项去向：长文分块、token 预算与限流退避 → 后续按需评估；只读仓库与 Issue 检索、证据版 Issue 草稿、经批准的 Issue 创建及失败路径测试 → 并入第二期（P2）；跨会议追踪与额外转写格式适配 → 按 issue #39 §7 暂不纳入。
-- 验收细节见 [CLIENT-SETUP.md](CLIENT-SETUP.md) 与 [PLUGIN-INSTALL.md](PLUGIN-INSTALL.md)；交付设计见 [AGENT-TOOLKIT.md](AGENT-TOOLKIT.md)。
+- 验收细节见 [CLIENT-SETUP.md](../guides/CLIENT-SETUP.md) 与 [PLUGIN-INSTALL.md](../guides/PLUGIN-INSTALL.md)；交付设计见 [AGENT-TOOLKIT.md](AGENT-TOOLKIT.md)。
 
 原则不变：阶段完成必须有测试、文档、可复现演示与已知限制说明；外部写入保持确认门禁。

@@ -61,7 +61,7 @@ Validate evidence via the plugin's MCP tools and generate a Markdown report save
 Keep owners and dates unknown when uncertain, preserve contradictions. Do not create GitHub issues.
 ```
 
-The result should contain minutes organized by topic, a consolidated to-do list, and a trace appendix. The import task remains unclaimed, Jo's deadline stays `next Friday`, the launch dispute can be traced back to the original text, and the instruction at the end of the transcript is treated as data. Compare with the [generated sample minutes](../examples/agent-workflow/minutes.md). Tool discovery, programmatic validation, and model interpretation quality must each be verified separately.
+The result should contain minutes organized by topic, a consolidated to-do list, and a trace appendix. The import task remains unclaimed, Jo's deadline stays `next Friday`, the launch dispute can be traced back to the original text, and the instruction at the end of the transcript is treated as data. Compare with the [generated sample minutes](../../examples/agent-workflow/minutes.md). Tool discovery, programmatic validation, and model interpretation quality must each be verified separately.
 
 ## Updates and cleanup
 
