@@ -8,8 +8,8 @@ import {
   type MinutesErrorCode,
 } from "../domain/minutes.js";
 
-type FactKind = "decision" | "action" | "risk" | "openQuestion" | "conflict";
-type FactEntry = { kind: FactKind; status: string | undefined };
+export type MinutesFactKind = "decision" | "action" | "risk" | "openQuestion" | "conflict";
+type FactEntry = { kind: MinutesFactKind; status?: string };
 const PROGRESS_ACTION_STATUSES = new Set(["done", "in_progress", "blocked"]);
 
 /** Deterministic minutes-contract@1.0 failure; `code` is one of MINUTES_ERROR_CODES. */
@@ -58,8 +58,8 @@ export function validateMinutes(
       "minutes=" + document.meetingId + "，analysis=" + analysis.meetingId,
     );
   const facts = new Map<string, FactEntry[]>();
-  const addFact = (id: string, kind: FactKind, status?: string) => {
-    const entry = { kind, status };
+  const addFact = (id: string, kind: MinutesFactKind, status?: string) => {
+    const entry = { kind, ...(status === undefined ? {} : { status }) };
     const entries = facts.get(id);
     if (entries) entries.push(entry);
     else facts.set(id, [entry]);
@@ -69,11 +69,16 @@ export function validateMinutes(
   for (const item of analysis.risks) addFact(item.id, "risk");
   for (const item of analysis.openQuestions) addFact(item.id, "openQuestion");
   for (const item of analysis.conflicts) addFact(item.id, "conflict");
+  if (!document.sections.length && facts.size)
+    throw new MinutesContractError("MINUTES_SCHEMA_INVALID", "存在可引用条目时 sections 不能为空");
   const referenced = new Set<string>();
+  const claimIds = new Set<string>();
   for (const section of document.sections)
-    for (const claim of section.claims)
+    for (const claim of section.claims) {
+      if (claimIds.has(claim.id))
+        throw new MinutesContractError("MINUTES_SCHEMA_INVALID", "sections.claims.id 必须唯一");
+      claimIds.add(claim.id);
       for (const ref of claim.refs) {
-        referenced.add(ref);
         const entries = facts.get(ref);
         if (!entries)
           throw new MinutesContractError("MINUTES_REF_UNKNOWN", claim.id + " -> " + ref);
@@ -82,7 +87,10 @@ export function validateMinutes(
             "MINUTES_KIND_MISMATCH",
             claim.id + "（kind=" + claim.kind + "）不能引用 " + ref,
           );
+        if (entries.some((entry) => entry.kind === "action" && claimSupports(claim.kind, entry)))
+          referenced.add(ref);
       }
+    }
   const missing = analysis.actionItems
     .filter((item) => !referenced.has(item.id))
     .map((item) => item.id);
@@ -94,7 +102,7 @@ export function validateMinutes(
   return document;
 }
 
-function claimSupports(kind: MinutesClaim["kind"], entry: FactEntry): boolean {
+export function claimSupports(kind: MinutesClaim["kind"], entry: FactEntry): boolean {
   switch (kind) {
     case "decision":
       return entry.kind === "decision";

@@ -19,7 +19,7 @@
 | `meta.date` | string | 否 | 展示用会议日期 |
 | `meta.participants` | string[] | 否 | 展示用参会人，不建立任务归属 |
 | `highlights` | string[] | 是 | 要点摘录；可为空数组，元素须为非空串 |
-| `sections[]` | `{ id, heading, claims[] }` | 是 | 阅读顺序的议题分节；至少 1 节 |
+| `sections[]` | `{ id, heading, claims[] }` | 是 | 阅读顺序的议题分节。五类可引用条目都为空时可用 `[]` |
 | `sections[].claims[]` | `{ id, kind, text, detail?, refs[] }` | 是 | 每节至少 1 条；`kind` 见下 |
 | `actionNote` | string | 否 | 行动清单前的说明 |
 
@@ -40,7 +40,7 @@
 4. `kind` 与所引条目类型匹配（见上表）→ `MINUTES_KIND_MISMATCH`
 5. `progress` 引用行动项时，其 status 必须属于 `done` / `in_progress` / `blocked`；否则同样 → `MINUTES_KIND_MISMATCH`
 6. **任务全覆盖**：`analysis.actionItems` 的每个 `id` 至少被某条 claim 的 `refs` 引用一次 → `MINUTES_ACTION_COVERAGE`
-7. 结构必须严格符合 Zod 契约（未知字段拒绝、`sections`/`claims`/`refs` 非空、版本文档字面量等）→ `MINUTES_SCHEMA_INVALID`（附首个违规字段路径）
+7. 结构必须严格符合 Zod 契约（未知字段拒绝、`claims`/`refs` 非空、版本文档字面量等）。存在可引用条目时 `sections` 不能为空；`claim.id` 必须在整份纪要中唯一。违反时返回 `MINUTES_SCHEMA_INVALID`。
 
 规则 4 与 5 共用 `MINUTES_KIND_MISMATCH`：两者都是「claim 与所引事实条目的语义类型不符」，拆开写只是为了让「类型匹配」和「状态子集」两件事分别可读。
 
@@ -100,3 +100,7 @@ MCP `render_report`：
 3. **minutes 来源**：本阶段 minutes 由宿主模型/人工提供；`analyze` 不自动生成 minutes，避免语义归并进入确定性管线。
 4. **标题**：允许宿主模型命名，但标注「编辑标题，非事实断言」，不得作为事实依据。
 5. **语言**：主稿默认中文；`--lang en` 留待后续。
+6. **插件默认交付**：普通会议分析、报告或保留证据的请求，Skill 生成纪要编辑稿并交付主稿与溯源附录。明确要求独立证据报告或仅执行清单时选择相应模式。CLI 和 MCP 直接调用仍按上文规则选择模式。
+7. **栏目顺序**：各议题统一按已确认决定、进展、后续、待确认展示。兼容旧编辑稿时，提议、已否决、已作废显示在进展之后、后续之前。空栏目跳过，同一栏目内保留编辑稿顺序。
+8. **纯汇报**：当五类可引用条目都为空时，可提供 `sections: []`。正文从分析议题生成，缺少议题时使用分析摘要。
+9. **附录覆盖**：附录包含正文引用、全部议题证据和其余可引用条目的证据。要点与引文的语义一致性由宿主核对。

@@ -69,6 +69,8 @@ npm run dev -- report normalized.json --analysis analysis.json --out report.md
 npm run dev -- report examples/agent-workflow/normalized.json --analysis examples/agent-workflow/analysis.json
 ```
 
+可对照[虚构会议示例](examples/agent-workflow/README.md)中的逐字稿、编辑稿和生成的纪要。
+
 `inspect` 和 `report` 不调用模型。`report` 校验会议 ID、结构、分类内重复 ID 及证据后再渲染。带 `--out` 的 CLI 命令拒绝覆盖已有文件。
 
 需要更紧凑的中文纪要或行动清单时，在已校验的 analysis 之上再提供一份 minutes 编辑稿（`minutes-contract@1.0`，见[会议纪要展示契约](docs/MINUTES-CONTRACT.md)）：

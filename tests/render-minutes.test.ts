@@ -249,12 +249,61 @@ it("renders the minutes title, meta line, highlights and topic sections", () => 
   expect(md).toContain("### 待确认");
 });
 
-it("labels all four claim kinds in reading order", () => {
-  const body = render().split("## 集中待办")[0]!;
-  const labels = ["**进展：**", "**后续：**", "**已确认决定：**", "**待确认：**"];
-  const positions = labels.map((label) => body.indexOf(label));
-  expect(positions.every((position) => position >= 0)).toBe(true);
-  expect([...positions].sort((left, right) => left - right)).toEqual(positions);
+it("renders the same column order across topics regardless of claim order", () => {
+  const draft = minutesFixture();
+  const claims = draft.sections.flatMap((section) => section.claims);
+  draft.sections[0]!.claims = claims.map((claim) => ({ ...claim, id: `${claim.id}-first` }));
+  draft.sections[1]!.claims = [...claims]
+    .reverse()
+    .map((claim) => ({ ...claim, id: `${claim.id}-second` }));
+  const body = renderMinutesDocument(inputFixture(), analysisFixture(), draft).split(
+    "## 集中待办",
+  )[0]!;
+  const labels = (heading: string) =>
+    [
+      ...body
+        .split(`### ${heading}\n`)[1]!
+        .split("### ")[0]!
+        .matchAll(/^- \*\*(.+?)：\*\*$/gm),
+    ].map((match) => match[1]);
+  const expected = ["已确认决定", "进展", "后续", "待确认"];
+  expect(labels("登录改造")).toEqual(expected);
+  expect(labels("发布安排")).toEqual(expected);
+  expect(labels("待确认")).toEqual(["待确认"]);
+});
+
+it("renders topics-only briefings without requiring invented claim references", () => {
+  const analysis = analysisFixture();
+  analysis.decisions = [];
+  analysis.actionItems = [];
+  analysis.risks = [];
+  analysis.openQuestions = [];
+  analysis.conflicts = [];
+  const md = renderMinutesDocument(inputFixture(), analysis, { ...minutesFixture(), sections: [] });
+  const [body, appendix] = md.split("## 溯源附录");
+  expect(body).toContain("### 登录改造\n- 回归完成，准备灰度");
+  expect(appendix).toContain("登录改造的回归已经跑完了。");
+});
+
+it("includes topic evidence and facts left out of the editorial claims", () => {
+  const analysis = analysisFixture();
+  analysis.decisions.push({ ...analysis.decisions[0]!, id: "d2", statement: "另一个决定" });
+  const md = renderMinutesDocument(inputFixture(), analysis, minutesFixture());
+  const [body, appendix] = md.split("## 溯源附录");
+  expect(body).not.toContain("另一个决定");
+  expect(appendix).toContain("登录改造的回归已经跑完了。");
+  expect(appendix).toContain("d2（决定）：另一个决定");
+});
+
+it("keeps matching evidence distinct when an action and a decision share an ID", () => {
+  const analysis = analysisFixture();
+  const draft = minutesFixture();
+  analysis.actionItems[1]!.id = "d1";
+  draft.sections[0]!.claims[1]!.refs = ["d1"];
+  const md = renderMinutesDocument(inputFixture(), analysis, draft);
+  expect(md).toContain("| d1 | 补充支付回调监控 | c2 |");
+  expect(md).toContain("d1（行动项）：补充支付回调监控");
+  expect(md).toContain("d1（决定）：发布窗口定在下周三。");
 });
 
 it("renders claim details as indented explanatory lines", () => {

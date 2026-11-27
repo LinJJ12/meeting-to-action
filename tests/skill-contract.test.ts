@@ -15,6 +15,7 @@ it("ships a Skill schema matching the runtime contract", () => {
 import { normalizeTranscript } from "../src/core/normalize.js";
 import { validateAnalysis } from "../src/core/analysis.js";
 import { renderMarkdown } from "../src/render/markdown.js";
+import { renderMinutesDocument } from "../src/render/minutes.js";
 it("keeps the shipped edge-case demo traceable to the actual transcript", () => {
   const read = (name: string) =>
     readFileSync(new URL("../examples/agent-workflow/" + name, import.meta.url), "utf8");
@@ -22,6 +23,9 @@ it("keeps the shipped edge-case demo traceable to the actual transcript", () => 
   expect(JSON.parse(read("normalized.json"))).toEqual(input);
   const analysis = validateAnalysis(input, JSON.parse(read("analysis.json")));
   expect(renderMarkdown(analysis)).toBe(read("report.md"));
+  expect(renderMinutesDocument(input, analysis, JSON.parse(read("minutes.json")))).toBe(
+    read("minutes.md"),
+  );
   expect(analysis.actionItems.find((x) => x.id === "a1")?.assignee).toBeUndefined();
   expect(analysis.actionItems.find((x) => x.id === "a2")?.dueDate).toBe("next Friday");
   expect(analysis.decisions.find((x) => x.id === "d2")?.status).toBe("unclear");

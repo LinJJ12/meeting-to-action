@@ -11,8 +11,10 @@ npm run dev -- inspect /absolute/path/meeting.md --out /absolute/path/normalized
 Read normalized.json completely (or disclose coverage limits). Author analysis.json following contract.md. Preserve schemaVersion and meetingId. Use the current UTC timestamp for generatedAt. The assistant performs interpretation; the CLI does not need a model key for this path.
 
 ```sh
-npm run dev -- report /absolute/path/normalized.json --analysis /absolute/path/analysis.json --out /absolute/path/report.md
+npm run dev -- report /absolute/path/normalized.json --analysis /absolute/path/analysis.json --minutes /absolute/path/minutes.json --mode minutes --out /absolute/path/report.md
 ```
+
+Author `minutes.json` before this command. This renders the readable report with its trace appendix. For an explicitly requested standalone evidence report, use `--mode evidence` and omit `--minutes`. For an action-only checklist, keep `--minutes` and use `--mode actions`.
 
 Exit 0 means schema, meeting ID, duplicate item IDs and evidence passed validation. Exit 1 means input/validation/IO failure; exit 2 means invalid arguments. On validation failure inspect the source and correct the draft, never weaken the validators. Do not print confidential payloads into diagnostics. If report succeeds, read the output and check semantic accuracy manually.
 

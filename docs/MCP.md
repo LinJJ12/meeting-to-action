@@ -60,6 +60,8 @@ All arguments are inline JSON, not filesystem paths. Objects reject unknown fiel
 4. Call validate_analysis or render_report with original input and analysis. The latter validates independently, so rendering cannot bypass validation. A result with isError is a failure, not a report. `render_report` accepts an optional `minutes` argument as a JSON-encoded minutes-contract document (see [the minutes contract](MINUTES-CONTRACT.md)); `mode` defaults to "minutes" when minutes are supplied and to "evidence" otherwise, and `appendix: false` omits the trace appendix. Supplying `mode: "minutes"` or `"actions"` without `minutes` is rejected with MINUTES_MISSING, and any supplied minutes document is validated even in evidence mode.
 5. The host saves Markdown only at the user's selected destination. This MCP has no write tool.
 
+For a briefing with no decisions, actions, risks, open questions, or conflicts, pass a minutes draft with `sections: []`. The renderer uses the analysis topics or summary for the body. Claim IDs must be unique across the document. Empty sections with referable facts and duplicate claim IDs return `MINUTES_SCHEMA_INVALID`. The minutes appendix includes topic evidence and analysis facts left out of the editorial body.
+
 JSON Schema describes shape only; cross-field identity, duplicate IDs, source relationships and quotes are checked by runtime code. The normalized input itself is supplied by the client; matching evidence is not proof that an input or interpretation is authentic.
 
 ## Limits and errors
