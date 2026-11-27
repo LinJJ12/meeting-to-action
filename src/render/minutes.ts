@@ -1,6 +1,6 @@
 import type { EvidenceRef, MeetingAnalysis, MeetingInput } from "../domain/schema.js";
 import type { MinutesClaim, MinutesDocument, MinutesMeta } from "../domain/minutes.js";
-import { validateMinutes } from "../core/minutes.js";
+import { claimSupports, validateMinutes, type MinutesFactKind } from "../core/minutes.js";
 import { escapeMarkdownInline as text } from "./escape.js";
 import { renderMarkdown } from "./markdown.js";
 
@@ -12,13 +12,13 @@ export interface RenderMinutesOptions {
 
 type ActionItem = MeetingAnalysis["actionItems"][number];
 type ActionStatus = ActionItem["status"];
-type FactKind = "decision" | "action" | "risk" | "openQuestion" | "conflict";
 interface AnalysisFact {
-  kind: FactKind;
+  kind: MinutesFactKind;
   summary: string;
   evidence: EvidenceRef[];
-  decisionStatus?: string;
+  status?: string;
 }
+type AnalysisFactIndex = Map<string, AnalysisFact[]>;
 
 const READING_MODES: readonly string[] = ["minutes", "actions", "evidence"];
 
@@ -53,14 +53,24 @@ const ACTION_STATUS_LABELS: Record<ActionStatus, string> = {
   blocked: "受阻",
   unknown: "未确认",
 };
-const DECISION_STATUS_LABELS: Record<string, string> = {
+const DECISION_STATUS_LABELS = {
   confirmed: "已确认决定",
   proposed: "提议",
   unclear: "待确认",
   rejected: "已否决",
   superseded: "已作废",
 };
-const FACT_KIND_LABELS: Record<FactKind, string> = {
+const SECTION_LABEL_ORDER = [
+  DECISION_STATUS_LABELS.confirmed,
+  "决定",
+  CLAIM_KIND_FALLBACK_LABELS.progress,
+  DECISION_STATUS_LABELS.proposed,
+  DECISION_STATUS_LABELS.rejected,
+  DECISION_STATUS_LABELS.superseded,
+  CLAIM_KIND_FALLBACK_LABELS.followup,
+  CLAIM_KIND_FALLBACK_LABELS.open,
+];
+const FACT_KIND_LABELS: Record<MinutesFactKind, string> = {
   decision: "决定",
   action: "行动项",
   risk: "风险",
@@ -125,10 +135,15 @@ function renderHighlights(highlights: string[]): string {
 function renderSections(analysis: MeetingAnalysis, document: MinutesDocument): string {
   const facts = indexAnalysisFacts(analysis);
   const lines: string[] = ["## 按议题整理"];
+  if (!document.sections.length) {
+    for (const topic of analysis.topics)
+      lines.push("### " + text(topic.title), "- " + text(topic.summary));
+    if (!analysis.topics.length) lines.push(...analysis.summary.map((line) => "- " + text(line)));
+    return lines.join("\n");
+  }
   for (const section of document.sections) {
     lines.push("### " + text(section.heading));
-    // 同一小节内按标签聚合：进展/后续/待确认各成一个组，子项缩进列出。
-    // 组顺序 = 标签在 claim 序列中的首次出现顺序，渲染不重排语义。
+    // 让读者能在各节按相同顺序扫读。只固定栏目顺序，保留组内编辑顺序。
     const groups = new Map<string, MinutesClaim[]>();
     for (const claim of section.claims) {
       const label = claimKindLabel(claim, facts);
@@ -136,7 +151,9 @@ function renderSections(analysis: MeetingAnalysis, document: MinutesDocument): s
       if (bucket) bucket.push(claim);
       else groups.set(label, [claim]);
     }
-    for (const [label, claims] of groups) {
+    for (const label of SECTION_LABEL_ORDER) {
+      const claims = groups.get(label);
+      if (!claims) continue;
       lines.push("- **" + label + "：**");
       for (const claim of claims) {
         lines.push("  - " + text(claim.text));
@@ -153,14 +170,14 @@ function renderSections(analysis: MeetingAnalysis, document: MinutesDocument): s
  * confirmed decision. Label by the referenced statuses so the minutes never
  * upgrade a proposal into a confirmed outcome; other kinds keep fixed labels.
  */
-function claimKindLabel(claim: MinutesClaim, facts: Map<string, AnalysisFact>): string {
+function claimKindLabel(claim: MinutesClaim, facts: AnalysisFactIndex): string {
   if (claim.kind !== "decision") return CLAIM_KIND_FALLBACK_LABELS[claim.kind];
   const statuses = claim.refs
-    .map((ref) => facts.get(ref)?.decisionStatus)
+    .map((ref) => facts.get(ref)?.find((fact) => fact.kind === "decision")?.status)
     .filter((status): status is string => status !== undefined);
-  for (const status of ["proposed", "unclear", "rejected", "superseded"])
-    if (statuses.includes(status)) return DECISION_STATUS_LABELS[status]!;
-  return statuses.length ? DECISION_STATUS_LABELS.confirmed! : "决定";
+  for (const status of ["proposed", "unclear", "rejected", "superseded"] as const)
+    if (statuses.includes(status)) return DECISION_STATUS_LABELS[status];
+  return statuses.length ? DECISION_STATUS_LABELS.confirmed : "决定";
 }
 
 /**
@@ -180,8 +197,7 @@ function renderOpenClaims(
       (claim) =>
         claim.kind === "open" &&
         claim.refs.some((ref) => {
-          const kind = facts.get(ref)?.kind;
-          return kind === "conflict" || kind === "risk";
+          return facts.get(ref)?.some(({ kind }) => kind === "conflict" || kind === "risk");
         }),
     );
   if (!claims.length) return undefined;
@@ -273,7 +289,7 @@ export function renderTraceAppendix(
 ): string {
   const facts = indexAnalysisFacts(analysis);
   const segments = indexSegments(input);
-  const claimIndex = indexActionItemClaims(document);
+  const claimIndex = indexActionItemClaims(document, facts);
   const mappingRows = analysis.actionItems.map((item) => {
     const claimIds = claimIndex.get(item.id) ?? [];
     return (
@@ -292,14 +308,29 @@ export function renderTraceAppendix(
     ...(mappingRows.length ? mappingRows : ["| — | — | — |"]),
   ];
   const claims = document.sections.flatMap((section) => section.claims);
-  const evidenceLines = claims.map((claim) => renderClaimEvidence(claim, facts, segments));
-  const evidenceBlock = evidenceLines.length ? evidenceLines.join("\n") : "- 无条目。";
+  const cited = new Set<AnalysisFact>();
+  const evidenceLines = claims.map((claim) => renderClaimEvidence(claim, facts, segments, cited));
+  const topics = analysis.topics.flatMap((topic) =>
+    renderFactEvidence(
+      text(topic.title) + "：" + text(topic.summary),
+      topic.evidence,
+      segments,
+      "",
+    ),
+  );
+  const remaining = [...facts].flatMap(([id, entries]) =>
+    entries
+      .filter((fact) => !cited.has(fact))
+      .flatMap((fact) => renderFactEvidence(formatFact(id, fact), fact.evidence, segments, "")),
+  );
   return [
     "## 溯源附录",
     "### 任务映射",
     mappingLines.join("\n"),
     "### 条目证据",
-    evidenceBlock,
+    evidenceLines.length ? evidenceLines.join("\n") : "- 无条目。",
+    ...(topics.length ? ["### 议题证据", topics.join("\n")] : []),
+    ...(remaining.length ? ["### 未在正文引用的分析条目", remaining.join("\n")] : []),
     DISCLAIMER,
   ].join("\n\n");
 }
@@ -321,26 +352,24 @@ function indexSegments(input: MeetingInput): Map<string, SegmentMeta> {
   return segments;
 }
 
-function indexAnalysisFacts(analysis: MeetingAnalysis): Map<string, AnalysisFact> {
-  const facts = new Map<string, AnalysisFact>();
+function indexAnalysisFacts(analysis: MeetingAnalysis): AnalysisFactIndex {
+  const facts: AnalysisFactIndex = new Map();
   const add = (
-    kind: FactKind,
+    kind: MinutesFactKind,
     id: string,
     summary: string,
     evidence: EvidenceRef[],
-    decisionStatus?: string,
+    status?: string,
   ): void => {
-    if (!facts.has(id))
-      facts.set(id, {
-        kind,
-        summary,
-        evidence,
-        ...(decisionStatus !== undefined ? { decisionStatus } : {}),
-      });
+    const fact = { kind, summary, evidence, ...(status === undefined ? {} : { status }) };
+    const entries = facts.get(id);
+    if (entries) entries.push(fact);
+    else facts.set(id, [fact]);
   };
   for (const item of analysis.decisions)
     add("decision", item.id, item.statement, item.evidence, item.status);
-  for (const item of analysis.actionItems) add("action", item.id, item.title, item.evidence);
+  for (const item of analysis.actionItems)
+    add("action", item.id, item.title, item.evidence, item.status);
   for (const item of analysis.risks) add("risk", item.id, item.description, item.evidence);
   for (const item of analysis.openQuestions)
     add("openQuestion", item.id, item.question, item.evidence);
@@ -348,11 +377,18 @@ function indexAnalysisFacts(analysis: MeetingAnalysis): Map<string, AnalysisFact
   return facts;
 }
 
-function indexActionItemClaims(document: MinutesDocument): Map<string, string[]> {
+function indexActionItemClaims(
+  document: MinutesDocument,
+  facts: AnalysisFactIndex,
+): Map<string, string[]> {
   const index = new Map<string, string[]>();
   for (const section of document.sections)
     for (const claim of section.claims)
       for (const ref of claim.refs) {
+        if (
+          !facts.get(ref)?.some((fact) => fact.kind === "action" && claimSupports(claim.kind, fact))
+        )
+          continue;
         const claimIds = index.get(ref);
         if (claimIds) {
           if (!claimIds.includes(claim.id)) claimIds.push(claim.id);
@@ -363,38 +399,43 @@ function indexActionItemClaims(document: MinutesDocument): Map<string, string[]>
 
 function renderClaimEvidence(
   claim: MinutesClaim,
-  facts: Map<string, AnalysisFact>,
+  facts: AnalysisFactIndex,
   segments: Map<string, SegmentMeta>,
+  cited: Set<AnalysisFact>,
 ): string {
   const lines: string[] = [
     "- **" + text(claim.id) + "**（" + claimKindLabel(claim, facts) + "）：" + text(claim.text),
   ];
   for (const ref of claim.refs) {
-    const fact = facts.get(ref);
-    if (fact === undefined) {
+    const matches = facts.get(ref)?.filter((fact) => claimSupports(claim.kind, fact)) ?? [];
+    if (!matches.length) {
       lines.push("  - " + text(ref) + "：未解析到分析条目（引用不可达）");
       continue;
     }
-    // 引用条目与首条证据合并为一行，压平附录层级；其余证据缩进续列。
-    const locator = fact.evidence.length
-      ? formatEvidenceLocator(fact.evidence[0]!, APPENDIX_QUOTE_LIMIT, true, segments)
-      : "—";
-    lines.push(
-      "  - " +
-        text(ref) +
-        "（" +
-        FACT_KIND_LABELS[fact.kind] +
-        "）：" +
-        text(fact.summary) +
-        " — 证据：" +
-        locator,
-    );
-    for (const evidence of fact.evidence.slice(1))
-      lines.push(
-        "    - 证据：" + formatEvidenceLocator(evidence, APPENDIX_QUOTE_LIMIT, true, segments),
-      );
+    for (const fact of matches) {
+      cited.add(fact);
+      lines.push(...renderFactEvidence(formatFact(ref, fact), fact.evidence, segments, "  "));
+    }
   }
   return lines.join("\n");
+}
+
+function formatFact(id: string, fact: AnalysisFact): string {
+  return text(id) + "（" + FACT_KIND_LABELS[fact.kind] + "）：" + text(fact.summary);
+}
+
+function renderFactEvidence(
+  label: string,
+  evidence: EvidenceRef[],
+  segments: Map<string, SegmentMeta>,
+  indent: string,
+): string[] {
+  const locator = (ref: EvidenceRef | undefined) =>
+    formatEvidenceLocator(ref, APPENDIX_QUOTE_LIMIT, true, segments);
+  return [
+    indent + "- " + label + " — 证据：" + locator(evidence[0]),
+    ...evidence.slice(1).map((ref) => indent + "  - 证据：" + locator(ref)),
+  ];
 }
 
 function formatEvidenceLocator(

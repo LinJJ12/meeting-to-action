@@ -22,7 +22,7 @@ const edit = async (file, fn) => {
   console.log("updated", file);
 };
 await edit("src/version.ts", (s) =>
-  s.replace(/export const APP_VERSION="[^"]+"/, `export const APP_VERSION="${version}"`),
+  s.replace(/(export const APP_VERSION\s*=\s*)"[^"]+"/, (_, prefix) => `${prefix}"${version}"`),
 );
 await edit("package.json", (s) =>
   s.replaceAll(`"version": "${oldVersion}"`, `"version": "${version}"`),

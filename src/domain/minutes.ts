@@ -48,7 +48,7 @@ export const MinutesDocumentSchema = z
     title: z.string().min(1),
     meta: MinutesMetaSchema,
     highlights: z.array(z.string().min(1)),
-    sections: z.array(MinutesSectionSchema).min(1),
+    sections: z.array(MinutesSectionSchema),
     actionNote: z.string().min(1).optional(),
   })
   .strict();

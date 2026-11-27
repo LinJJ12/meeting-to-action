@@ -39,6 +39,32 @@ describe("render_report minutes wiring", () => {
     );
   });
 
+  it("renders a plain briefing with no referable facts and keeps its topic evidence", () => {
+    const result = renderReport({
+      analysis: {
+        ...analysis,
+        decisions: [],
+        actionItems: [],
+        risks: [],
+        openQuestions: [],
+        conflicts: [],
+      },
+      minutes: JSON.stringify({ ...minutes, sections: [] }),
+      mode: "minutes",
+    });
+    const [body, appendix] = parseOk(result).markdown.split("## 溯源附录");
+    expect(body).toContain("### 登录改造");
+    expect(appendix).toContain("登录改造的回归已经跑完了。");
+  });
+
+  it("returns a stable error for duplicate claim IDs", () => {
+    const draft = mutatedMinutes((document) => {
+      document.sections[1].claims[0].id = document.sections[0].claims[0].id;
+    });
+    const result = renderReport({ minutes: JSON.stringify(draft) });
+    expect(errorCode(result)).toBe("MINUTES_SCHEMA_INVALID");
+  });
+
   it("renders the actions checklist with mode=actions", () => {
     const markdown = parseOk(renderReport({ minutes: minutesText(), mode: "actions" })).markdown;
     expect(markdown).toBe(renderMinutesDocument(input, analysis, minutes, { mode: "actions" }));

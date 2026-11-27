@@ -71,7 +71,7 @@ it("rejects bad datetimes, empty containers and unknown claim kinds", () => {
   expect(() => MinutesDocumentSchema.parse({ ...valid(), generatedAt: "not-a-datetime" })).toThrow(
     z.ZodError,
   );
-  expect(() => MinutesDocumentSchema.parse({ ...valid(), sections: [] })).toThrow(z.ZodError);
+  expect(MinutesDocumentSchema.parse({ ...valid(), sections: [] }).sections).toEqual([]);
   const emptyClaims: any = valid();
   emptyClaims.sections[0].claims = [];
   expect(() => MinutesDocumentSchema.parse(emptyClaims)).toThrow(z.ZodError);

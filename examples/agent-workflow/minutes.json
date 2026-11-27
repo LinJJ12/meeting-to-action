@@ -1,0 +1,32 @@
+{
+  "schemaVersion": "1.0",
+  "contractVersion": "1.0",
+  "meetingId": "meeting-086bf0903de66bcb",
+  "generatedAt": "2026-11-24T07:44:01.865Z",
+  "title": "虚构示例｜API 规划会议纪要",
+  "meta": {},
+  "highlights": [
+    "API 审查已有负责人，导入任务仍待认领。",
+    "重试仍是提案，发布是否延期存在分歧。"
+  ],
+  "sections": [
+    {
+      "id": "api-review",
+      "heading": "API 审查与导入",
+      "claims": [
+        { "id": "api-actions", "kind": "followup", "text": "跟进 API 审查和导入任务。", "refs": ["a2", "a1"] },
+        { "id": "import-owner", "kind": "open", "text": "导入任务仍待认领。", "refs": ["q1"] },
+        { "id": "review-date", "kind": "open", "text": "审查期限保留原文的相对日期，具体日期待确认。", "refs": ["q2"] }
+      ]
+    },
+    {
+      "id": "release",
+      "heading": "发布与重试",
+      "claims": [
+        { "id": "retry-proposal", "kind": "progress", "text": "会上提出增加重试，仍待决定。", "refs": ["d1"] },
+        { "id": "release-timing", "kind": "open", "text": "参会者对是否已同意延期说法不同，发布时间待确认。", "refs": ["c1"] }
+      ]
+    }
+  ],
+  "actionNote": "相对期限按原文保留。待认领任务的负责人标为未指定。"
+}

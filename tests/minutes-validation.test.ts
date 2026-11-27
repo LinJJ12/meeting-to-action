@@ -79,6 +79,26 @@ it("accepts a fully mapped minutes document and returns the parsed copy", () => 
   expect(document.sections).toHaveLength(3);
   expect(document.sections[0]!.claims[0]!.detail).toBe("云端环境尚未验证");
 });
+it.each(["same", "different"])("rejects duplicate claim IDs in %s sections", (placement) => {
+  const error = run(
+    mutate((document) => {
+      const target = document.sections[placement === "same" ? 0 : 1];
+      target.claims.push({ ...document.sections[0].claims[0], id: "c-progress" });
+    }),
+  );
+  expect(error?.code).toBe("MINUTES_SCHEMA_INVALID");
+  expect(error?.message).not.toContain("c-progress");
+});
+it("requires editorial sections when there are referable analysis facts", () => {
+  expect(run({ ...makeMinutes(), sections: [] })?.code).toBe("MINUTES_SCHEMA_INVALID");
+});
+
+it("does not count a decision reference as coverage of an action with the same ID", () => {
+  const analysis = makeAnalysis();
+  analysis.actionItems[2]!.id = "d1";
+  const draft = mutate((document) => document.sections[0].claims.pop());
+  expect(run(draft, analysis)?.code).toBe("MINUTES_ACTION_COVERAGE");
+});
 it.each<[string, (document: any) => void]>([
   [
     "MINUTES_MEETING_MISMATCH",
