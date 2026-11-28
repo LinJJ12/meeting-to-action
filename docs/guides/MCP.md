@@ -2,7 +2,7 @@
 
 # 本地 stdio MCP
 
-本仓库提供五个无状态工具，基于官方 [TypeScript MCP SDK](https://github.com/modelcontextprotocol/typescript-sdk/tree/v1.x)。需要 Node.js 20+。不需要模型凭据，也不需要部署服务端。本 MCP 不调用独立模型 Provider。
+本仓库提供五个无状态工具，基于官方 [TypeScript MCP SDK](https://github.com/modelcontextprotocol/typescript-sdk/tree/v1.x)。需要 Node.js 22+。不需要模型凭据，也不需要部署服务端。本 MCP 不调用独立模型 Provider。
 
 ## 构建与验证
 

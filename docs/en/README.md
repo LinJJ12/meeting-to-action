@@ -30,7 +30,7 @@ Plugin installation and project installation are alternatives — usually pick o
 
 ## Getting started
 
-Requires Node.js 20+ and npm (CI runs the same verification suite on Node.js 20 and 22; the project-level installer behaves the same on both on Windows — see [project setup](guides/CLIENT-SETUP.md)). Clone and build:
+Requires Node.js 22+ and npm (CI runs the same verification suite on Node.js 22 and 24; the project-level installer behaves the same on both on Windows — see [project setup](guides/CLIENT-SETUP.md)). Clone and build:
 
 ```sh
 git clone https://github.com/LinJJ12/meeting-to-action.git

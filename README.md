@@ -30,7 +30,7 @@
 
 ## 快速开始
 
-需要 Node.js 20+ 和 npm（CI 在 Node.js 20 与 22 上验证同一套流程；Windows 上使用项目级安装器时两者行为一致，见[项目级安装文档](docs/guides/CLIENT-SETUP.md)）。克隆并构建：
+需要 Node.js 22+ 和 npm（CI 在 Node.js 22 与 24 上验证同一套流程；Windows 上使用项目级安装器时两者行为一致，见[项目级安装文档](docs/guides/CLIENT-SETUP.md)）。克隆并构建：
 
 ```sh
 git clone https://github.com/LinJJ12/meeting-to-action.git

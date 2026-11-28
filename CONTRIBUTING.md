@@ -30,7 +30,7 @@ npm run preflight
 | 6 | `npm run plugin:build` | 构建单插件上传包和本地插件市场 |
 | 7 | `npm run format:check` | Prettier 格式检查（`src tests scripts`） |
 
-提交前必须跑完整 preflight。CI 会在 push 与 PR 上运行同一套七步（Node 20/22 矩阵），以 CI 通过为准；PR 的「验证」段同时贴本地 preflight 结果。
+提交前必须跑完整 preflight。CI 会在 push 与 PR 上运行同一套七步（Node 22/24 矩阵），以 CI 通过为准；PR 的「验证」段同时贴本地 preflight 结果。
 
 单独使用某个脚本时：`npm run format` 自动格式化，`npm run skill:schema` 重新生成 Skill 内的契约 schema，`npm run plugin:check-installed` 在本地 Codex 上验证插件安装。
 
@@ -84,7 +84,7 @@ npm run preflight
   - 涉及 `MeetingAnalysisSchema` / `MinutesDocumentSchema` 时重跑 `npm run skill:schema`
   - 在 PR 标题中注明契约影响
 - 提交前跑完整 `npm run preflight`；PR 的「验证」段贴本地结果（tsc / eslint / vitest 汇总行 / build / smoke / format:check）
-- CI 在 push 与 PR 上运行同一套七步（Node 20/22），以 CI 通过为准；PR 的「验证」段同时贴本地结果
+- CI 在 push 与 PR 上运行同一套七步（Node 22/24），以 CI 通过为准；PR 的「验证」段同时贴本地结果
 
 ## 文档规范
 

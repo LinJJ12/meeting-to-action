@@ -10,11 +10,11 @@
 
 GitHub 上名为 `meeting-to-action-marketplace-v<版本>.zip` 的旧附件用于本地市场注册。把该附件上传到「创建插件」会触发 `Expected a single plugin archive`。若使用旧附件，请解压后将包含 `.agents/plugins/marketplace.json` 的目录传给下方的 `codex plugin marketplace add`。
 
-启用五个本地 MCP 工具需要 Codex 能从 PATH 找到 Node.js 20+。若上传入口所在环境不支持本地 MCP，使用下方的本地市场安装方式。
+启用五个本地 MCP 工具需要 Codex 能从 PATH 找到 Node.js 22+。若上传入口所在环境不支持本地 MCP，使用下方的本地市场安装方式。
 
 ## 前提
 
-- Node.js 20+、npm，以及支持本地插件市场命令的 Codex 客户端。
+- Node.js 22+、npm，以及支持本地插件市场命令的 Codex 客户端。
 - 在本地终端执行，Node 必须能从客户端 PATH 找到；包内不含 Node 本体。
 - 先用 `codex plugin --help` 确认当前版本支持相关命令。并非所有 Codex/ChatGPT 桌面版本都支持；浏览器端不能直接运行这个本地 stdio 包。
 

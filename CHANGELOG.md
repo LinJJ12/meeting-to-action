@@ -15,6 +15,7 @@
 
 ### 变更
 
+- 支持口径升级：CI 矩阵与 `engines` 从 Node 20/22（20 已于 2026-04 EOL）推进到 Node 22/24，README / CONTRIBUTING / AGENTS / MCP / PLUGIN-INSTALL / CLIENT-SETUP 双语口径同步；CI action 升级到 node24 运行时版本（checkout v5.1.0、setup-node v6.5.0，钉 SHA）。
 - CI 改为 Ubuntu/Windows × Node 20/22 四 job 矩阵，补 `permissions`、`concurrency`、`timeout` 与 action SHA 固定；PR 模板与 README / CLIENT-SETUP 的 Node 版本口径对齐；`package.json` 补 `description` / `license` / `repository` 元数据。
 - 文档语言布局重组：英文内容（双语变体与英文主版）集中至 `docs/en/`，废弃 `.en.md` 后缀命名；顺带修复 AGENTS / CONTRIBUTING 中的过时文档路径与 issue 模板的 ROADMAP 断链。
 - README「源码与本地分发」表述改为适配开源后状态：仓库公开（MIT），但不发布 npm 包或公共插件市场。

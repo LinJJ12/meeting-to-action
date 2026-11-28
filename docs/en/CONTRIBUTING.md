@@ -30,7 +30,7 @@ npm run preflight
 | 6 | `npm run plugin:build` | Build the single-plugin upload archive and the local plugin marketplace |
 | 7 | `npm run format:check` | Prettier format check (`src tests scripts`) |
 
-Run the full preflight before committing. CI runs the same seven steps on push and pull requests (Node 20/22 matrix) and is authoritative; PRs should also include local preflight results in the "Verification" section.
+Run the full preflight before committing. CI runs the same seven steps on push and pull requests (Node 22/24 matrix) and is authoritative; PRs should also include local preflight results in the "Verification" section.
 
 For individual scripts: `npm run format` auto-formats, `npm run skill:schema` regenerates the contract schemas inside the Skill, and `npm run plugin:check-installed` verifies the plugin installation on a local Codex.
 
@@ -84,7 +84,7 @@ For individual scripts: `npm run format` auto-formats, `npm run skill:schema` re
   - Re-run `npm run skill:schema` when `MeetingAnalysisSchema` / `MinutesDocumentSchema` are involved
   - Note the contract impact in the PR title
 - Run the full `npm run preflight` before committing; include local results in the PR "Verification" section (tsc / eslint / vitest summary lines / build / smoke / format:check)
-- Once CI is restored, CI results are authoritative and local evidence is transitional only
+- CI runs the same seven steps on push and pull requests (Node 22/24) and is authoritative; include local results in the PR "Verification" section as well
 
 ## Documentation conventions
 

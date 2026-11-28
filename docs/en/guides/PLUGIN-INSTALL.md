@@ -10,11 +10,11 @@ In a Codex desktop client that supports local MCP, open "Create plugin", select 
 
 The legacy attachment named `meeting-to-action-marketplace-v<version>.zip` on GitHub was for local marketplace registration. Uploading that attachment to "Create plugin" triggers `Expected a single plugin archive`. If you use the legacy attachment, extract it and pass the directory containing `.agents/plugins/marketplace.json` to the `codex plugin marketplace add` command below.
 
-Enabling the five local MCP tools requires Codex to find Node.js 20+ on its PATH. If the environment hosting the upload entry does not support local MCP, use the local marketplace installation method below.
+Enabling the five local MCP tools requires Codex to find Node.js 22+ on its PATH. If the environment hosting the upload entry does not support local MCP, use the local marketplace installation method below.
 
 ## Prerequisites
 
-- Node.js 20+, npm, and a Codex client that supports local plugin marketplace commands.
+- Node.js 22+, npm, and a Codex client that supports local plugin marketplace commands.
 - Run this in a local terminal; Node must be findable from the client's PATH — the package does not bundle Node itself.
 - First confirm with `codex plugin --help` that your version supports the relevant commands. Not every Codex/ChatGPT desktop version does; the browser client cannot run this local stdio bundle directly.
 

@@ -15,6 +15,7 @@ All notable changes to this project are documented in this file. The format is b
 
 ### Changed
 
+- Support floor bumped: the CI matrix and `engines` move from Node 20/22 (20 reached EOL in April 2026) to Node 22/24, with the README / CONTRIBUTING / AGENTS / MCP / PLUGIN-INSTALL / CLIENT-SETUP bilingual guidance synced; CI actions upgraded to node24-runtime versions (checkout v5.1.0, setup-node v6.5.0, SHA-pinned).
 - CI now runs an Ubuntu/Windows × Node 20/22 four-job matrix with `permissions`, `concurrency`, `timeout` and SHA-pinned actions; the PR template and the README / CLIENT-SETUP Node guidance are aligned; `package.json` gained `description` / `license` / `repository` metadata.
 - Documentation layout reorganized: all English content (bilingual variants and English-main documents) is now collected under `docs/en/`, replacing the `.en.md` suffix convention; stale document paths in AGENTS / CONTRIBUTING and the ROADMAP broken link in the issue template were fixed along the way.
 - The README's "source and local distribution" wording now reflects the post-open-source state: the repository is public (MIT), but no npm package or public plugin marketplace is published.

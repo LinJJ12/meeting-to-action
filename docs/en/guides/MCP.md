@@ -2,7 +2,7 @@
 
 # Local stdio MCP
 
-This checkout provides five stateless tools using the official [TypeScript MCP SDK](https://github.com/modelcontextprotocol/typescript-sdk/tree/v1.x). Node.js 20+ is required. No model credentials or server deployment are needed. This MCP does not call the standalone provider.
+This checkout provides five stateless tools using the official [TypeScript MCP SDK](https://github.com/modelcontextprotocol/typescript-sdk/tree/v1.x). Node.js 22+ is required. No model credentials or server deployment are needed. This MCP does not call the standalone provider.
 
 ## Build and verify
 

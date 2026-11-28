@@ -102,7 +102,7 @@ docs/
 | `docs/contracts/` | 中文契约文档（MINUTES-CONTRACT）；英文契约文档在 `docs/en/contracts/` | 契约改动同步 DATA-SCHEMA / MINUTES-CONTRACT / guides/MCP 及其 en 变体 |
 | `docs/design/` | 中文设计资料（ROADMAP / MEETING-*）；英文设计资料在 `docs/en/design/` | 区分当前与计划，不把规划写成现有功能 |
 | `docs/en/` | 英文文档库：双语变体（与根目录 / docs 主版同名）+ 英文主版技术文档 | 主版变更必须同步 en 变体 |
-| `.github/workflows/ci.yml` | CI（Node 20/22 矩阵，运行 `preflight` 同款七步；本地与 CI 结果应一致） | 改动验证步骤时与 `npm run preflight` 一起改 |
+| `.github/workflows/ci.yml` | CI（Node 22/24 矩阵，运行 `preflight` 同款七步；本地与 CI 结果应一致） | 改动验证步骤时与 `npm run preflight` 一起改 |
 | `.env.example`、`.gitignore`、`.gitattributes`、`.editorconfig`、`.prettierrc.json`、`.prettierignore`、`.git-blame-ignore-revs`、`vitest.config.ts`、`tsconfig.json`、`package-lock.json` | 环境占位 / 忽略规则 / LF 强制 / 格式配置与忽略 / 格式提交的 blame 忽略 / 测试配置 / 严格编译 / 可复现安装 | `.env` 永不入库 |
 
 变更能力时同步 README、相关使用文档和路线图。使用文档为双语对的，主版变更必须同步 `docs/en/` 下的英文变体。客户端验证必须注明环境与验证范围，不把维护者机器的安装状态写成读者前置条件。历史测试数量不作为长期有效的质量声明，以当前验证结果为准。
