@@ -1,6 +1,6 @@
 {
   "name": "@meeting-to-action/core",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Turn meeting transcripts into traceable decisions, action items, and minutes with evidence.",
   "license": "MIT",
   "repository": {

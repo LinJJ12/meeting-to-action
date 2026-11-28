@@ -6,6 +6,10 @@
 
 ## [Unreleased]
 
+（空）
+
+## [0.1.2] - 2026-11-28
+
 ### 新增
 
 - 建立核心文档中英双语体系：中文主版（根目录与 docs/，无后缀）+ `docs/en/` 英文库（同名英文变体与 6 份英文主版技术文档），覆盖 README、CONTRIBUTING、docs/ 索引、插件安装、项目级安装与 MCP 文档。
@@ -71,6 +75,7 @@
 - 协作规范落地：CONTRIBUTING.md / AGENTS.md，preflight 门禁接入 `format:check`。
 - Schema 错误细节附带首个字段路径，便于宿主修正参数（#26）。
 
-[Unreleased]: https://github.com/LinJJ12/meeting-to-action/compare/v0.1.1...HEAD
+[Unreleased]: https://github.com/LinJJ12/meeting-to-action/compare/v0.1.2...HEAD
+[0.1.2]: https://github.com/LinJJ12/meeting-to-action/compare/v0.1.1...v0.1.2
 [0.1.1]: https://github.com/LinJJ12/meeting-to-action/compare/v0.1.0...v0.1.1
 [0.1.0]: https://github.com/LinJJ12/meeting-to-action/releases/tag/v0.1.0

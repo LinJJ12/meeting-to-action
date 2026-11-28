@@ -1,7 +1,7 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "meeting-to-action",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Evidence-backed meeting analysis, decisions and follow-up tasks using your coding assistant.",
   "author": {
     "name": "LinJJ12"

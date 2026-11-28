@@ -6,6 +6,10 @@ All notable changes to this project are documented in this file. The format is b
 
 ## [Unreleased]
 
+(empty)
+
+## [0.1.2] - 2026-11-28
+
 ### Added
 
 - A bilingual documentation system for core documents: Chinese main versions (at the repo root and in docs/, no suffix) plus the `docs/en/` English library (same-named English variants and six English-main technical documents) covering the README, CONTRIBUTING, the docs index, plugin installation, project setup, and the MCP documentation.
@@ -71,6 +75,7 @@ First tagged release.
 - Collaboration conventions introduced: CONTRIBUTING.md / AGENTS.md, and `format:check` wired into the preflight gate.
 - Schema error details now include the first field path so hosts can correct arguments without guessing (#26).
 
-[Unreleased]: https://github.com/LinJJ12/meeting-to-action/compare/v0.1.1...HEAD
+[Unreleased]: https://github.com/LinJJ12/meeting-to-action/compare/v0.1.2...HEAD
+[0.1.2]: https://github.com/LinJJ12/meeting-to-action/compare/v0.1.1...v0.1.2
 [0.1.1]: https://github.com/LinJJ12/meeting-to-action/compare/v0.1.0...v0.1.1
 [0.1.0]: https://github.com/LinJJ12/meeting-to-action/releases/tag/v0.1.0
