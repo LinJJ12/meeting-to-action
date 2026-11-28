@@ -38,9 +38,11 @@ This Code of Conduct applies within all project spaces (repository, issues, pull
 
 ## Enforcement
 
-Instances of abusive, harassing, or otherwise unacceptable behavior may be reported to the project maintainer responsible for enforcement, [@LinJJ12](https://github.com/LinJJ12), via a private GitHub message. All complaints will be reviewed and investigated promptly and fairly.
+Instances of abusive, harassing, or otherwise unacceptable behavior may be reported privately through the repository's **Security → Report a vulnerability** channel (available on public repositories). If that entry point is unavailable, open a public issue that only says you need a private channel and mention [@LinJJ12](https://github.com/LinJJ12) without disclosing details; the maintainer will provide an alternative. All complaints will be reviewed and investigated promptly and fairly.
 
 All community leaders are obligated to respect the privacy and security of the reporter of any incident.
+
+If a maintainer fails to follow or enforce this Code of Conduct in good faith, other community leaders may temporarily or permanently revoke their maintainer status.
 
 ## Attribution
 

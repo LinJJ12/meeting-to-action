@@ -30,6 +30,7 @@ export type MeetingInput = {
     checksum?: string;
     transcriptFormat?:
       | "speaker-header"
+      | "speaker-time"
       | "speaker-inline"
       | "timestamp-first"
       | "speaker-colon"

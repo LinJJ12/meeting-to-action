@@ -18,9 +18,9 @@ This policy covers all local components shipped from this repository:
 Use GitHub's private vulnerability reporting:
 
 1. Open the repository's **Security** tab → **Report a vulnerability**.
-2. If that entry point is unavailable, contact the maintainer [@LinJJ12](https://github.com/LinJJ12) via a private GitHub message.
+2. If that entry point is unavailable, open a public issue that only says you need a private channel and mention [@LinJJ12](https://github.com/LinJJ12); the maintainer will provide an alternative. Do not disclose details publicly.
 
-Private vulnerability reporting is available for **public repositories** only: once the repository is public, maintainers set **Private vulnerability reporting** to Enable on the repository's Code security (shown as Advanced Security in some UI versions) settings page. Not seeing the toggle on a private repository is expected.
+Private vulnerability reporting is available for **public repositories** only. This repository is public and private vulnerability reporting is enabled (Settings → Code security, shown as Advanced Security in some UI versions); if the entry point is unavailable, use the fallback contact above.
 
 ### Please include in the report
 

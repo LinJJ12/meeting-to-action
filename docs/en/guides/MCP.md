@@ -50,7 +50,7 @@ All arguments are inline JSON, not filesystem paths. Objects reject unknown fiel
 
 | Tool | Arguments | Result in JSON text |
 |---|---|---|
-| prepare_meeting | content, fileName, optional title | Normalized MeetingInput |
+| prepare_meeting | content (≤2 MiB UTF-8), fileName (1–1024 chars), optional title (1–1024 chars) | Normalized MeetingInput |
 | split_transcript | input, maxChars | `{chunks: [{fragments, charCount}]}` |
 | get_meeting_schema | contractVersion: "1.0" | contractVersion, input JSON Schema, analysis JSON Schema |
 | validate_analysis | input, analysis | `{valid: true, analysis}` |
@@ -83,4 +83,4 @@ No default persistence, arbitrary disk reads/writes, GitHub access, model calls 
 
 ## Verification status
 
-Local SDK source/compiled subprocess tests are passing. Actual Codex CLI/App Server Skill and five-tool discovery has also passed; [acceptance details and project setup](CLIENT-SETUP.md) distinguish invocation overrides from trusted project config loading. Cursor UI verification is deferred by the 2026-11-27 phase-1 scope decision (Codex only); model-level behavior remains a separate release check. The server and local plugin bundle are implemented. Public package distribution and full client/model acceptance remain pending.
+Local SDK source/compiled subprocess tests are passing. Actual Codex CLI/App Server Skill and five-tool discovery has also passed; [acceptance details and project setup](CLIENT-SETUP.md) distinguish invocation overrides from trusted project config loading. Cursor UI verification is deferred by the 2026-11-27 phase-1 scope decision (Codex only); model-level behavior remains a separate release check. The server and local plugin bundle are implemented. Public package distribution (npm packages or public plugin marketplaces) is out of scope; full client/model acceptance remains pending.

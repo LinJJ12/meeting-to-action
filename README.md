@@ -73,10 +73,10 @@ npm run dev -- report normalized.json --analysis analysis.json --out report.md
 
 ## 可选：独立模型分析
 
-复制 `.env.example` 为 `.env`，填写 `OPENAI_API_KEY` 与 `OPENAI_MODEL`，按需配置 `OPENAI_BASE_URL`：
+复制 `.env.example` 为 `.env`，填写 `OPENAI_API_KEY` 与 `OPENAI_MODEL`，按需配置 `OPENAI_BASE_URL`，并在命令中用 `--env .env` 指定该文件：
 
 ```sh
-npm run dev -- analyze examples/sample-meeting.md --out report.md
+npm run dev -- analyze examples/sample-meeting.md --env .env --out report.md
 ```
 
 环境文件仅在 `analyze --env <path>` 显式指定时读取，工作目录下的 `.env` 不会被隐式加载。该模式会把记录发送给所配置的模型服务并可能产生费用，不要提交密钥或私有会议资料。重试策略、输入限额与 Provider 适配细节见[分析引擎](docs/en/guides/ANALYSIS-ENGINE.md)。
@@ -89,11 +89,11 @@ npm run dev -- analyze examples/sample-meeting.md --out report.md
 - 未知负责人/日期保持未知；记录内的指令作为不可信数据处理。
 - 校验通过证明结构与引用符合规则，不能证明解释正确。摘要目前没有逐项证据字段，报告仍需人工审阅。
 - MCP 不调用模型、不读写任意文件、不访问 GitHub，也不自动创建 Issue。宿主模型是否联网及数据如何处理取决于宿主设置。
-- 跨会议持久化、GitHub 集成与公共发布仍属后续计划；简洁纪要渲染已接入 CLI `report` 与 MCP `render_report`。
+- 跨会议持久化与 GitHub 集成仍属后续计划；分发以本地构建的插件包为主，不发布 npm 包或公共插件市场；简洁纪要渲染已接入 CLI `report` 与 MCP `render_report`。
 
 ## 演示
 
-截图与端到端演示视频待开源发布时补充。当前可以先看仓库内的完整虚构样例：[示例说明](examples/agent-workflow/README.md)包含逐字稿、analysis 编辑稿与生成的[会议纪要](examples/agent-workflow/minutes.md)、[证据报告](examples/agent-workflow/report.md)。
+仓库内的完整虚构样例可直接查看：[示例说明](examples/agent-workflow/README.md)包含逐字稿、analysis 编辑稿与生成的[会议纪要](examples/agent-workflow/minutes.md)、[证据报告](examples/agent-workflow/report.md)。截图与端到端演示视频将在后续版本补充。
 
 ## 仓库结构
 
@@ -121,12 +121,13 @@ meeting-to-action/
 
 ```sh
 npm run typecheck
+npm run lint
 npm test
 npm run mcp:smoke
 npm run plugin:build
 ```
 
-契约变更后执行 `npm run skill:schema` 并检查差异。`npm run build` 只编译运行时；`plugin:build` 独立打包插件。`plugin:check-installed` 是可选的本机客户端发现检查，需要先构建并安装插件，不是通用单元测试。
+完整门禁是 `npm run preflight`（typecheck → lint → build → test → mcp:smoke → plugin:build → format:check）。契约变更后执行 `npm run skill:schema` 并检查差异。`npm run build` 只编译运行时；`plugin:build` 独立打包插件。`plugin:check-installed` 是可选的本机客户端发现检查，需要先构建并安装插件，不是通用单元测试。
 
 ## 支持
 

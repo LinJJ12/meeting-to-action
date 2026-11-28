@@ -4,7 +4,7 @@
 
 This document is the single authoritative source for collaboration: code style, directory responsibilities, testing and verification, and commit/PR processes all defer to it. For the condensed version aimed at AI assistants see [AGENTS.md](../../AGENTS.md); in case of conflict this document wins.
 
-This project's collaboration conventions originate from issue #32. The conventions take effect for new code from the moment that issue was finalized; changes to this document go through a PR, not verbal changes in comments.
+This project's collaboration conventions were finalized by the phase-1 collaboration spec (issue #32, now closed) and take effect for new code; changes to this document go through a PR, not verbal changes in comments.
 
 ## Requirements
 
@@ -23,13 +23,14 @@ npm run preflight
 | Step | Command | Purpose |
 |---|---|---|
 | 1 | `npm run typecheck` | Strict TypeScript compilation (`strict` + `noUncheckedIndexedAccess` + `exactOptionalPropertyTypes`) |
-| 2 | `npm run build` | Build `dist/` |
-| 3 | `npm test` | Full vitest suite |
-| 4 | `npm run mcp:smoke` | stdio MCP smoke test on compiled artifacts |
-| 5 | `npm run plugin:build` | Build the single-plugin upload archive and the local plugin marketplace |
-| 6 | `npm run format:check` | Prettier format check (`src tests scripts`) |
+| 2 | `npm run lint` | ESLint correctness check (no warnings; no style or complexity rules) |
+| 3 | `npm run build` | Build `dist/` |
+| 4 | `npm test` | Full vitest suite |
+| 5 | `npm run mcp:smoke` | stdio MCP smoke test on compiled artifacts |
+| 6 | `npm run plugin:build` | Build the single-plugin upload archive and the local plugin marketplace |
+| 7 | `npm run format:check` | Prettier format check (`src tests scripts`) |
 
-Run the full preflight before committing. Once CI is restored, CI passing is authoritative; CI is currently unable to run due to GitHub Actions billing, so PRs must include local preflight results in the "Verification" section.
+Run the full preflight before committing. CI runs the same seven steps on push and pull requests (Node 20/22 matrix) and is authoritative; PRs should also include local preflight results in the "Verification" section.
 
 For individual scripts: `npm run format` auto-formats, `npm run skill:schema` regenerates the contract schemas inside the Skill, and `npm run plugin:check-installed` verifies the plugin installation on a local Codex.
 
@@ -37,6 +38,7 @@ For individual scripts: `npm run format` auto-formats, `npm run skill:schema` re
 
 - 2-space indent, UTF-8, LF, trailing newline at end of file; soft line-width limit of 100 characters (set by `.editorconfig` and `.prettierrc.json`)
 - **Formatting is enforced by Prettier**: `src`, `tests`, and `scripts` must pass `format:check`; do not hand-write "Prettier-looking" code to bypass it
+- **ESLint covers correctness only**: `npm run lint` must be warning-free; the rule set is `@eslint/js` recommended plus typescript-eslint recommended plus two type-aware rules (`no-floating-promises`, `no-misused-promises`). No style or complexity rules, no autofix (style belongs to Prettier)
 - Double quotes, semicolons at statement ends
 - No large-scale reformatting: when editing an existing file, format only the lines you touch; if a whole-file reformat is truly needed, make it a **separate format commit** (history is protected via `.git-blame-ignore-revs`)
 - Comments are primarily Chinese, explaining the "why" (trade-offs, reasons, boundaries) rather than restating code; code identifiers are English
@@ -48,7 +50,7 @@ For individual scripts: `npm run format` auto-formats, `npm run skill:schema` re
 - Named exports only; do not add `export default`
 - ESM relative imports must include the `.js` suffix (required by NodeNext)
 - Use `!` non-null assertions only when the invariant is locally provable; prefer explicit guards in production code; allowed in tests
-- External errors follow `stable error code: one-line detail`; details must not echo user field values; **new error codes must be synced to `docs/guides/MCP.md`**
+- External errors follow `stable error code: one-line detail`; details must not echo user field values; **new error codes must be synced to `docs/guides/MCP.md` and its English variant under `docs/en/guides/`**
 
 ### Naming
 
@@ -81,7 +83,7 @@ For individual scripts: `npm run format` auto-formats, `npm run skill:schema` re
   - Sync `docs/en/contracts/DATA-SCHEMA.md` / `docs/contracts/MINUTES-CONTRACT.md` / `docs/guides/MCP.md`
   - Re-run `npm run skill:schema` when `MeetingAnalysisSchema` / `MinutesDocumentSchema` are involved
   - Note the contract impact in the PR title
-- Run the full `npm run preflight` before committing; include local results in the PR "Verification" section (tsc / vitest summary lines / build / smoke / format:check)
+- Run the full `npm run preflight` before committing; include local results in the PR "Verification" section (tsc / eslint / vitest summary lines / build / smoke / format:check)
 - Once CI is restored, CI results are authoritative and local evidence is transitional only
 
 ## Documentation conventions
