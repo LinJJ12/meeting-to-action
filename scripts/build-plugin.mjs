@@ -23,7 +23,7 @@ export async function buildPlugin(output = join(repo, "dist", "plugin-marketplac
   await writeFile(join(plugin, "plugin.json"), JSON.stringify(pluginManifest, null, 2) + "\n");
   // mcp.json 的 `command` 必须保持裸 `node`：Codex app-server 不会启动绝对路径的 command
   // （2026-11-26 实测：绝对 node 路径与无空格 junction 路径都会导致工具列表为空），
-  // 因此运行环境要求 node 在客户端 PATH 内，详见 docs/PLUGIN-INSTALL.md。
+  // 因此运行环境要求 node 在客户端 PATH 内，详见 docs/en/guides/PLUGIN-INSTALL.md。
   const mcp = await json(join(repo, "plugin", "mcp.json"));
   await writeFile(join(plugin, "mcp.json"), JSON.stringify(mcp, null, 2) + "\n");
   await cp(join(repo, "skills", "meeting-to-action"), join(plugin, "skills", "meeting-to-action"), {

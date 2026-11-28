@@ -48,7 +48,7 @@ For individual scripts: `npm run format` auto-formats, `npm run skill:schema` re
 - Named exports only; do not add `export default`
 - ESM relative imports must include the `.js` suffix (required by NodeNext)
 - Use `!` non-null assertions only when the invariant is locally provable; prefer explicit guards in production code; allowed in tests
-- External errors follow `stable error code: one-line detail`; details must not echo user field values; **new error codes must be synced to `docs/MCP.md`**
+- External errors follow `stable error code: one-line detail`; details must not echo user field values; **new error codes must be synced to `docs/guides/MCP.md`**
 
 ### Naming
 
@@ -78,7 +78,7 @@ For individual scripts: `npm run format` auto-formats, `npm run skill:schema` re
 
 - Any behavior change comes with tests; a pure refactor must prove tests are unchanged (or only moved)
 - Contract changes (`analysis-schema@1.0` / `minutes-contract@1.0`, `src/domain/schema.ts`, the error-code set) must:
-  - Sync `docs/DATA-SCHEMA.md` / `docs/MINUTES-CONTRACT.md` / `docs/MCP.md`
+  - Sync `docs/en/contracts/DATA-SCHEMA.md` / `docs/contracts/MINUTES-CONTRACT.md` / `docs/guides/MCP.md`
   - Re-run `npm run skill:schema` when `MeetingAnalysisSchema` / `MinutesDocumentSchema` are involved
   - Note the contract impact in the PR title
 - Run the full `npm run preflight` before committing; include local results in the PR "Verification" section (tsc / vitest summary lines / build / smoke / format:check)
@@ -88,9 +88,9 @@ For individual scripts: `npm run format` auto-formats, `npm run skill:schema` re
 
 - Distinguish "currently implemented" from "future plans"; never present plans as existing features
 - Behavior or contract changes must sync the corresponding documents (DATA-SCHEMA / MINUTES-CONTRACT / MCP / PLUGIN-INSTALL / CLIENT-SETUP, etc., chosen by scope of impact)
-- Core user-facing documents exist as bilingual pairs: Chinese main version (no suffix) + English variant (`.en.md`); **changes to a main version must be synced to the English variant**. Naming and authority conventions are in the "documentation language rules" section of [INDEX.md](../INDEX.md)
-- New documents must be registered in the [INDEX.md](../INDEX.md) index
-- Directory responsibilities are in the "file structure conventions" section of [INDEX.md](../INDEX.md); architecture and delivery plans are in [AGENT-TOOLKIT.md](../design/AGENT-TOOLKIT.md)
+- Core user-facing documents exist as bilingual pairs: a Chinese main version (at the repo root or in `docs/`, no suffix) + a same-named English variant under `docs/en/`; **changes to a main version must be synced to the English variant**. Naming and authority conventions are in the "documentation language rules" section of [INDEX.md](INDEX.md)
+- New documents must be registered in the [INDEX.md](INDEX.md) index
+- Directory responsibilities are in the "file structure conventions" section of [INDEX.md](INDEX.md); architecture and delivery plans are in [AGENT-TOOLKIT.md](design/AGENT-TOOLKIT.md)
 
 ## Branches, commits, and PRs
 

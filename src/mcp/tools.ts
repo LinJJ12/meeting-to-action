@@ -105,7 +105,7 @@ export function toolErrorCode(error: unknown): string {
   const candidate = error instanceof Error ? error.message.split(":")[0]! : "";
   return codes.has(candidate) ? candidate : "INPUT_INVALID";
 }
-/** 工具层稳定错误码全集（docs-consistency 测试以此为准核对 docs/MCP.md，防止文档漂移）。 */
+/** 工具层稳定错误码全集（docs-consistency 测试以此为准核对 docs/guides/MCP.md 与其 docs/en/guides/ 英文变体，防止文档漂移）。 */
 export const toolErrorCodes: readonly string[] = [...codes];
 function parseMinutesDocument(value: string): unknown {
   try {

@@ -1,4 +1,4 @@
-简体中文（主版） | [English](docs/community/CONTRIBUTING.en.md)
+简体中文（主版） | [English](docs/en/CONTRIBUTING.md)
 
 # 贡献指南
 
@@ -48,7 +48,7 @@ npm run preflight
 - 只用具名导出，不新增 `export default`
 - ESM 相对导入必须带 `.js` 后缀（NodeNext 要求）
 - `!` 非空断言仅当不变量在局部可证时使用；生产代码优先显式 guard，测试中允许
-- 对外错误遵循 `稳定错误码: 一行细节`，细节不得回显用户字段值；**新增错误码必须同步 `docs/MCP.md`**
+- 对外错误遵循 `稳定错误码: 一行细节`，细节不得回显用户字段值；**新增错误码必须同步 `docs/guides/MCP.md` 与其 `docs/en/guides/` 英文变体**
 
 ### 命名
 
@@ -78,7 +78,7 @@ npm run preflight
 
 - 任何行为改动必须带测试；纯重构必须证明测试零改动（或仅位置移动）
 - 契约改动（`analysis-schema@1.0` / `minutes-contract@1.0`、`src/domain/schema.ts`、错误码集合）必须：
-  - 同步 `docs/DATA-SCHEMA.md` / `docs/MINUTES-CONTRACT.md` / `docs/MCP.md`
+  - 同步 `docs/en/contracts/DATA-SCHEMA.md` / `docs/contracts/MINUTES-CONTRACT.md` / `docs/guides/MCP.md`
   - 涉及 `MeetingAnalysisSchema` / `MinutesDocumentSchema` 时重跑 `npm run skill:schema`
   - 在 PR 标题中注明契约影响
 - 提交前跑完整 `npm run preflight`；PR 的「验证」段贴本地结果（tsc / vitest 汇总行 / build / smoke / format:check）
@@ -88,9 +88,9 @@ npm run preflight
 
 - 区分「当前已实现」与「未来计划」，不把计划写成现有功能
 - 行为或契约变化必须同步对应文档（DATA-SCHEMA / MINUTES-CONTRACT / MCP / PLUGIN-INSTALL / CLIENT-SETUP 等，按影响范围选择）
-- 用户向核心文档为中英双语对：中文主版（无后缀）+ 英文变体（`.en.md`），**改动主版内容必须同步英文变体**；命名与权威版本约定见 [docs/INDEX.md](docs/INDEX.md) 的「文档语言规范」
+- 用户向核心文档为中英双语对：中文主版（根目录或 docs/，无后缀）+ `docs/en/` 下同名英文变体，**改动主版内容必须同步英文变体**；命名与权威版本约定见 [docs/INDEX.md](docs/INDEX.md) 的「文档语言规范」
 - 新增文档必须登记进 [docs/INDEX.md](docs/INDEX.md) 索引
-- 目录职责见 [docs/INDEX.md](docs/INDEX.md) 的「文件结构约定」；架构与交付计划见 [docs/design/AGENT-TOOLKIT.md](docs/design/AGENT-TOOLKIT.md)
+- 目录职责见 [docs/INDEX.md](docs/INDEX.md) 的「文件结构约定」；架构与交付计划见 [docs/en/design/AGENT-TOOLKIT.md](docs/en/design/AGENT-TOOLKIT.md)
 
 ## 分支、提交与 PR
 

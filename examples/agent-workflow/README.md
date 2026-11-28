@@ -11,3 +11,17 @@ npm run dev -- report examples/agent-workflow/normalized.json --analysis example
 ```
 
 此命令校验证据和引用后渲染纪要，无需模型 API Key。若要体验从逐字稿到纪要的完整流程，可让已安装插件的助手分析 `examples/agent-workflow/edge-cases.md` 并保留证据。
+
+## 文件与语言
+
+本目录是完整流程样例，语言跟随内容角色，不属于 docs/ 的双语文档体系：
+
+| 文件 | 语言 | 角色 |
+|---|---|---|
+| edge-cases.md | 英文 | 输入逐字稿（末尾注入指令是测试宿主行为的合成数据） |
+| normalized.json | 语言无关 | 归一化中间产物 |
+| analysis.json | 语言无关 | 事实分析编辑稿 |
+| minutes.json / minutes.md | 中文 | 纪要编辑稿与渲染结果（纪要契约的固定文案为中文） |
+| report.md | 英文 | 渲染结果（报告语言跟随输入逐字稿） |
+
+这些文件名被 `tests/skill-contract.test.ts`（逐字节比对渲染输出）与 `scripts/smoke-mcp.mjs` 依赖，不可随意更名。

@@ -5,8 +5,8 @@ body:
   - type: markdown
     attributes:
       value: |
-        产品方向类讨论请先关联相关 issue（#4 / #26 / #32）再提新想法，避免与既有范围决议冲突；先读 [docs/ROADMAP.md](https://github.com/LinJJ12/meeting-to-action/blob/main/docs/ROADMAP.md) 了解当前阶段边界。
-        For product-direction topics, first check the related issues (#4 / #26 / #32) and [docs/ROADMAP.md](https://github.com/LinJJ12/meeting-to-action/blob/main/docs/ROADMAP.md) to avoid conflicting with existing scope decisions.
+        产品方向类讨论请先关联相关 issue（#4 / #26 / #32）再提新想法，避免与既有范围决议冲突；先读 [docs/design/ROADMAP.md](https://github.com/LinJJ12/meeting-to-action/blob/main/docs/design/ROADMAP.md) 了解当前阶段边界。
+        For product-direction topics, first check the related issues (#4 / #26 / #32) and [docs/design/ROADMAP.md](https://github.com/LinJJ12/meeting-to-action/blob/main/docs/design/ROADMAP.md) to avoid conflicting with existing scope decisions.
   - type: textarea
     id: problem
     attributes:
