@@ -29,7 +29,15 @@ const nodeGlobals = {
 
 export default tseslint.config(
   {
-    ignores: ["dist/**", "node_modules/**", "coverage/**"],
+    // .zcode / .local-client-check 是本地工作目录（会话数据与不入库的自测样本），
+    // 与 dist 一样不属于被检代码；gitignore 只管 git，ESLint 需要单独排除。
+    ignores: [
+      "dist/**",
+      "node_modules/**",
+      "coverage/**",
+      ".zcode/**",
+      ".local-client-check/**",
+    ],
   },
   {
     files: ["**/*.{js,mjs,cjs}"],
