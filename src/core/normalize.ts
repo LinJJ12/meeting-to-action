@@ -112,8 +112,9 @@ export function normalizeTranscript(
     start = 1,
     meta: LineMeta | undefined;
   const flush = (end: number) => {
-    const text = buffer.join("\n").trim();
-    if (text) {
+    // 契约（docs/en/contracts/DATA-SCHEMA.md）：segment.text 与源文件对应行逐字一致，因此只 trim 判空。
+    const text = buffer.join("\n");
+    if (text.trim()) {
       // 到达上限立即停止：先拒绝，再构造 segment，避免超大输入先把内存吃完再报错。
       if (maxSegments !== undefined && segments.length >= maxSegments)
         throw new Error(`INPUT_SEGMENT_LIMIT: transcript has more than ${maxSegments} segments`);

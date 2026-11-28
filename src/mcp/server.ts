@@ -3,6 +3,7 @@ import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js"
 import { CallToolRequestSchema, ListToolsRequestSchema } from "@modelcontextprotocol/sdk/types.js";
 import { callTool, toolList, MAX_REQUEST_BYTES } from "./tools.js";
 import { oversizeLineError, RequestLineGuard } from "./line-guard.js";
+import { invalidParamsError, ParamsGuard } from "./params-guard.js";
 import { APP_VERSION } from "../version.js";
 
 const server = new Server(
@@ -25,7 +26,15 @@ const requestLines = new RequestLineGuard({
     process.stdout.write(oversizeLineError(bytes, MAX_REQUEST_BYTES));
   },
 });
-const transport = new StdioServerTransport(requestLines, process.stdout);
+// Reject malformed tools/call params with -32602 before the SDK serializes its
+// internal schema error as -32603.
+const paramsGuard = new ParamsGuard({
+  onInvalidParams: (id) => {
+    process.stdout.write(invalidParamsError(id));
+  },
+});
+requestLines.pipe(paramsGuard);
+const transport = new StdioServerTransport(paramsGuard, process.stdout);
 const shutdown = (reason: string) => {
   console.error(reason);
   void transport.close().catch(() => {});

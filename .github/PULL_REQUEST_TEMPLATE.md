@@ -13,8 +13,8 @@ Title format: <type>(<scope>): <topic>. Note contract impact in the title when a
 
 ## 验证 / Verification
 
-<!-- 粘贴本地 `npm run preflight` 结果（tsc / vitest 汇总行 / build / smoke / format:check）。CI 暂停期间以本地结果为准。
-Paste local `npm run preflight` results (tsc / vitest summary / build / smoke / format:check). Local results are authoritative while CI is paused. -->
+<!-- 粘贴本地 `npm run preflight` 结果（tsc / vitest 汇总行 / build / smoke / format:check）。CI 在 push 与 PR 上运行同一套七步（Node 20/22 × Ubuntu/Windows 矩阵），以 CI 通过为准；验证段同时贴本地结果。
+Paste local `npm run preflight` results (tsc / vitest summary / build / smoke / format:check). CI runs the same seven steps on push and pull requests (Node 20/22 × Ubuntu/Windows matrix) and is authoritative; paste local results here as well. -->
 
 - [ ] `npm run preflight` 全部通过 / fully passed
 - [ ] 行为改动带测试；契约改动已同步文档与生成 schema / behavior changes carry tests; contract changes synced docs and generated schemas

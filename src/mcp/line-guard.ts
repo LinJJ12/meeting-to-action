@@ -88,35 +88,45 @@ export class RequestLineGuard extends Transform {
     callback();
   }
 
+  /**
+   * Appends one raw segment of the current line.
+   *
+   * Every byte counts toward the limit, including CR bytes: a request line that
+   * ends with CRLF only gets its final CR excluded (it is a terminator, not
+   * payload). CR bytes were previously counted as zero, which let a caller pad a
+   * line with CRs and bypass the documented 4 MiB bound.
+   *
+   * The line can only be proven oversized once its raw size exceeds
+   * `limit + 1`: one trailing CR may still turn out to be part of a CRLF
+   * terminator. Crossing that bound reports the limit-plus-one offset so the
+   * error frame keeps the documented `bytes=<limit + 1>` shape, then the rest
+   * of the line is discarded.
+   */
   private appendSegment(segment: Buffer): void {
     const length = segment.length;
     if (length === 0) {
       return;
     }
-    const effectiveBefore = this.bytesInLine - (this.trailingCR ? 1 : 0);
-    const carriedCR = this.trailingCR ? 1 : 0;
-    const lastByte = segment[length - 1]!;
-    // Effective size after appending all bytes; it never overshoots the max of
-    // the intermediate sizes because each byte adds 0 or 1 effective byte.
-    if (effectiveBefore + carriedCR + length - (lastByte === CR ? 1 : 0) <= this.limit) {
-      this.parts.push(segment);
-      this.bytesInLine += length;
-      this.trailingCR = lastByte === CR;
+    this.parts.push(segment);
+    this.bytesInLine += length;
+    this.trailingCR = segment[length - 1] === CR;
+    if (this.bytesInLine <= this.limit + 1) {
       return;
     }
-    let effective = effectiveBefore + carriedCR;
-    for (let index = 0; index < length; index += 1) {
-      effective += segment[index] === CR ? 0 : 1;
-      if (effective > this.limit) {
-        this.onOversize(effective);
-        this.reset();
-        this.discarding = true;
-        return;
-      }
-    }
+    this.onOversize(this.limit + 1);
+    this.reset();
+    this.discarding = true;
   }
 
   private emitLine(): void {
+    const effectiveBytes = this.bytesInLine - (this.trailingCR ? 1 : 0);
+    if (effectiveBytes > this.limit) {
+      // The line reached `limit + 1` raw bytes without crossing the streaming
+      // bound above because its last byte may still be a CRLF terminator.
+      this.onOversize(this.limit + 1);
+      this.reset();
+      return;
+    }
     const joined =
       this.parts.length === 0
         ? Buffer.alloc(0)

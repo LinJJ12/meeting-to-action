@@ -70,10 +70,11 @@
 CLI：
 
 ```sh
-meeting-to-action report normalized.json --analysis analysis.json \
+npm run dev -- report normalized.json --analysis analysis.json \
   [--minutes minutes.json] [--mode minutes|actions|evidence] [--no-appendix] [--out report.md]
 ```
 
+- `npm run dev` 即 `tsx src/cli.ts`；构建后的等价入口是 `node dist/cli.js`。仓库不发布 npm 包，因此不存在名为 `meeting-to-action` 的可执行文件。
 - 三个新参数只对 `report` 有效，出现在 `inspect`/`analyze` 上按用法错误处理。
 - 默认模式：给了 `--minutes` 是 `minutes`，否则 `evidence`（既有输出不变）。
 - `--mode minutes|actions` 但缺 `--minutes` → `MINUTES_MISSING`；未知 `--mode` 值 → 用法错误 exit 1。

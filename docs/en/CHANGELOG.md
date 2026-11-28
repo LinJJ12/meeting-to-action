@@ -15,11 +15,18 @@ All notable changes to this project are documented in this file. The format is b
 
 ### Changed
 
+- CI now runs an Ubuntu/Windows × Node 20/22 four-job matrix with `permissions`, `concurrency`, `timeout` and SHA-pinned actions; the PR template and the README / CLIENT-SETUP Node guidance are aligned; `package.json` gained `description` / `license` / `repository` metadata.
 - Documentation layout reorganized: all English content (bilingual variants and English-main documents) is now collected under `docs/en/`, replacing the `.en.md` suffix convention; stale document paths in AGENTS / CONTRIBUTING and the ROADMAP broken link in the issue template were fixed along the way.
 - The README's "source and local distribution" wording now reflects the post-open-source state: the repository is public (MIT), but no npm package or public plugin marketplace is published.
 
 ### Fixed
 
+- Fix: the MCP request-line limit now counts CR bytes, closing a CR-padding bypass of the 4 MiB bound.
+- Fix: malformed `tools/call` params return JSON-RPC `-32602` instead of surfacing the SDK's serialized Zod error as an internal error.
+- Fix: `normalizeTranscript` keeps each line's original whitespace so verbatim quotes are no longer rejected by normalization trimming; evidence and rendered locators truncate by Unicode code point and never split emoji.
+- Fix: CLI input read/parse failures, `--out` collisions and `--version` combined with other arguments use stable codes (`INPUT_JSON_INVALID` / `OUT_PATH_UNUSABLE` / exit 2) and no longer echo user field values; minutes now share the MCP 2 MiB limit.
+- Fix: `setup:client` gained preflight checks and a transactional rollback (`SETUP_PROJECT_INVALID` / `SETUP_CONFLICT` / `SETUP_APPLY_FAILED`); a failed `--apply` only removes what that run created.
+- Fix: `version-sync` preflights and verifies writes; plugin archives are byte-reproducible (fixed mtime, permissions and member order); `smoke-mcp` asserts the exact tool contract instead of only the tool count.
 - After CI resumed automatic runs, updated the stale "CI cannot run due to billing" notes in AGENTS / CONTRIBUTING / the docs index / the PRD, and added the missing `format:check` and `lint` steps to the CI workflow so it matches the seven steps of `npm run preflight`.
 - Removed the stale "will be added at the open-source release" placeholder from the README demo section; SECURITY now states that the repository is public and private vulnerability reporting is enabled.
 

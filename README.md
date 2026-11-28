@@ -30,7 +30,7 @@
 
 ## 快速开始
 
-需要 Node.js 20+ 和 npm（Windows 上使用项目级安装器推荐 Node.js 22+，原因见[项目级安装文档](docs/guides/CLIENT-SETUP.md)）。克隆并构建：
+需要 Node.js 20+ 和 npm（CI 在 Node.js 20 与 22 上验证同一套流程；Windows 上使用项目级安装器时两者行为一致，见[项目级安装文档](docs/guides/CLIENT-SETUP.md)）。克隆并构建：
 
 ```sh
 git clone https://github.com/LinJJ12/meeting-to-action.git
@@ -93,7 +93,7 @@ npm run dev -- analyze examples/sample-meeting.md --env .env --out report.md
 
 ## 演示
 
-仓库内的完整虚构样例可直接查看：[示例说明](examples/agent-workflow/README.md)包含逐字稿、analysis 编辑稿与生成的[会议纪要](examples/agent-workflow/minutes.md)、[证据报告](examples/agent-workflow/report.md)。截图与端到端演示视频将在后续版本补充。
+仓库内的完整虚构样例可直接查看：[示例说明](examples/agent-workflow/README.md)包含逐字稿、analysis 编辑稿与生成的[会议纪要](examples/agent-workflow/minutes.md)、[证据报告](examples/agent-workflow/report.md)。仓库不提供截图与端到端演示视频；按该示例的 CLI / MCP 流程即可本地复现完整效果。
 
 ## 仓库结构
 

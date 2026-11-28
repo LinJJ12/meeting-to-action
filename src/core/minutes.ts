@@ -44,7 +44,7 @@ export function validateMinutes(
   )
     throw new MinutesContractError(
       "MINUTES_CONTRACT_UNSUPPORTED",
-      "contractVersion=" + draft.contractVersion + "，当前仅支持 " + MINUTES_CONTRACT_VERSION,
+      "unsupported minutes contract version",
     );
   let document: MinutesDocument;
   try {
@@ -55,7 +55,7 @@ export function validateMinutes(
   if (document.meetingId !== analysis.meetingId)
     throw new MinutesContractError(
       "MINUTES_MEETING_MISMATCH",
-      "minutes=" + document.meetingId + "，analysis=" + analysis.meetingId,
+      "minutes and analysis refer to different meetings",
     );
   const facts = new Map<string, FactEntry[]>();
   const addFact = (id: string, kind: MinutesFactKind, status?: string) => {
@@ -81,11 +81,14 @@ export function validateMinutes(
       for (const ref of claim.refs) {
         const entries = facts.get(ref);
         if (!entries)
-          throw new MinutesContractError("MINUTES_REF_UNKNOWN", claim.id + " -> " + ref);
+          throw new MinutesContractError(
+            "MINUTES_REF_UNKNOWN",
+            "claim references an unknown analysis entry",
+          );
         if (!entries.some((entry) => claimSupports(claim.kind, entry)))
           throw new MinutesContractError(
             "MINUTES_KIND_MISMATCH",
-            claim.id + "（kind=" + claim.kind + "）不能引用 " + ref,
+            "claim references an analysis entry of a different kind (kind=" + claim.kind + ")",
           );
         if (entries.some((entry) => entry.kind === "action" && claimSupports(claim.kind, entry)))
           referenced.add(ref);

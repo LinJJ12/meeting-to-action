@@ -30,7 +30,7 @@ Plugin installation and project installation are alternatives — usually pick o
 
 ## Getting started
 
-Requires Node.js 20+ and npm (Node.js 22+ is recommended on Windows for the project-level installer; see [project setup](guides/CLIENT-SETUP.md) for why). Clone and build:
+Requires Node.js 20+ and npm (CI runs the same verification suite on Node.js 20 and 22; the project-level installer behaves the same on both on Windows — see [project setup](guides/CLIENT-SETUP.md)). Clone and build:
 
 ```sh
 git clone https://github.com/LinJJ12/meeting-to-action.git
@@ -93,7 +93,7 @@ The CLI only reads an env file when `analyze --env <path>` names one explicitly;
 
 ## Demo
 
-For now, see the complete in-repo fictional sample: the [example walkthrough](../../examples/agent-workflow/README.md) contains the transcript, the analysis draft, and the generated [minutes](../../examples/agent-workflow/minutes.md) and [evidence report](../../examples/agent-workflow/report.md). Screenshots and an end-to-end demo video will be added in a later release.
+For now, see the complete in-repo fictional sample: the [example walkthrough](../../examples/agent-workflow/README.md) contains the transcript, the analysis draft, and the generated [minutes](../../examples/agent-workflow/minutes.md) and [evidence report](../../examples/agent-workflow/report.md). Screenshots and an end-to-end demo video are not shipped in the repository; the example's CLI/MCP flow reproduces the full result locally.
 
 ## Repository layout
 

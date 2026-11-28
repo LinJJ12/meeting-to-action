@@ -18,13 +18,19 @@ concurrency:
 
 jobs:
   verify:
-    runs-on: ubuntu-latest
+    # Windows matters: the setup containment and --out path-guard suites are win32-only
+    # and skip on Linux, so an Ubuntu-only matrix never exercises the junction / UNC /
+    # ADS / reserved-device-name checks.
+    runs-on: ${{ matrix.os }}
     timeout-minutes: 20
     strategy:
       fail-fast: false
       matrix:
+        os: [ubuntu-latest, windows-latest]
         node-version: [20, 22]
     steps:
+      # Every step below is a plain `npm run ...` call, so it works unchanged under the
+      # Windows runner's default pwsh shell; no bash-only syntax is used.
       # Actions pinned to commit SHA (verified via git ls-remote) per the
       # GitHub Actions security-hardening guidance on third-party actions.
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2

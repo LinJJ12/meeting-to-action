@@ -15,11 +15,18 @@
 
 ### 变更
 
+- CI 改为 Ubuntu/Windows × Node 20/22 四 job 矩阵，补 `permissions`、`concurrency`、`timeout` 与 action SHA 固定；PR 模板与 README / CLIENT-SETUP 的 Node 版本口径对齐；`package.json` 补 `description` / `license` / `repository` 元数据。
 - 文档语言布局重组：英文内容（双语变体与英文主版）集中至 `docs/en/`，废弃 `.en.md` 后缀命名；顺带修复 AGENTS / CONTRIBUTING 中的过时文档路径与 issue 模板的 ROADMAP 断链。
 - README「源码与本地分发」表述改为适配开源后状态：仓库公开（MIT），但不发布 npm 包或公共插件市场。
 
 ### 修复
 
+- 修复：MCP 请求行限额按字节计入 CR，堵住用 CR 填充绕过 4 MiB 上限的通道。
+- 修复：`tools/call` 参数形状不合法时返回 JSON-RPC `-32602`，不再把 SDK 序列化的 Zod 错误当作内部错误返回。
+- 修复：`normalizeTranscript` 保留每行原始空白，逐字引用不再因归一化 trim 被误拒；证据与渲染截断改按 Unicode 码点进行，不再切断 emoji。
+- 修复：CLI 输入文件读取/解析失败、`--out` 冲突与 `--version` 混用改为稳定错误码（`INPUT_JSON_INVALID` / `OUT_PATH_UNUSABLE` / exit 2），错误不再回显用户字段值；minutes 与 MCP 统一为 2 MiB 上限。
+- 修复：`setup:client` 引入预检与事务式回滚（`SETUP_PROJECT_INVALID` / `SETUP_CONFLICT` / `SETUP_APPLY_FAILED`），`--apply` 失败只回滚本次新建内容。
+- 修复：`version-sync` 写前预检、写后校验；插件归档字节可复现（固定 mtime、权限与成员顺序）；`smoke-mcp` 精确断言工具契约而不是只数工具个数。
 - CI 恢复自动运行后，同步修正 AGENTS / CONTRIBUTING / docs 索引 / PRD 中「CI 因计费无法运行」的过时说明；CI 工作流补上 `format:check` 与 `lint`，与 `npm run preflight` 的七步保持一致。
 - README「演示」栏目去掉「待开源发布时补充」的过时占位；SECURITY 说明仓库已公开且私密漏洞报告已启用。
 
