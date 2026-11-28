@@ -93,7 +93,7 @@ The CLI only reads an env file when `analyze --env <path>` names one explicitly;
 
 ## Demo
 
-Screenshots and an end-to-end demo video will be added at the open-source release. For now, see the complete in-repo fictional sample: the [example walkthrough](../../examples/agent-workflow/README.md) contains the transcript, the analysis draft, and the generated [minutes](../../examples/agent-workflow/minutes.md) and [evidence report](../../examples/agent-workflow/report.md).
+For now, see the complete in-repo fictional sample: the [example walkthrough](../../examples/agent-workflow/README.md) contains the transcript, the analysis draft, and the generated [minutes](../../examples/agent-workflow/minutes.md) and [evidence report](../../examples/agent-workflow/report.md). Screenshots and an end-to-end demo video will be added in a later release.
 
 ## Repository layout
 

@@ -93,7 +93,7 @@ npm run dev -- analyze examples/sample-meeting.md --out report.md
 
 ## 演示
 
-截图与端到端演示视频待开源发布时补充。当前可以先看仓库内的完整虚构样例：[示例说明](examples/agent-workflow/README.md)包含逐字稿、analysis 编辑稿与生成的[会议纪要](examples/agent-workflow/minutes.md)、[证据报告](examples/agent-workflow/report.md)。
+仓库内的完整虚构样例可直接查看：[示例说明](examples/agent-workflow/README.md)包含逐字稿、analysis 编辑稿与生成的[会议纪要](examples/agent-workflow/minutes.md)、[证据报告](examples/agent-workflow/report.md)。截图与端到端演示视频将在后续版本补充。
 
 ## 仓库结构
 

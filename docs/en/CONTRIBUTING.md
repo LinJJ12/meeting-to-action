@@ -29,7 +29,7 @@ npm run preflight
 | 5 | `npm run plugin:build` | Build the single-plugin upload archive and the local plugin marketplace |
 | 6 | `npm run format:check` | Prettier format check (`src tests scripts`) |
 
-Run the full preflight before committing. Once CI is restored, CI passing is authoritative; CI is currently unable to run due to GitHub Actions billing, so PRs must include local preflight results in the "Verification" section.
+Run the full preflight before committing. CI runs the same six steps on push and pull requests (Node 20/22 matrix) and is authoritative; PRs should also include local preflight results in the "Verification" section.
 
 For individual scripts: `npm run format` auto-formats, `npm run skill:schema` regenerates the contract schemas inside the Skill, and `npm run plugin:check-installed` verifies the plugin installation on a local Codex.
 

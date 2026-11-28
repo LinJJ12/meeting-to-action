@@ -17,6 +17,11 @@ All notable changes to this project are documented in this file. The format is b
 - Documentation layout reorganized: all English content (bilingual variants and English-main documents) is now collected under `docs/en/`, replacing the `.en.md` suffix convention; stale document paths in AGENTS / CONTRIBUTING and the ROADMAP broken link in the issue template were fixed along the way.
 - The README's "source and local distribution" wording now reflects the post-open-source state: the repository is public (MIT), but no npm package or public plugin marketplace is published.
 
+### Fixed
+
+- After CI resumed automatic runs, updated the stale "CI cannot run due to billing" notes in AGENTS / CONTRIBUTING / the docs index / the PRD, and added the missing `format:check` step to the CI workflow so it matches the six steps of `npm run preflight`.
+- Removed the stale "will be added at the open-source release" placeholder from the README demo section; SECURITY now states that the repository is public and private vulnerability reporting is enabled.
+
 ## [0.1.1] - 2026-11-27
 
 ### Added

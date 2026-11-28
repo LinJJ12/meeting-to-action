@@ -42,7 +42,7 @@ Meeting recording, ASR, calendar management, autonomous assignment, hosted multi
 - No invented assignee or due date in acceptance tests.
 - Issue search occurs before issue proposals.
 - No external write without a separate approval step.
-- Schema validation and rendering run in local preflight (`npm run preflight`); CI is configured but paused (see .github/workflows/ci.yml).
+- Schema validation and rendering run in local preflight (`npm run preflight`); CI runs the same six steps on push and pull requests (see .github/workflows/ci.yml).
 - A reproducible demo is documented.
 
 ## Risks

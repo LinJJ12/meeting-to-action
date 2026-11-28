@@ -29,7 +29,7 @@ npm run preflight
 | 5 | `npm run plugin:build` | 构建单插件上传包和本地插件市场 |
 | 6 | `npm run format:check` | Prettier 格式检查（`src tests scripts`） |
 
-提交前必须跑完整 preflight。CI 恢复后以 CI 通过为准；当前 CI 因 GitHub Actions 计费问题无法运行，因此 PR 的「验证」段需要贴本地 preflight 结果。
+提交前必须跑完整 preflight。CI 会在 push 与 PR 上运行同一套六步（Node 20/22 矩阵），以 CI 通过为准；PR 的「验证」段同时贴本地 preflight 结果。
 
 单独使用某个脚本时：`npm run format` 自动格式化，`npm run skill:schema` 重新生成 Skill 内的契约 schema，`npm run plugin:check-installed` 在本地 Codex 上验证插件安装。
 

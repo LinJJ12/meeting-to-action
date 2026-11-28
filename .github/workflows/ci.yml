@@ -1,8 +1,7 @@
 name: CI
 
-# CI is paused: GitHub billing issue; local preflight (`npm run preflight`) is the source of truth.
-# When billing is restored, trigger this once manually via workflow_dispatch before
-# re-enabling push/pull_request automation.
+# CI runs the same six verification steps as `npm run preflight` on push and pull requests.
+# Keep the step list in sync with the `preflight` script in package.json.
 on:
   workflow_dispatch:
   push:
@@ -44,3 +43,4 @@ jobs:
       - run: npm test
       - run: npm run mcp:smoke
       - run: npm run plugin:build
+      - run: npm run format:check
