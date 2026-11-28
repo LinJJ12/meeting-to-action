@@ -90,8 +90,19 @@ export function validateMinutes(
             "MINUTES_KIND_MISMATCH",
             "claim references an analysis entry of a different kind (kind=" + claim.kind + ")",
           );
-        if (entries.some((entry) => entry.kind === "action" && claimSupports(claim.kind, entry)))
-          referenced.add(ref);
+        // 行动覆盖只统计语义明确的引用：followup 天然指向行动；progress 既能指进展也能指
+        // 已落地决定，因此当同一 id 被多个分组共用时不把它算作对行动项的覆盖（否则一条
+        // decision 引用会顺带"覆盖"同 id 的 action，产出漏项的行动清单）。
+        const actions = entries.filter((entry) => entry.kind === "action");
+        const sharedWithOtherGroups = entries.some((entry) => entry.kind !== "action");
+        const coversAction =
+          claim.kind === "followup"
+            ? actions.length > 0
+            : claim.kind === "progress" &&
+              actions.length > 0 &&
+              !sharedWithOtherGroups &&
+              actions.some((entry) => claimSupports(claim.kind, entry));
+        if (coversAction) referenced.add(ref);
       }
     }
   const missing = analysis.actionItems

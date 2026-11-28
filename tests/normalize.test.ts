@@ -52,6 +52,23 @@ describe("transcript normalization", () => {
     expect(validateEvidence(input, [ref])).toEqual([]);
     expect(validateEvidence(input, [ref], "strict")).toEqual([]);
   });
+  it("rejects input that only contains separators", () => {
+    expect(() => normalizeTranscript("---\n===\n***\n", "separators.txt")).toThrow(/INPUT_EMPTY/);
+  });
+  it("pads single-digit clock parts to HH:MM:SS", () => {
+    const minutes = normalizeTranscript("说话人1 1:05\n内容\n", "clock.txt");
+    expect(minutes.segments[0]?.timestamp).toBe("00:01:05");
+    expect(minutes.sources[0]?.transcriptFormat).toBe("speaker-time");
+    const hours = normalizeTranscript("说话人1 1:05:30\n内容\n", "clock2.txt");
+    expect(hours.segments[0]?.timestamp).toBe("01:05:30");
+  });
+  it("does not treat bracketed prose as a speaker label", () => {
+    const prose = normalizeTranscript("【会议记录】\n今天开会\n", "notes.txt");
+    expect(prose.segments[0]?.speaker).toBeUndefined();
+    const label = normalizeTranscript("【说话人3】\n内容\n", "label.txt");
+    expect(label.segments[0]?.speaker).toBe("说话人3");
+    expect(label.sources[0]?.transcriptFormat).toBe("speaker-bracket");
+  });
   it("never emits overlapping segment ranges", () => {
     const t = "Speaker A: one.\nSpeaker B: two.\n\n# Notes\n\nDecision: defer.\nAlice: ok";
     for (const fileName of ["x.txt", "y.md", "z.md"]) {

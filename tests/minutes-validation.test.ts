@@ -99,6 +99,14 @@ it("does not count a decision reference as coverage of an action with the same I
   const draft = mutate((document) => document.sections[0].claims.pop());
   expect(run(draft, analysis)?.code).toBe("MINUTES_ACTION_COVERAGE");
 });
+it("does not count an ambiguous progress reference as action coverage", () => {
+  // progress 既能引用进展也能引用已落地决定；同一 id 跨组重名时不能猜意图，
+  // 因此不作为行动覆盖，避免生成漏项的行动清单。
+  const analysis = makeAnalysis();
+  analysis.actionItems[2]!.id = "d1";
+  const draft = mutate((document) => document.sections[0].claims.pop());
+  expect(run(draft, analysis)?.code).toBe("MINUTES_ACTION_COVERAGE");
+});
 it.each<[string, (document: any) => void]>([
   [
     "MINUTES_MEETING_MISMATCH",

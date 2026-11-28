@@ -103,6 +103,7 @@ Rules:
 
 - A new turn starts only at a complete export header, a line that begins with a timestamp, or a recognized anonymous speaker label (`说话人N` / `发言人N` / `参与者N` / `嘉宾` / `主持人` / `Speaker N`). Ordinary prose such as `Decision: defer launch.` is never guessed into a speaker.
 - `speaker-inline` labels are also rejected when they look like dates, document titles, or paths (`年月日`, `《》`, `/`, `\`, `%`, or no letters at all). Real exports contain title lines such as `4月20日 11:15 B1录音`; attaching them as a speaker would make evidence point at the wrong person.
+- `speaker-bracket` labels follow the same rule: only recognized anonymous labels (`【说话人1】`) start a turn; bracketed prose such as `【会议记录】` stays body text.
 - `MM:SS` timestamps are normalized to `HH:MM:SS` (`00:05` → `00:00:05`); existing `HH:MM:SS` values are kept as-is. Missing timestamps stay absent (`timestamp` omitted and rendered as `—`): no time is invented, and no relative date is resolved.
 - Segment `text` keeps the original source line(s) unchanged, so evidence quotes stay exact and line ranges map back to the file.
 - `transcriptFormat` is `mixed` when one file combines several formats, and omitted when no speaker metadata was recognized (plain text).
