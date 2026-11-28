@@ -5,6 +5,7 @@ import {
   type MeetingInput,
 } from "../domain/schema.js";
 import { MAX_EVIDENCE_REFS_PER_ENTRY, MAX_QUOTE_CHARS } from "./limits.js";
+import { truncateText } from "./text.js";
 
 export type EvidenceMode = "fragment" | "strict";
 
@@ -118,7 +119,7 @@ export function validateEvidenceWithIndex(
       continue;
     }
     if (!index.sourceIds.has(ref.sourceId)) {
-      errors.push("Unknown source: " + ref.sourceId);
+      errors.push("evidence references an unknown source");
       continue;
     }
     if (ref.quote !== undefined && ref.quote.length > MAX_QUOTE_CHARS) {
@@ -127,7 +128,7 @@ export function validateEvidenceWithIndex(
     }
     const segment = ref.segmentId === undefined ? undefined : index.segmentsById.get(ref.segmentId);
     if (ref.segmentId !== undefined && !segment) {
-      errors.push("Unknown segment: " + ref.segmentId);
+      errors.push("evidence references an unknown segment");
       continue;
     }
     if (segment && segment.sourceId !== ref.sourceId) {
@@ -233,7 +234,8 @@ export function evidenceForSegment(input: MeetingInput, segmentId: string): Evid
     segmentId,
     lineStart: segment.lineStart,
     lineEnd: segment.lineEnd,
-    quote: segment.text.slice(0, 240),
+    // 引文必须仍是逐字前缀：按码点截断且不加省略号，避免切开 emoji 后校验失败。
+    quote: truncateText(segment.text, 240, ""),
     ...(segment.speaker ? { speaker: segment.speaker } : {}),
     ...(segment.timestamp ? { timestamp: segment.timestamp } : {}),
   };

@@ -17,16 +17,20 @@
 | `CONFIG_MISSING` | `analyze` 缺 `OPENAI_API_KEY` / `OPENAI_MODEL` |
 | `CONFIG_INVALID` | 环境文件不可读、`OPENAI_TIMEOUT_MS` 越界、`OPENAI_BASE_URL` scheme 不合法（非 https 且非 loopback 明文 http） |
 | `INPUT_UNSUPPORTED` / `INPUT_EMPTY` | 逐字稿扩展名不支持 / 内容为空 |
-| `INPUT_SIZE_LIMIT` | 输入超过 2 MiB（analysis 4 MiB） |
+| `INPUT_SIZE_LIMIT` | 输入超过 2 MiB（analysis 4 MiB；minutes 2 MiB） |
 | `INPUT_SEGMENT_LIMIT` | 归一化后段数超过 10,000 |
-| `INPUT_JSON_INVALID` | normalized / analysis / minutes JSON 文件读取或解析失败 |
+| `INPUT_JSON_INVALID` | normalized / analysis / minutes JSON 文件读取或解析失败（只说明是哪个角色，不回显宿主路径） |
 | `OUT_PATH_INVALID` | `--out` 为 UNC/设备命名空间/盘符相对/备用数据流形态 |
+| `OUT_PATH_UNUSABLE` | `--out` 目标已存在，或父目录缺失/不可用（inspect 与 report；从不覆盖已有文件） |
 | `INPUT_SCHEMA_INVALID` | normalized JSON、analysis JSON 或 minutes JSON 不符合 schema |
 | `ANALYSIS_MEETING_MISMATCH` / `ANALYSIS_DUPLICATE_ID` / `ANALYSIS_EVIDENCE_INVALID` | analysis 与输入会议身份不符 / 条目 ID 重复 / 证据校验失败 |
 | `ANALYSIS_INVALID_JSON` / `ANALYSIS_SCHEMA_INVALID` | 模型输出不可解析为 JSON / JSON 合法但不符合 schema（重试耗尽后） |
 | `MINUTES_MISSING` / `MINUTES_*` / `RENDER_MODE_INVALID` | minutes 契约与渲染模式错误（见[展示契约](../contracts/MINUTES-CONTRACT.md)） |
 | `HTTP_ERROR` / `REQUEST_FAILED` / `REQUEST_TIMEOUT` / `REQUEST_ABORTED` | provider 返回非 2xx / 网络失败 / 超时 / 外部中止 |
 | `RESPONSE_TOO_LARGE` / `BODY_READ_FAILED` / `INVALID_JSON` / `EMPTY_COMPLETION` / `PROVIDER_RESPONSE_INVALID` | provider 响应体超限 / 读取失败 / 非 JSON / 空 completion / 形状不合法 |
-| `SETUP_*` | `setup:client` 安装器错误（路径形态、越界、冲突、缺构建产物等） |
+| `SETUP_PROJECT_INVALID` | `--project` 不存在、不是目录或无法解析 |
+| `SETUP_CONFLICT` | 目标被同名目录/普通文件占用、父路径不可创建或已有不同内容（预览与 `--apply` 一致，`--apply` 会先回滚） |
+| `SETUP_APPLY_FAILED` | `--apply` 期间其它文件系统错误（本次创建内容已回滚） |
+| `SETUP_*` | 其余 `setup:client` 安装器错误（路径形态、越界、缺构建产物等） |
 
 新增错误码时必须同步本文件与 `docs/guides/MCP.md` 的 Known codes 行（由 `tests/docs-consistency.test.ts` 双向把关）。

@@ -29,11 +29,16 @@ interface LineMeta {
 
 /** 匿名说话人标签（说话人1/发言人2/Speaker 3），用于无时间戳行与时间戳在前行的保守识别。 */
 const ANON_LABEL =
-  /^(?:说话人|发言人|参与者|嘉宾|主持人|speaker|Speaker|SPEAKER)\s*[_\-]?\s*\d{1,3}$/;
+  /^(?:(?:说话人|发言人|参与者|嘉宾|主持人|speaker)\s*[_\-]?\s*\d{1,3}|嘉宾|主持人)$/i;
 
-/** MM:SS 补齐成 HH:MM:SS；已是 HH:MM:SS 的原样返回（不猜测缺失的小时/毫秒）。 */
+/** MM:SS 或 H:MM(:SS) 归一成两位 HH:MM:SS；其它形状原样返回（不猜测缺失的毫秒）。 */
 function normalizeClock(value: string): string {
-  return /^[0-9]{2}:[0-5][0-9]$/.test(value) ? `00:${value}` : value;
+  const match = /^([0-9]{1,2}):([0-5][0-9])(?::([0-5][0-9]))?$/.exec(value);
+  if (!match) return value;
+  const pad = (part: string) => part.padStart(2, "0");
+  const [, first, second, third] = match;
+  if (third === undefined) return `00:${pad(first!)}:${pad(second!)}`;
+  return `${pad(first!)}:${pad(second!)}:${pad(third!)}`;
 }
 
 /** 同行标签里一眼不是人名的字符：日期（年月日）、书名号、路径分隔符、百分比。 */
@@ -83,8 +88,10 @@ function parseLineMeta(line: string): LineMeta | undefined {
       timestamp: normalizeClock(timestampFirst[1]!),
       format: "timestamp-first",
     };
+  // 方括号只认匿名说话人标签；【会议记录】这类正文标题不能挂成 speaker。
   const bracketed = /^【([^】\r\n]{1,50})】\s*(.*)$/.exec(text);
-  if (bracketed) return { speaker: bracketed[1]!.trim(), format: "speaker-bracket" };
+  if (bracketed && ANON_LABEL.test(bracketed[1]!.trim()))
+    return { speaker: bracketed[1]!.trim(), format: "speaker-bracket" };
   const colon = /^([^\s:：]{1,20})[：:]\s*(.+)$/.exec(text);
   if (colon && ANON_LABEL.test(colon[1]!.trim()))
     return { speaker: colon[1]!.trim(), format: "speaker-colon" };
@@ -112,8 +119,9 @@ export function normalizeTranscript(
     start = 1,
     meta: LineMeta | undefined;
   const flush = (end: number) => {
-    const text = buffer.join("\n").trim();
-    if (text) {
+    // 契约（docs/en/contracts/DATA-SCHEMA.md）：segment.text 与源文件对应行逐字一致，因此只 trim 判空。
+    const text = buffer.join("\n");
+    if (text.trim()) {
       // 到达上限立即停止：先拒绝，再构造 segment，避免超大输入先把内存吃完再报错。
       if (maxSegments !== undefined && segments.length >= maxSegments)
         throw new Error(`INPUT_SEGMENT_LIMIT: transcript has more than ${maxSegments} segments`);
@@ -151,6 +159,8 @@ export function normalizeTranscript(
     buffer.push(line);
   });
   flush(lines.length);
+  // 只有分隔线/空行的输入没有任何 segment：明确报 INPUT_EMPTY，而不是抛 ZodError。
+  if (!segments.length) throw new Error("INPUT_EMPTY: transcript has no text segments");
   const detected: TranscriptFormat | undefined =
     formats.size === 0 ? undefined : formats.size === 1 ? [...formats][0] : "mixed";
   const heading = lines

@@ -1,6 +1,12 @@
 {
   "name": "@meeting-to-action/core",
   "version": "0.1.1",
+  "description": "Turn meeting transcripts into traceable decisions, action items, and minutes with evidence.",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/LinJJ12/meeting-to-action.git"
+  },
   "private": true,
   "type": "module",
   "scripts": {

@@ -133,4 +133,27 @@ describe("evidence 校验一致性（analyze / report / validateEvidence）", ()
       validateEvidence(input, [variants.forgedSpeaker as never], "strict").length,
     ).toBeGreaterThan(0);
   });
+
+  it("错误详情不回显用户提供的 sourceId / segmentId", () => {
+    let message = "";
+    try {
+      validateAnalysis(input, fullAnalysisWithEvidence([variants.unknownSource]));
+    } catch (error) {
+      message = (error as Error).message;
+    }
+    expect(message).toContain("ANALYSIS_EVIDENCE_INVALID");
+    expect(message).toContain("evidence references an unknown source");
+    expect(message).not.toContain("unknown-source");
+
+    const unknownSegment = { ...base, segmentId: "unknown-segment" };
+    let segmentMessage = "";
+    try {
+      validateAnalysis(input, fullAnalysisWithEvidence([unknownSegment]));
+    } catch (error) {
+      segmentMessage = (error as Error).message;
+    }
+    expect(segmentMessage).toContain("ANALYSIS_EVIDENCE_INVALID");
+    expect(segmentMessage).toContain("evidence references an unknown segment");
+    expect(segmentMessage).not.toContain("unknown-segment");
+  });
 });

@@ -8,6 +8,7 @@ import { MinutesDocumentSchema, type MinutesDocument } from "../src/domain/minut
 import { MinutesContractError } from "../src/core/minutes.js";
 import { renderMarkdown } from "../src/render/markdown.js";
 import { renderMinutesDocument, renderTraceAppendix } from "../src/render/minutes.js";
+import { countLoneSurrogates } from "./support/lone-surrogates.js";
 
 type EvidenceExtra = { speaker?: string; timestamp?: string; quote?: string };
 const ev = (segmentId: string, lineStart: number, lineEnd: number, extra: EvidenceExtra = {}) => ({
@@ -484,6 +485,24 @@ it("truncates appendix quotes to 200 characters with an ellipsis", () => {
   const md = renderMinutesDocument(inputFixture(), analysis, minutesFixture());
   expect(md).toContain("“" + "引".repeat(200) + "…”");
   expect(md).not.toContain("引".repeat(201));
+});
+
+it("truncates appendix quotes without splitting emoji surrogate pairs", () => {
+  const analysis = analysisFixture();
+  analysis.decisions[0]!.evidence[0]!.quote = "a".repeat(199) + "😀" + "b".repeat(30);
+  const md = renderMinutesDocument(inputFixture(), analysis, minutesFixture());
+  expect(md).toContain("“" + "a".repeat(199) + "😀…”");
+  expect(md).not.toContain("a".repeat(200));
+  expect(countLoneSurrogates(md)).toBe(0);
+});
+
+it("truncates action locators without splitting emoji surrogate pairs", () => {
+  const analysis = analysisFixture();
+  analysis.actionItems[0]!.evidence[0]!.quote = "b".repeat(79) + "😀" + "c".repeat(10);
+  const md = renderMinutesDocument(inputFixture(), analysis, minutesFixture(), { mode: "actions" });
+  expect(md).toContain("“" + "b".repeat(79) + "😀…”");
+  expect(md).not.toContain("b".repeat(80));
+  expect(countLoneSurrogates(md)).toBe(0);
 });
 
 it("marks unreachable references defensively in the appendix", () => {

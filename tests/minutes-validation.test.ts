@@ -99,6 +99,14 @@ it("does not count a decision reference as coverage of an action with the same I
   const draft = mutate((document) => document.sections[0].claims.pop());
   expect(run(draft, analysis)?.code).toBe("MINUTES_ACTION_COVERAGE");
 });
+it("does not count an ambiguous progress reference as action coverage", () => {
+  // progress 既能引用进展也能引用已落地决定；同一 id 跨组重名时不能猜意图，
+  // 因此不作为行动覆盖，避免生成漏项的行动清单。
+  const analysis = makeAnalysis();
+  analysis.actionItems[2]!.id = "d1";
+  const draft = mutate((document) => document.sections[0].claims.pop());
+  expect(run(draft, analysis)?.code).toBe("MINUTES_ACTION_COVERAGE");
+});
 it.each<[string, (document: any) => void]>([
   [
     "MINUTES_MEETING_MISMATCH",
@@ -143,14 +151,16 @@ it.each<[string, (document: any) => void]>([
   expect(error!.code).toBe(code);
   expect(error!.message).toContain(code);
 });
-it("reports both meeting ids on MINUTES_MEETING_MISMATCH", () => {
+it("does not echo either meeting id on MINUTES_MEETING_MISMATCH", () => {
   const error = run(
     mutate((document) => {
       document.meetingId = "meeting-2";
     }),
   );
-  expect(error?.message).toContain("meeting-2");
-  expect(error?.message).toContain("meeting-1");
+  expect(error?.code).toBe("MINUTES_MEETING_MISMATCH");
+  expect(error?.message).toContain("different meetings");
+  expect(error?.message).not.toContain("meeting-2");
+  expect(error?.message).not.toContain("meeting-1");
 });
 it("reports unsupported contract versions before structural problems", () => {
   const error = run(
@@ -160,6 +170,8 @@ it("reports unsupported contract versions before structural problems", () => {
     }),
   );
   expect(error?.code).toBe("MINUTES_CONTRACT_UNSUPPORTED");
+  expect(error?.message).toContain("unsupported minutes contract version");
+  expect(error?.message).not.toContain("3.1");
 });
 it("keeps the offending field path in MINUTES_SCHEMA_INVALID", () => {
   const error = run(
@@ -190,7 +202,9 @@ it("rejects references to items missing from the analysis", () => {
       }),
     );
     expect(error?.code).toBe("MINUTES_REF_UNKNOWN");
-    expect(error?.message).toContain("missing-item");
+    expect(error?.message).toContain("unknown analysis entry");
+    expect(error?.message).not.toContain("missing-item");
+    expect(error?.message).not.toContain("c-extra");
   }
 });
 it.each<[string, string]>([
@@ -234,6 +248,8 @@ it.each<[string, string]>([
   const error = run(document);
   expect(error?.code).toBe("MINUTES_KIND_MISMATCH");
   expect(error?.message).toContain(kind);
+  expect(error?.message).not.toContain(ref);
+  expect(error?.message).not.toContain("c-extra");
 });
 it.each<[ActionStatus, boolean]>([
   ["done", true],

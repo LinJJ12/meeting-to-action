@@ -26,12 +26,14 @@ import {
 import { assertSafePathForm } from "./core/path-guard.js";
 import { describeZodError } from "./core/zod-detail.js";
 
+// 本仓库没有 npm bin：示例用真实可执行的入口（源码 `npm run dev --`，构建后 `node dist/cli.js`）。
 const USAGE = [
   "Usage:",
-  "  meeting-to-action --version",
-  "  meeting-to-action inspect <transcript.txt|transcript.md> [--out normalized.json]",
-  "  meeting-to-action analyze <transcript.txt|transcript.md> [--env <path>] [--out report.md]",
-  "  meeting-to-action report <normalized.json> --analysis <analysis.json> [--minutes <minutes.json>] [--mode minutes|actions|evidence] [--no-appendix] [--out report.md]",
+  "  from source: npm run dev -- <command>; built CLI: node dist/cli.js <command>",
+  "  npm run dev -- --version",
+  "  npm run dev -- inspect <transcript.txt|transcript.md> [--out normalized.json]",
+  "  npm run dev -- analyze <transcript.txt|transcript.md> [--env <path>] [--out report.md]",
+  "  npm run dev -- report <normalized.json> --analysis <analysis.json> [--minutes <minutes.json>] [--mode minutes|actions|evidence] [--no-appendix] [--out report.md]",
   "",
   "Report modes:",
   "  with --minutes, the default mode is minutes; without it, the evidence report is rendered.",
@@ -60,8 +62,13 @@ function invalidMode(value: string): never {
   process.exit(1);
 }
 
-const [command, input, ...args] = process.argv.slice(2);
-if (command === "--version" || command === "-v") {
+const argv = process.argv.slice(2);
+const wantsVersion = argv.includes("--version") || argv.includes("-v");
+// --version 是短路的成功路径，但只接受单独出现：混进其他参数说明调用方期望
+// 做别的事却拿了版本号，按用法错误处理，避免脚本静默成功。
+if (wantsVersion && argv.length !== 1) usage();
+const [command, input, ...args] = argv;
+if (wantsVersion) {
   const pkg = JSON.parse(
     readFileSync(new URL("../package.json", import.meta.url), "utf8").replace(/^\uFEFF/, ""),
   ) as { version?: string };
@@ -125,36 +132,44 @@ if (envPath !== undefined) {
   }
 }
 /**
- * report 的 input/analysis 都来自本地文件：先按 stat 大小拒绝超大文件，绝不整读。
+ * report 的 input/analysis/minutes 都来自本地文件：先按 stat 大小拒绝超大文件，绝不整读。
  * stat 与读取之间文件可能变化，按实际读到的 Buffer 字节数复核一次。
+ * 读取/解析失败统一为 INPUT_JSON_INVALID，只说明是哪个角色，不回显宿主路径或字段值。
  */
+type JsonInputRole = "input" | "analysis" | "minutes";
 async function readJsonWithinLimit(
   path: string,
   maxBytes: number,
   label: string,
+  role: JsonInputRole = "input",
 ): Promise<unknown> {
   const assertSize = (bytes: number): void => {
     if (bytes > maxBytes)
       throw new Error(`INPUT_SIZE_LIMIT: ${label} ${path} is ${bytes} bytes, limit is ${maxBytes}`);
   };
-  assertSize((await stat(path)).size);
-  const raw = await readFile(path);
+  let size: number;
+  try {
+    size = (await stat(path)).size;
+  } catch {
+    throw new Error(`INPUT_JSON_INVALID: cannot read ${role} file`);
+  }
+  assertSize(size);
+  let raw: Buffer;
+  try {
+    raw = await readFile(path);
+  } catch {
+    throw new Error(`INPUT_JSON_INVALID: cannot read ${role} file`);
+  }
   assertSize(raw.byteLength);
   try {
     return JSON.parse(raw.toString("utf8").replace(/^\uFEFF/, ""));
   } catch {
-    throw new Error("INPUT_JSON_INVALID");
+    throw new Error(`INPUT_JSON_INVALID: cannot parse ${role} file`);
   }
 }
-/** `--minutes` 是可选编辑稿：读取或 JSON 解析失败统一收敛，且不回显宿主路径。 */
+/** `--minutes` 是可选编辑稿：与 MCP 侧同口径按 2 MiB 读取，读取/解析失败统一收敛。 */
 async function readMinutesJson(path: string): Promise<unknown> {
-  try {
-    return await readJsonWithinLimit(path, MAX_ANALYSIS_BYTES, "minutes");
-  } catch (error) {
-    // 大小限制保留原错误码；其余（读取失败/JSON 解析失败）统一收敛为 INPUT_JSON_INVALID。
-    if (error instanceof Error && error.message.startsWith("INPUT_SIZE_LIMIT")) throw error;
-    throw new Error("INPUT_JSON_INVALID");
-  }
+  return readJsonWithinLimit(path, MAX_CONTENT_BYTES, "minutes", "minutes");
 }
 function assertTranscriptSize(bytes: number, path: string): void {
   if (bytes > MAX_CONTENT_BYTES)
@@ -171,6 +186,20 @@ async function readTranscriptForAnalyze(path: string): Promise<string> {
   // Windows 记事本等工具会写 UTF-8 BOM：剥掉，避免首行说话人被识别错。
   return raw.toString("utf8").replace(/^\uFEFF/, "");
 }
+/**
+ * `--out` 用 wx 打开，绝不覆盖已有文件。目标已存在（EEXIST）或父路径不可用
+ * （ENOENT/ENOTDIR）统一收敛为稳定码，只给结论不回显宿主路径。
+ */
+async function writeOutput(path: string, content: string): Promise<void> {
+  try {
+    await writeFile(path, content, { encoding: "utf8", flag: "wx" });
+  } catch (error) {
+    const code = (error as NodeJS.ErrnoException).code;
+    if (code === "EEXIST" || code === "ENOENT" || code === "ENOTDIR")
+      throw new Error("OUT_PATH_UNUSABLE: target exists or its parent directory is missing");
+    throw error;
+  }
+}
 
 try {
   const absoluteInput = resolve(input);
@@ -183,7 +212,7 @@ try {
     assertMeetingInputWithinLimits(meeting);
     const analysis = validateAnalysis(
       meeting,
-      await readJsonWithinLimit(resolve(analysisPath!), MAX_ANALYSIS_BYTES, "analysis"),
+      await readJsonWithinLimit(resolve(analysisPath!), MAX_ANALYSIS_BYTES, "analysis", "analysis"),
     );
     let minutes: MinutesDocument | undefined;
     if (minutesPath !== undefined)
@@ -193,7 +222,7 @@ try {
         ? renderMarkdown(analysis)
         : renderMinutesDocument(meeting, analysis, minutes, { mode, appendix });
     if (outputPath) {
-      await writeFile(resolve(outputPath), report, { encoding: "utf8", flag: "wx" });
+      await writeOutput(resolve(outputPath), report);
       console.log("Wrote " + resolve(outputPath));
     } else process.stdout.write(report);
   } else {
@@ -240,7 +269,7 @@ try {
     }
 
     if (outputPath) {
-      await writeFile(resolve(outputPath), output, { encoding: "utf8", flag: "wx" });
+      await writeOutput(resolve(outputPath), output);
       console.log("Wrote " + resolve(outputPath));
     } else process.stdout.write(output);
   }

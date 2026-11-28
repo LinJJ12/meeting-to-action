@@ -71,11 +71,11 @@ JSON Schema 只描述形状；跨字段身份、重复 ID、来源关系与引�
 - 单条请求行（UTF-8 字节，不含 CRLF 结尾）与序列化工具参数的最大体积：4 MiB。
 - 逐字稿/合并段文本：2 MiB UTF-8，最多 10,000 段。限额按 UTF-8 字节计数，因此超限的 ASCII 与中日韩内容都会一致地以 INPUT_SIZE_LIMIT 拒绝，并报告实际字节数与限额。
 - 同一来源内的段行区间不得重叠：段是规范、互斥的时间线发言，部分重叠、嵌套与完全相同的区间会在证据校验之前的 schema 阶段（schema 错误码）被拒绝。
-- 本地 `report` 命令读取文件前先 `stat` 检查：normalized 输入 JSON 按 2 MiB、analysis JSON 按 4 MiB 限制。超限文件以 INPUT_SIZE_LIMIT 直接拒绝、不加载；解析后的输入同样受上述 2 MiB / 10,000 段约束。
+- 本地 `report` 命令读取文件前先 `stat` 检查：normalized 输入 JSON 按 2 MiB、analysis JSON 按 4 MiB、minutes JSON 按 2 MiB 限制。超限文件以 INPUT_SIZE_LIMIT 直接拒绝、不加载；解析后的输入同样受上述 2 MiB / 10,000 段约束。
 - 证据资源上限：每个 analysis 条目最多 200 条引用，每条引文最多 4,000 字符。任一超限返回 ANALYSIS_EVIDENCE_INVALID，消息中包含实际限额。证据校验为每个 analysis 按来源各建一个索引，而不是对每条引用重扫全部段。
 - 所有工具调用共享 5,000 ms CPU 预算（`MAX_TOOL_WORK_MS`）。超限会以 WORK_LIMIT_EXCEEDED 结束调用，而不是阻塞事件循环；正常与超大有界输入的完成时间远低于该预算。
 - maxChars：1 到 2,097,152 的整数。段行数不一致会被切分阶段拒绝。
-- 超过 4 MiB 的请求行会收到 JSON-RPC 错误 `-32600`，消息为 `INPUT_SIZE_LIMIT: request line exceeds 4 MiB (bytes=N)`；该行剩余内容被丢弃，服务器继续处理后续请求。传输层 stdin/stdout 失败会向 stderr 记录 `MCP_STDIN_ERROR`/`MCP_STDOUT_ERROR` 并优雅关闭。其他工具校验失败返回 `isError: true` 与稳定错误码，不回显参数。
+- 超过 4 MiB 的请求行会收到 JSON-RPC 错误 `-32600`，消息为 `INPUT_SIZE_LIMIT: request line exceeds 4 MiB (bytes=N)`；该行剩余内容被丢弃，服务器继续处理后续请求。传输层 stdin/stdout 失败会向 stderr 记录 `MCP_STDIN_ERROR`/`MCP_STDOUT_ERROR` 并优雅关闭。其他工具校验失败返回 `isError: true` 与稳定错误码，不回显参数。`tools/call` 的 `params` 形状不合法（缺少 `name`、`name` 非字符串、`arguments` 非对象）时，服务器直接返回 JSON-RPC 错误 `-32602`，消息固定为 `INPUT_INVALID: invalid tools/call params`，请求不会被转发。
 - 可选的 `minutes` 参数是 JSON 编码的纪要文档，同样受 2 MiB UTF-8 内容限额约束；JSON 不合法以 INPUT_INVALID 拒绝。渲染 minutes 草稿永远不会跳过 analysis 校验。
 - Known codes include INPUT_EMPTY, INPUT_UNSUPPORTED, INPUT_INVALID, INPUT_SIZE_LIMIT, INPUT_SEGMENT_LIMIT, CHUNK_LINE_TOO_LONG, SEGMENT_LINE_COUNT_INVALID, ANALYSIS_MEETING_MISMATCH, ANALYSIS_DUPLICATE_ID, ANALYSIS_EVIDENCE_INVALID, WORK_LIMIT_EXCEEDED, MINUTES_MISSING, MINUTES_SCHEMA_INVALID, MINUTES_CONTRACT_UNSUPPORTED, MINUTES_MEETING_MISMATCH, MINUTES_REF_UNKNOWN, MINUTES_KIND_MISMATCH, MINUTES_ACTION_COVERAGE, RENDER_MODE_INVALID and TOOL_UNKNOWN. Schema-level failures (for example an unknown enum value or a non-string `minutes`) are reported as `INPUT_INVALID` followed by the first field path and a short reason; the path lets the host correct arguments without guessing, and field values are never echoed. The CLI prints the same detail behind its schema-error code.
 

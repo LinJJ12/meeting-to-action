@@ -1,4 +1,14 @@
-import { lstat, readdir, readFile, realpath, mkdir, writeFile, stat } from "node:fs/promises";
+import {
+  lstat,
+  readdir,
+  readFile,
+  realpath,
+  mkdir,
+  writeFile,
+  unlink,
+  rmdir,
+  stat,
+} from "node:fs/promises";
 import { resolve, join, dirname, relative, sep, basename, isAbsolute } from "node:path";
 import { assertSafePathForm } from "../core/path-guard.js";
 
@@ -56,12 +66,36 @@ export async function resolveContainedPath(root: string, target: string): Promis
     throw new Error("SETUP_LINK_REJECTED");
   return targetReal;
 }
-async function exists(path: string) {
+/** Reject a destination whose existing ancestor chain is not made of directories.
+ * `mkdir -p` through such a chain fails midway with raw EEXIST/ENOTDIR after earlier
+ * files were already written, so the plan must never advertise those targets. */
+async function assertDirectoryChain(project: string, destination: string): Promise<void> {
+  const segments = relative(project, destination).split(sep);
+  let current = project;
+  for (const segment of segments.slice(0, -1)) {
+    current = join(current, segment);
+    let info;
+    try {
+      info = await lstat(current);
+    } catch (error) {
+      // A missing ancestor is fine: `mkdir -p` creates the whole tail. Anything else
+      // (ENOTDIR from a file earlier in the chain, EACCES, ...) means the chain cannot
+      // be proven installable.
+      if ((error as NodeJS.ErrnoException).code === "ENOENT") return;
+      throw new Error("SETUP_CONFLICT");
+    }
+    if (!info.isDirectory()) throw new Error("SETUP_CONFLICT");
+  }
+}
+/** lstat a planned destination. A missing destination is a create candidate; every
+ * other inspection failure is reported as a conflict so preflight never leaks raw fs
+ * errors (or paths) for targets it cannot reason about. */
+async function destinationState(destination: string) {
   try {
-    return await lstat(path);
+    return await lstat(destination);
   } catch (error) {
     if ((error as NodeJS.ErrnoException).code === "ENOENT") return undefined;
-    throw error;
+    throw new Error("SETUP_CONFLICT");
   }
 }
 async function sourceFiles(
@@ -81,14 +115,30 @@ async function sourceFiles(
   }
   return files;
 }
-/** Project-local setup only. Existing different files are never replaced or merged. */
-export async function setupProject(options: SetupOptions): Promise<SetupPlan> {
+/** Resolve the user-supplied `--project` directory. A missing path or a file at that
+ * location is an installer error, never a raw fs error; the message stays the stable
+ * code only so the CLI never echoes the user's absolute path. */
+async function projectDirectory(candidate: string): Promise<string> {
+  try {
+    const project = await realpath(resolve(candidate));
+    if (!(await stat(project)).isDirectory()) throw new Error("SETUP_PROJECT_INVALID");
+    return project;
+  } catch (error) {
+    if (error instanceof Error && error.message === "SETUP_PROJECT_INVALID") throw error;
+    throw new Error("SETUP_PROJECT_INVALID");
+  }
+}
+/** The immutable install plan plus the exact file contents to write. Preview and
+ * `--apply` consume this same object, so they can never disagree about what to do. */
+export type SetupPreview = { plan: SetupPlan; writes: { path: string; content: Buffer }[] };
+/** Build the install plan without touching the project. Every destination is validated
+ * here, so a preview that reports `create` is exactly what apply will attempt. */
+export async function planSetup(options: SetupOptions): Promise<SetupPreview> {
   if (!["codex", "cursor"].includes(options.client)) throw new Error("SETUP_CLIENT_INVALID");
   assertSafePathForm(options.project);
   assertSafePathForm(options.runtime);
-  const project = await realpath(resolve(options.project)),
+  const project = await projectDirectory(options.project),
     runtime = await realpath(resolve(options.runtime));
-  if (!(await stat(project)).isDirectory()) throw new Error("SETUP_PROJECT_INVALID");
   const server = await resolveContainedPath(runtime, join(runtime, "dist", "mcp", "server.js"));
   if (!(await stat(server)).isFile()) throw new Error("SETUP_BUILD_REQUIRED");
   const source = await resolveContainedPath(runtime, join(runtime, "skills", "meeting-to-action"));
@@ -117,23 +167,97 @@ export async function setupProject(options: SetupOptions): Promise<SetupPlan> {
     { path: configPath, content: Buffer.from(config) },
   ];
   const plan: SetupPlan = { client: options.client, project, files: [], applied: false };
-  // Preflight every destination before any writes. Never expose existing config contents.
+  // Preflight every destination before any writes: an ancestor that is not a directory
+  // (e.g. `.cursor` is a plain file) or an existing file with different bytes makes the
+  // whole plan uninstallable, so preview and --apply fail with the same stable code
+  // before a single write. Never expose existing config contents or paths.
   for (const file of writes) {
     const destination = await resolveContainedPath(project, file.path);
-    const info = await exists(file.path);
-    if (info && (!info.isFile() || !file.content.equals(await readFile(destination))))
-      throw new Error("SETUP_CONFLICT: " + file.path);
+    await assertDirectoryChain(project, destination);
+    const info = await destinationState(destination);
+    if (info) {
+      if (!info.isFile()) throw new Error("SETUP_CONFLICT");
+      let unchanged;
+      try {
+        unchanged = file.content.equals(await readFile(destination));
+      } catch {
+        throw new Error("SETUP_CONFLICT");
+      }
+      if (!unchanged) throw new Error("SETUP_CONFLICT");
+    }
     plan.files.push({ path: file.path, status: info ? "unchanged" : "create" });
   }
-  if (options.apply) {
-    for (let i = 0; i < writes.length; i++) {
-      const file = writes[i]!;
-      if (plan.files[i]!.status === "unchanged") continue;
-      const destination = await resolveContainedPath(project, file.path);
-      await mkdir(dirname(destination), { recursive: true });
-      await writeFile(destination, file.content, { flag: "wx" });
+  return { plan, writes };
+}
+const stableSetupCode = /^SETUP_[A-Z_]+$/;
+/** Apply-time failures must stay stable: raw fs errors never reach the CLI, and they are
+ * mapped to the same conflict code the preflight uses whenever possible. */
+function applyFailure(error: unknown): Error {
+  if (error instanceof Error && stableSetupCode.test(error.message)) return error;
+  const code = (error as NodeJS.ErrnoException | undefined)?.code;
+  if (code === "EEXIST" || code === "ENOTDIR" || code === "EISDIR" || code === "ENOENT")
+    return new Error("SETUP_CONFLICT");
+  return new Error("SETUP_APPLY_FAILED");
+}
+/** Create the missing tail of a directory chain, recording every directory this call
+ * actually created so a later rollback can remove exactly those and nothing else. */
+async function ensureDirectory(directory: string, created: string[]): Promise<void> {
+  const missing: string[] = [];
+  let current = directory;
+  for (;;) {
+    let info;
+    try {
+      info = await lstat(current);
+    } catch (error) {
+      if ((error as NodeJS.ErrnoException).code !== "ENOENT") throw new Error("SETUP_CONFLICT");
+      const parent = dirname(current);
+      if (parent === current) throw new Error("SETUP_CONFLICT");
+      missing.push(current);
+      current = parent;
+      continue;
     }
-    plan.applied = true;
+    if (!info.isDirectory()) throw new Error("SETUP_CONFLICT");
+    break;
   }
-  return plan;
+  for (const dir of missing.reverse()) {
+    await mkdir(dir);
+    created.push(dir);
+  }
+}
+/** Remove exactly what this apply created, deepest first. Best effort only: a leftover
+ * entry is safer than deleting anything the user already had. */
+async function rollback(createdFiles: string[], createdDirs: string[]): Promise<void> {
+  for (const file of [...createdFiles].reverse()) await unlink(file).catch(() => undefined);
+  for (const dir of [...createdDirs].reverse()) await rmdir(dir).catch(() => undefined);
+}
+/** Execute a planned install. Any failure rolls back the files and directories created
+ * by this call and rethrows one stable installer code, so from the outside the project
+ * looks exactly as it did before the apply started. */
+export async function applySetup(preview: SetupPreview): Promise<SetupPlan> {
+  const createdFiles: string[] = [],
+    createdDirs: string[] = [];
+  try {
+    for (let i = 0; i < preview.writes.length; i++) {
+      if (preview.plan.files[i]!.status === "unchanged") continue;
+      const file = preview.writes[i]!;
+      try {
+        const destination = await resolveContainedPath(preview.plan.project, file.path);
+        await ensureDirectory(dirname(destination), createdDirs);
+        await writeFile(destination, file.content, { flag: "wx" });
+        createdFiles.push(destination);
+      } catch (error) {
+        throw applyFailure(error);
+      }
+    }
+  } catch (error) {
+    await rollback(createdFiles, createdDirs);
+    throw error;
+  }
+  preview.plan.applied = true;
+  return preview.plan;
+}
+/** Project-local setup only. Existing different files are never replaced or merged. */
+export async function setupProject(options: SetupOptions): Promise<SetupPlan> {
+  const preview = await planSetup(options);
+  return options.apply ? applySetup(preview) : preview.plan;
 }

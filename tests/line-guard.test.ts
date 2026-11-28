@@ -99,6 +99,32 @@ describe("request line byte guard", () => {
   it("drops an empty line without emitting a frame", async () => {
     expect(await run(["\n\na\n"], 10)).toEqual({ output: "a\n", oversize: [] });
   });
+
+  it("counts CR bytes as payload so a CR-padded line cannot bypass the limit", async () => {
+    // Regression: CR was previously counted as a zero-width byte, so a caller
+    // could send a large line padded with CRs and stay under the bound.
+    const padded = "a".repeat(4) + "\r".repeat(64) + "\n";
+    const result = await run([padded + "ok\n"], 10);
+    expect(result.oversize).toHaveLength(1);
+    expect(result.output).toBe("ok\n");
+  });
+
+  it("rejects a transport-sized CR-only line", async () => {
+    const limit = 4 * 1024 * 1024;
+    const result = await run(["\r".repeat(5 * 1024 * 1024) + "\n" + '{"id":1}\n'], limit);
+    expect(result.oversize).toEqual([limit + 1]);
+    expect(result.output).toBe('{"id":1}\n');
+  });
+
+  it("reports an oversized line written in a single chunk instead of dropping it silently", async () => {
+    const result = await run(["a".repeat(50) + "\n" + "ok\n"], 10);
+    expect(result.oversize).toEqual([11]);
+    expect(result.output).toBe("ok\n");
+  });
+
+  it("rejects limit-plus-one payload bytes terminated by CRLF", async () => {
+    expect(await run(["a".repeat(11) + "\r\n"], 10)).toEqual({ output: "", oversize: [11] });
+  });
 });
 
 describe("oversize JSON-RPC error frame", () => {

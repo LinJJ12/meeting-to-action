@@ -39,7 +39,7 @@
 3. 所有 `refs` 必须命中 analysis 五类事实条目（decisions / actionItems / risks / openQuestions / conflicts）的 `id` → `MINUTES_REF_UNKNOWN`
 4. `kind` 与所引条目类型匹配（见上表）→ `MINUTES_KIND_MISMATCH`
 5. `progress` 引用行动项时，其 status 必须属于 `done` / `in_progress` / `blocked`；否则同样 → `MINUTES_KIND_MISMATCH`
-6. **任务全覆盖**：`analysis.actionItems` 的每个 `id` 至少被某条 claim 的 `refs` 引用一次 → `MINUTES_ACTION_COVERAGE`
+6. **任务全覆盖**：`analysis.actionItems` 的每个 `id` 至少被某条 claim 的 `refs` 引用一次 → `MINUTES_ACTION_COVERAGE`。覆盖只统计语义明确的引用：`followup` 一律算；`progress` 在 id 未被其它分组共用时才算（跨组同名 id 时请改用 `followup` 或唯一 id，否则按未覆盖拒绝）
 7. 结构必须严格符合 Zod 契约（未知字段拒绝、`claims`/`refs` 非空、版本文档字面量等）。存在可引用条目时 `sections` 不能为空；`claim.id` 必须在整份纪要中唯一。违反时返回 `MINUTES_SCHEMA_INVALID`。
 
 规则 4 与 5 共用 `MINUTES_KIND_MISMATCH`：两者都是「claim 与所引事实条目的语义类型不符」，拆开写只是为了让「类型匹配」和「状态子集」两件事分别可读。
@@ -53,7 +53,7 @@
 | `MINUTES_MEETING_MISMATCH` | `meetingId` 与 analysis 不一致（规则 1） |
 | `MINUTES_REF_UNKNOWN` | `refs` 指向 analysis 中不存在的条目（规则 3） |
 | `MINUTES_KIND_MISMATCH` | `kind` 与条目类型不匹配，或 `progress` 的 status 不在允许子集内（规则 4、5） |
-| `MINUTES_ACTION_COVERAGE` | 存在未被任何 claim 引用的 actionItem（规则 6），消息列出缺失 id |
+| `MINUTES_ACTION_COVERAGE` | 存在未被任何 claim 明确引用的 actionItem（规则 6），消息列出缺失 id |
 
 接线层另有两个入口错误码，不属于 `validateMinutes` 的契约错误：`MINUTES_MISSING`（要求 `minutes`/`actions` 模式但未提供 minutes 编辑稿）与 `RENDER_MODE_INVALID`（渲染器收到非法模式值）。CLI 直接以 `<code>: <message>` 写入 stderr 并 exit 1；MCP 把两者映射为 `isError: true` 的稳定码。
 
@@ -70,10 +70,11 @@
 CLI：
 
 ```sh
-meeting-to-action report normalized.json --analysis analysis.json \
+npm run dev -- report normalized.json --analysis analysis.json \
   [--minutes minutes.json] [--mode minutes|actions|evidence] [--no-appendix] [--out report.md]
 ```
 
+- `npm run dev` 即 `tsx src/cli.ts`；构建后的等价入口是 `node dist/cli.js`。仓库不发布 npm 包，因此不存在名为 `meeting-to-action` 的可执行文件。
 - 三个新参数只对 `report` 有效，出现在 `inspect`/`analyze` 上按用法错误处理。
 - 默认模式：给了 `--minutes` 是 `minutes`，否则 `evidence`（既有输出不变）。
 - `--mode minutes|actions` 但缺 `--minutes` → `MINUTES_MISSING`；未知 `--mode` 值 → 用法错误 exit 1。

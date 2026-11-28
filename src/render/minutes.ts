@@ -1,6 +1,7 @@
 import type { EvidenceRef, MeetingAnalysis, MeetingInput } from "../domain/schema.js";
 import type { MinutesClaim, MinutesDocument, MinutesMeta } from "../domain/minutes.js";
 import { claimSupports, validateMinutes, type MinutesFactKind } from "../core/minutes.js";
+import { truncateText } from "../core/text.js";
 import { escapeMarkdownInline as text } from "./escape.js";
 import { renderMarkdown } from "./markdown.js";
 
@@ -453,7 +454,7 @@ function formatEvidenceLocator(
   else if (fillMissing) parts.push("行 —");
   if (ref.timestamp !== undefined) parts.push(text(ref.timestamp));
   else if (fillMissing) parts.push("—");
-  if (ref.quote !== undefined) parts.push("“" + text(truncate(ref.quote, quoteLimit)) + "”");
+  if (ref.quote !== undefined) parts.push("“" + text(truncateText(ref.quote, quoteLimit)) + "”");
   else if (fillMissing) parts.push("—");
   return parts.join(" / ");
 }
@@ -491,10 +492,6 @@ function countNewlines(value: string): number {
 function formatLineRange(lineStart: number, lineEnd: number | undefined): string {
   if (lineEnd === undefined || lineEnd === lineStart) return "行 " + lineStart;
   return "行 " + lineStart + "–" + lineEnd;
-}
-
-function truncate(value: string, limit: number): string {
-  return value.length <= limit ? value : value.slice(0, limit) + "…";
 }
 
 function tableCell(value: string | undefined, fallback = "—"): string {
