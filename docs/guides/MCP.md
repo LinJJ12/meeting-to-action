@@ -50,7 +50,7 @@ Cursor 项目 `.cursor/mcp.json` 条目：
 
 | 工具 | 参数 | JSON 文本结果 |
 |---|---|---|
-| prepare_meeting | content, fileName, 可选 title | 规范化后的 MeetingInput |
+| prepare_meeting | content（≤2 MiB UTF-8）、fileName（1–1024 字符）、可选 title（1–1024 字符） | 规范化后的 MeetingInput |
 | split_transcript | input, maxChars | `{chunks: [{fragments, charCount}]}` |
 | get_meeting_schema | contractVersion: "1.0" | contractVersion、输入 JSON Schema、analysis JSON Schema |
 | validate_analysis | input, analysis | `{valid: true, analysis}` |
@@ -83,4 +83,4 @@ JSON Schema 只描述形状；跨字段身份、重复 ID、来源关系与引�
 
 ## 验证状态
 
-本地 SDK 源码/编译产物子进程测试全部通过。真实的 Codex CLI/App Server Skill 与五工具发现也已通过；[验收细节与项目级安装](CLIENT-SETUP.md)区分了调用级覆盖与受信任的项目配置加载。Cursor UI 验证按 2026-11-27 第一期范围决议（仅 Codex）延后；模型层行为是独立的发布检查项。服务端与本地插件包均已实现。公开发布与完整的客户端/模型验收仍未完成。
+本地 SDK 源码/编译产物子进程测试全部通过。真实的 Codex CLI/App Server Skill 与五工具发现也已通过；[验收细节与项目级安装](CLIENT-SETUP.md)区分了调用级覆盖与受信任的项目配置加载。Cursor UI 验证按 2026-11-27 第一期范围决议（仅 Codex）延后；模型层行为是独立的发布检查项。服务端与本地插件包均已实现；公开发布（npm 包与公共插件市场）不在当前范围，完整的客户端/模型验收仍未完成。

@@ -11,11 +11,17 @@ All notable changes to this project are documented in this file. The format is b
 - A bilingual documentation system for core documents: Chinese main versions (at the repo root and in docs/, no suffix) plus the `docs/en/` English library (same-named English variants and six English-main technical documents) covering the README, CONTRIBUTING, the docs index, plugin installation, project setup, and the MCP documentation.
 - Open-source community files: the MIT `LICENSE`, this changelog, a root `SECURITY.md` vulnerability reporting policy, a Code of Conduct (Contributor Covenant v2.1), and bilingual Issue / PR templates.
 - Open-source standard README sections: License badge and section, Contributing / Security links, an English tagline, a demo placeholder, and a Support section.
+- ESLint correctness gate: `npm run lint` (`@eslint/js` + typescript-eslint recommended + two type-aware rules) is now the second `preflight` step; `#36`.
 
 ### Changed
 
 - Documentation layout reorganized: all English content (bilingual variants and English-main documents) is now collected under `docs/en/`, replacing the `.en.md` suffix convention; stale document paths in AGENTS / CONTRIBUTING and the ROADMAP broken link in the issue template were fixed along the way.
 - The README's "source and local distribution" wording now reflects the post-open-source state: the repository is public (MIT), but no npm package or public plugin marketplace is published.
+
+### Fixed
+
+- After CI resumed automatic runs, updated the stale "CI cannot run due to billing" notes in AGENTS / CONTRIBUTING / the docs index / the PRD, and added the missing `format:check` and `lint` steps to the CI workflow so it matches the seven steps of `npm run preflight`.
+- Removed the stale "will be added at the open-source release" placeholder from the README demo section; SECURITY now states that the repository is public and private vulnerability reporting is enabled.
 
 ## [0.1.1] - 2026-11-27
 

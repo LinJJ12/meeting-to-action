@@ -17,11 +17,11 @@ Applies to the CLI commands `analyze` / `inspect` / `report` and the `setup:clie
 | `CONFIG_MISSING` | `analyze` is missing `OPENAI_API_KEY` / `OPENAI_MODEL` |
 | `CONFIG_INVALID` | env file unreadable, `OPENAI_TIMEOUT_MS` out of range, or `OPENAI_BASE_URL` scheme not allowed (not https and not loopback plain http) |
 | `INPUT_UNSUPPORTED` / `INPUT_EMPTY` | unsupported transcript extension / empty content |
-| `INPUT_SIZE_LIMIT` | input exceeds 2 MiB (analysis 4 MiB) or 10,000 segments |
-| `INPUT_SEGMENT_LIMIT` | segment count over limit after normalization |
+| `INPUT_SIZE_LIMIT` | input exceeds 2 MiB (analysis 4 MiB) |
+| `INPUT_SEGMENT_LIMIT` | more than 10,000 segments after normalization |
 | `INPUT_JSON_INVALID` | normalized / analysis / minutes JSON failed to read or parse |
 | `OUT_PATH_INVALID` | `--out` in UNC/device-namespace/drive-relative/alternate-data-stream form |
-| `INPUT_SCHEMA_INVALID` | normalized JSON fails schema validation (report input) |
+| `INPUT_SCHEMA_INVALID` | normalized, analysis, or minutes JSON fails schema validation |
 | `ANALYSIS_MEETING_MISMATCH` / `ANALYSIS_DUPLICATE_ID` / `ANALYSIS_EVIDENCE_INVALID` | analysis does not match the input meeting / duplicate entry IDs / evidence validation failed |
 | `ANALYSIS_INVALID_JSON` / `ANALYSIS_SCHEMA_INVALID` | model output not parseable as JSON / valid JSON that fails the schema (after retries exhausted) |
 | `MINUTES_MISSING` / `MINUTES_*` / `RENDER_MODE_INVALID` | minutes contract and render mode errors (see the [display contract](../../contracts/MINUTES-CONTRACT.md)) |

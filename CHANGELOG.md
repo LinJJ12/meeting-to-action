@@ -11,11 +11,17 @@
 - 建立核心文档中英双语体系：中文主版（根目录与 docs/，无后缀）+ `docs/en/` 英文库（同名英文变体与 6 份英文主版技术文档），覆盖 README、CONTRIBUTING、docs/ 索引、插件安装、项目级安装与 MCP 文档。
 - 开源社区文件：MIT `LICENSE`、本更新日志、根目录 `SECURITY.md` 漏洞报告政策、行为准则（Contributor Covenant v2.1）、Issue / PR 双语模板。
 - README 开源标准栏目：License 徽章与章节、Contributing / Security 链接、英文副标题、演示占位与 Support 章节。
+- ESLint 正确性门禁接入：`npm run lint`（`@eslint/js` + typescript-eslint 推荐集 + 两条 type-aware 规则）成为 `preflight` 第二步，`#36`。
 
 ### 变更
 
 - 文档语言布局重组：英文内容（双语变体与英文主版）集中至 `docs/en/`，废弃 `.en.md` 后缀命名；顺带修复 AGENTS / CONTRIBUTING 中的过时文档路径与 issue 模板的 ROADMAP 断链。
 - README「源码与本地分发」表述改为适配开源后状态：仓库公开（MIT），但不发布 npm 包或公共插件市场。
+
+### 修复
+
+- CI 恢复自动运行后，同步修正 AGENTS / CONTRIBUTING / docs 索引 / PRD 中「CI 因计费无法运行」的过时说明；CI 工作流补上 `format:check` 与 `lint`，与 `npm run preflight` 的七步保持一致。
+- README「演示」栏目去掉「待开源发布时补充」的过时占位；SECURITY 说明仓库已公开且私密漏洞报告已启用。
 
 ## [0.1.1] - 2026-11-27
 

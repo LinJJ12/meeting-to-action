@@ -73,10 +73,10 @@ For a more compact Chinese minutes document or an action list, append `--minutes
 
 ## Optional: standalone model analysis
 
-Copy `.env.example` to `.env`, fill in `OPENAI_API_KEY` and `OPENAI_MODEL`, optionally configure `OPENAI_BASE_URL`:
+Copy `.env.example` to `.env`, fill in `OPENAI_API_KEY` and `OPENAI_MODEL`, optionally configure `OPENAI_BASE_URL`, and point the command at that file with `--env .env`:
 
 ```sh
-npm run dev -- analyze examples/sample-meeting.md --out report.md
+npm run dev -- analyze examples/sample-meeting.md --env .env --out report.md
 ```
 
 The CLI only reads an env file when `analyze --env <path>` names one explicitly; a `.env` in the working directory is never loaded implicitly. This mode sends the transcript to the configured model service and may incur charges — do not submit credentials or private meeting material. Retry policy, input limits, and provider adaptation details are in [analysis engine](guides/ANALYSIS-ENGINE.md).
@@ -89,11 +89,11 @@ The CLI only reads an env file when `analyze --env <path>` names one explicitly;
 - Unknown owners/dates stay unknown; instructions embedded in the transcript are treated as untrusted data.
 - Passing validation proves structure and citations follow the rules, not that the interpretation is correct. Summaries currently have no per-item evidence fields; reports still need human review.
 - MCP does not call a model, read/write arbitrary files, access GitHub, or create issues automatically. Whether the host model has network access and how data is processed depends on host settings.
-- Cross-meeting persistence, GitHub integration, and public distribution remain future plans; compact minutes rendering is already wired into CLI `report` and MCP `render_report`.
+- Cross-meeting persistence and GitHub integration remain future plans; distribution stays local (built plugin bundles), with no npm package or public plugin marketplace; compact minutes rendering is already wired into CLI `report` and MCP `render_report`.
 
 ## Demo
 
-Screenshots and an end-to-end demo video will be added at the open-source release. For now, see the complete in-repo fictional sample: the [example walkthrough](../../examples/agent-workflow/README.md) contains the transcript, the analysis draft, and the generated [minutes](../../examples/agent-workflow/minutes.md) and [evidence report](../../examples/agent-workflow/report.md).
+For now, see the complete in-repo fictional sample: the [example walkthrough](../../examples/agent-workflow/README.md) contains the transcript, the analysis draft, and the generated [minutes](../../examples/agent-workflow/minutes.md) and [evidence report](../../examples/agent-workflow/report.md). Screenshots and an end-to-end demo video will be added in a later release.
 
 ## Repository layout
 
@@ -121,12 +121,13 @@ For the full meaning of `CONFIG_MISSING`, `INPUT_SIZE_LIMIT`, `SETUP_*`, and all
 
 ```sh
 npm run typecheck
+npm run lint
 npm test
 npm run mcp:smoke
 npm run plugin:build
 ```
 
-After contract changes run `npm run skill:schema` and inspect the diff. `npm run build` compiles the runtime only; `plugin:build` packages the plugin separately. `plugin:check-installed` is an optional local client-discovery check that requires the plugin to be built and installed first; it is not a general unit test.
+The full gate is `npm run preflight` (typecheck → lint → build → test → mcp:smoke → plugin:build → format:check). After contract changes run `npm run skill:schema` and inspect the diff. `npm run build` compiles the runtime only; `plugin:build` packages the plugin separately. `plugin:check-installed` is an optional local client-discovery check that requires the plugin to be built and installed first; it is not a general unit test.
 
 ## Support
 

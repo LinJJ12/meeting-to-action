@@ -63,10 +63,11 @@ it("README（含 docs/en/ 英文变体）与 ANALYSIS-ENGINE 不再出现“无�
   }
 });
 
-/** PRD 不得再声称 CI 在运行（#20/#22：CI 暂停，本地 preflight 为准）。 */
-it("docs/en/design/PRD.md 不再声称 CI 运行", () => {
+/** PRD 必须说明 CI 在 push/PR 上运行与 preflight 相同的验证步骤（#20/#22、#36）。 */
+it("docs/en/design/PRD.md 说明 CI 运行与 preflight 相同的七步", () => {
   const text = readFileSync(new URL("../docs/en/design/PRD.md", import.meta.url), "utf8");
-  expect(text.includes("run in CI.")).toBe(false);
+  expect(text.includes("CI runs the same seven steps on push and pull requests")).toBe(true);
+  expect(text.includes("paused")).toBe(false);
 });
 
 /** CHANGELOG 双语对必须包含当前包版本对应的发布小节（Keep a Changelog 标题格式；英文变体在 docs/en/）。 */

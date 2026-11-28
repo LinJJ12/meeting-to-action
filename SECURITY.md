@@ -18,9 +18,9 @@
 请使用 GitHub 的私密漏洞报告渠道：
 
 1. 打开仓库的 **Security** 标签页 → **Report a vulnerability**（私密漏洞报告）。
-2. 若该入口不可用，通过 GitHub 私信联系维护者 [@LinJJ12](https://github.com/LinJJ12)。
+2. 若该入口不可用，请在公开 issue 中只说明需要私下沟通并 @[LinJJ12](https://github.com/LinJJ12)，由维护者提供替代渠道，不要披露细节。
 
-私密漏洞报告仅对**公开仓库**开放：仓库公开后，维护者在 Settings → Code security（部分界面版本显示为 Advanced Security）设置页把 **Private vulnerability reporting** 置为 Enable。私有仓库看不到该开关属正常现象。
+私密漏洞报告仅对**公开仓库**开放。本仓库已公开并已启用 **Private vulnerability reporting**（Settings → Code security，部分界面版本显示为 Advanced Security）；若该入口不可用，请用上面的备用渠道联系维护者。
 
 ### 报告内容请包含
 

@@ -62,7 +62,7 @@ Installation target: copy `skills/meeting-to-action/` from this checkout. Codex 
 
 References checked 2026-11-24: [OpenAI customization](https://learn.chatgpt.com/docs/customization/overview), [Cursor Skills](https://cursor.com/docs/skills). Actual client installation/discovery is a release gate, not something proven by unit tests.
 
-## MCP v0.2 local implementation (release pending)
+## MCP v0.2 local implementation (local build only; no public release)
 
 Implemented using the stable official TypeScript SDK and stdio; see [setup, limits and verification](../guides/MCP.md). Stdout carries protocol messages only. No secrets or raw meeting text in diagnostics. Initial tools accept inline data; no arbitrary filesystem read tool is required.
 
@@ -72,7 +72,7 @@ Implemented using the stable official TypeScript SDK and stdio; see [setup, limi
 | `split_transcript` | `{input: MeetingInput, maxChars: positive integer}` | Ordered chunks with original segment IDs and source line ranges |
 | `get_meeting_schema` | `{contractVersion: "1.0"}` | Generated JSON Schemas for input and full analysis |
 | `validate_analysis` | `{input: MeetingInput, analysis: unknown}` | Validated full analysis, or stable error codes |
-| `render_report` | `{input: MeetingInput, analysis: unknown}` | Markdown only after the same full validation |
+| `render_report` | `{input: MeetingInput, analysis: unknown, minutes?: MinutesDocument, mode?: "minutes" / "actions" / "evidence", appendix?: boolean}` | Markdown only after the same full validation |
 
 JSON Schemas must be generated from Zod, not hand-maintained. Tool argument objects reject unknown fields. Use bounded request sizes; implemented limits: 2 MiB UTF-8 content, 10,000 segments, a 4 MiB transport/request bound, 200 evidence references per entry and 4,000-character quotes. The `report` command also stat-checks its input (2 MiB) and analysis (4 MiB) files before reading. All are covered by local tests. Splitting must preserve evidence coordinates, split oversized segments on line boundaries, and explicitly reject an oversized single line until a column-aware contract exists. These source-preserving behaviors are implemented. Chunk output is not a source rewrite.
 
@@ -92,6 +92,6 @@ Keep the existing runtime private until package names, bin entrypoints and packa
 | 1a | Core Agent workflow | inspect/report CLI integration tests; fabricated evidence and mismatched meeting rejection; output never overwritten; no API credentials needed |
 | 2 | MCP v0.2 | Five tools; stdio client roundtrip; invalid payload/size tests; no transcript logs; real Codex and Cursor smoke tests; installable package |
 | 3 | Continuity | SQLite schema/migrations, opt-in retention, historical provenance, superseded decisions and action status tests |
-| 4 | Distribution | Separately verified client manifests; reproducible package; upgrade/rollback instructions; manual release until CI quota restored |
+| 4 | Distribution | Separately verified client manifests; reproducible package; upgrade/rollback instructions; release artifacts built locally and recorded with CI evidence |
 
 Do not label a stage complete based solely on code generation. Record actual client versions and observed tool discovery/results. Claude Code and other clients remain compatibility targets until tested. No external write, merge, publish or CI run is implied by this plan.

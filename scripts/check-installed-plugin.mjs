@@ -25,9 +25,12 @@ lines.on("line", (line) => {
     const p = pending.get(message.id);
     if (p) {
       pending.delete(message.id);
-      message.error ? p.reject(new Error("CODEX_REQUEST_FAILED")) : p.resolve(message.result);
+      if (message.error) p.reject(new Error("CODEX_REQUEST_FAILED"));
+      else p.resolve(message.result);
     }
-  } catch {}
+  } catch {
+    // Ignore malformed client-to-server lines; the app-server protocol may interleave notifications.
+  }
 });
 const request = (method, params) =>
   new Promise((resolve, reject) => {

@@ -4,7 +4,7 @@
 
 本文档是多人协作的唯一权威来源：代码风格、目录职责、测试与验证、提交与 PR 流程都以这里为准。面向 AI 协助者的精简版见 [AGENTS.md](AGENTS.md)，两者冲突时以本文档为准。
 
-本项目的协作约定源于 issue #32。规范自该 issue 定稿起对新代码生效；修改本文档请走 PR，不在评论里做口头变更。
+本项目的协作约定由一期协作规范（issue #32，已关闭）定稿而来，对新代码生效；修改本文档请走 PR，不在评论里做口头变更。
 
 ## 环境要求
 
@@ -23,13 +23,14 @@ npm run preflight
 | 步骤 | 命令 | 作用 |
 |---|---|---|
 | 1 | `npm run typecheck` | TypeScript 严格编译（`strict` + `noUncheckedIndexedAccess` + `exactOptionalPropertyTypes`） |
-| 2 | `npm run build` | 构建 `dist/` |
-| 3 | `npm test` | vitest 全量测试 |
-| 4 | `npm run mcp:smoke` | 编译产物上的 stdio MCP 冒烟 |
-| 5 | `npm run plugin:build` | 构建单插件上传包和本地插件市场 |
-| 6 | `npm run format:check` | Prettier 格式检查（`src tests scripts`） |
+| 2 | `npm run lint` | ESLint 正确性检查（零告警；不做风格与复杂度检查） |
+| 3 | `npm run build` | 构建 `dist/` |
+| 4 | `npm test` | vitest 全量测试 |
+| 5 | `npm run mcp:smoke` | 编译产物上的 stdio MCP 冒烟 |
+| 6 | `npm run plugin:build` | 构建单插件上传包和本地插件市场 |
+| 7 | `npm run format:check` | Prettier 格式检查（`src tests scripts`） |
 
-提交前必须跑完整 preflight。CI 恢复后以 CI 通过为准；当前 CI 因 GitHub Actions 计费问题无法运行，因此 PR 的「验证」段需要贴本地 preflight 结果。
+提交前必须跑完整 preflight。CI 会在 push 与 PR 上运行同一套七步（Node 20/22 矩阵），以 CI 通过为准；PR 的「验证」段同时贴本地 preflight 结果。
 
 单独使用某个脚本时：`npm run format` 自动格式化，`npm run skill:schema` 重新生成 Skill 内的契约 schema，`npm run plugin:check-installed` 在本地 Codex 上验证插件安装。
 
@@ -37,6 +38,7 @@ npm run preflight
 
 - 缩进 2 空格、UTF-8、LF、文件末尾保留换行；行宽软上限 100 字符（由 `.editorconfig` 与 `.prettierrc.json` 规定）
 - **格式由 Prettier 强制**：`src`、`tests`、`scripts` 必须通过 `format:check`；不要手写「看起来像 Prettier」的代码绕过检查
+- **ESLint 只做正确性检查**：`npm run lint` 必须零告警；规则集＝`@eslint/js` 推荐集 + typescript-eslint 推荐集 + 两条 type-aware 规则（`no-floating-promises`、`no-misused-promises`），不做风格/复杂度检查、不自动 fix（风格交给 Prettier）
 - 双引号、语句末尾分号
 - 不做大范围格式重排：修改既有文件时只格式化自己改动的行；如果确实需要整文件格式化，把它作为**独立的 format commit**（历史已用 `.git-blame-ignore-revs` 保护 blame）
 - 注释以中文为主，解释「为什么」（取舍、原因、边界），不复述代码；代码标识符用英文
@@ -81,8 +83,8 @@ npm run preflight
   - 同步 `docs/en/contracts/DATA-SCHEMA.md` / `docs/contracts/MINUTES-CONTRACT.md` / `docs/guides/MCP.md`
   - 涉及 `MeetingAnalysisSchema` / `MinutesDocumentSchema` 时重跑 `npm run skill:schema`
   - 在 PR 标题中注明契约影响
-- 提交前跑完整 `npm run preflight`；PR 的「验证」段贴本地结果（tsc / vitest 汇总行 / build / smoke / format:check）
-- CI 恢复后以 CI 结果为准，本地证据仅作过渡
+- 提交前跑完整 `npm run preflight`；PR 的「验证」段贴本地结果（tsc / eslint / vitest 汇总行 / build / smoke / format:check）
+- CI 在 push 与 PR 上运行同一套七步（Node 20/22），以 CI 通过为准；PR 的「验证」段同时贴本地结果
 
 ## 文档规范
 
