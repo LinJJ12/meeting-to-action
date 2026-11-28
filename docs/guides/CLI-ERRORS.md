@@ -1,8 +1,8 @@
-简体中文（主版） | [English](CLI-ERRORS.en.md)
+简体中文（主版） | [English](../en/guides/CLI-ERRORS.md)
 
 # CLI 错误码与退出码参考
 
-适用于 CLI 的 `analyze` / `inspect` / `report` 与 `setup:client` 安装器。MCP 侧的工具边界、限额与 Known codes 清单见 [MCP 文档](MCP.md)；minutes 相关错误码的校验规则详见[会议纪要展示契约](../contracts/MINUTES-CONTRACT.md)；`analyze` 的重试与输入限额语义见[分析引擎](ANALYSIS-ENGINE.md)。
+适用于 CLI 的 `analyze` / `inspect` / `report` 与 `setup:client` 安装器。MCP 侧的工具边界、限额与 Known codes 清单见 [MCP 文档](MCP.md)；minutes 相关错误码的校验规则详见[会议纪要展示契约](../contracts/MINUTES-CONTRACT.md)；`analyze` 的重试与输入限额语义见[分析引擎](../en/guides/ANALYSIS-ENGINE.md)。
 
 ## 退出码
 

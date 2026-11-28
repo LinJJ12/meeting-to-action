@@ -1,4 +1,4 @@
-简体中文（主版） | [English](docs/community/README.en.md)
+简体中文（主版） | [English](docs/en/README.md)
 
 # Meeting-to-Action
 
@@ -79,7 +79,7 @@ npm run dev -- report normalized.json --analysis analysis.json --out report.md
 npm run dev -- analyze examples/sample-meeting.md --out report.md
 ```
 
-环境文件仅在 `analyze --env <path>` 显式指定时读取，工作目录下的 `.env` 不会被隐式加载。该模式会把记录发送给所配置的模型服务并可能产生费用，不要提交密钥或私有会议资料。重试策略、输入限额与 Provider 适配细节见[分析引擎](docs/guides/ANALYSIS-ENGINE.md)。
+环境文件仅在 `analyze --env <path>` 显式指定时读取，工作目录下的 `.env` 不会被隐式加载。该模式会把记录发送给所配置的模型服务并可能产生费用，不要提交密钥或私有会议资料。重试策略、输入限额与 Provider 适配细节见[分析引擎](docs/en/guides/ANALYSIS-ENGINE.md)。
 
 ## 能力与边界
 
@@ -105,11 +105,11 @@ meeting-to-action/
 ├── scripts/             # 构建、schema 导出、冒烟与版本同步脚本
 ├── tests/               # vitest 单元 / 集成 / 打包测试
 ├── examples/            # 可公开的虚构样例（sample-meeting + agent-workflow 全流程）
-├── docs/                # 全部文档：INDEX.md 为导航，按 guides / contracts / design / community 分组
+├── docs/                # 全部文档：INDEX.md 为导航，中文按 guides / contracts / design 分组，en/ 为英文库
 └── .github/             # CI 工作流与 issue / PR 模板
 ```
 
-文档按主题分组：`docs/guides/`（安装与使用）、`docs/contracts/`（契约与技术参考）、`docs/design/`（产品与设计资料）、`docs/community/`（根目录文件的英文变体）。完整导航与维护约定见[文档索引](docs/INDEX.md)。
+文档按语言划分：中文在 `docs/guides/`（安装与使用）、`docs/contracts/`（契约与技术参考）、`docs/design/`（产品与设计资料）；英文全部集中在 `docs/en/`（双语变体与英文主版，分组结构同中文侧）。完整导航与维护约定见[文档索引](docs/INDEX.md)。
 
 ## CLI 错误码与退出码
 

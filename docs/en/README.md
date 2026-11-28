@@ -6,7 +6,7 @@
 
 **Turn meeting transcripts into traceable decisions, action items, and minutes — with evidence.**
 
-[Contributing](CONTRIBUTING.en.md) · [Security](SECURITY.en.md) · [Code of Conduct](CODE_OF_CONDUCT.en.md) · [Changelog](CHANGELOG.en.md)
+[Contributing](CONTRIBUTING.md) · [Security](SECURITY.md) · [Code of Conduct](CODE_OF_CONDUCT.md) · [Changelog](CHANGELOG.md)
 
 Turn existing TXT / Markdown meeting transcripts into traceable topics, decisions, action items, risks, disagreements, and open questions. Ships a portable Skill, five local MCP tools, and an optional standalone CLI analysis mode. No meeting recording or speech recognition is included.
 
@@ -30,7 +30,7 @@ Plugin installation and project installation are alternatives — usually pick o
 
 ## Getting started
 
-Requires Node.js 20+ and npm (Node.js 22+ is recommended on Windows for the project-level installer; see [project setup](../guides/CLIENT-SETUP.en.md) for why). Clone and build:
+Requires Node.js 20+ and npm (Node.js 22+ is recommended on Windows for the project-level installer; see [project setup](guides/CLIENT-SETUP.md) for why). Clone and build:
 
 ```sh
 git clone https://github.com/LinJJ12/meeting-to-action.git
@@ -41,7 +41,7 @@ npm run build
 
 Then install according to the mode you chose:
 
-- **Local desktop plugin**: `npm run plugin:build` produces the upload archive and the local marketplace; see [local plugin installation and usage](../guides/PLUGIN-INSTALL.en.md).
+- **Local desktop plugin**: `npm run plugin:build` produces the upload archive and the local marketplace; see [local plugin installation and usage](guides/PLUGIN-INSTALL.md).
 - **Project-level Skill + MCP**: preview first, then apply (the target project must already exist; quote paths containing spaces). For Cursor use `--client cursor`:
 
 ```sh
@@ -79,7 +79,7 @@ Copy `.env.example` to `.env`, fill in `OPENAI_API_KEY` and `OPENAI_MODEL`, opti
 npm run dev -- analyze examples/sample-meeting.md --out report.md
 ```
 
-The CLI only reads an env file when `analyze --env <path>` names one explicitly; a `.env` in the working directory is never loaded implicitly. This mode sends the transcript to the configured model service and may incur charges — do not submit credentials or private meeting material. Retry policy, input limits, and provider adaptation details are in [analysis engine](../guides/ANALYSIS-ENGINE.md).
+The CLI only reads an env file when `analyze --env <path>` names one explicitly; a `.env` in the working directory is never loaded implicitly. This mode sends the transcript to the configured model service and may incur charges — do not submit credentials or private meeting material. Retry policy, input limits, and provider adaptation details are in [analysis engine](guides/ANALYSIS-ENGINE.md).
 
 ## Capabilities and boundaries
 
@@ -105,17 +105,17 @@ meeting-to-action/
 ├── scripts/             # build, schema export, smoke, and version-sync scripts
 ├── tests/               # vitest unit / integration / packaging tests
 ├── examples/            # publishable fictional samples (sample-meeting + agent-workflow flows)
-├── docs/                # all documentation: INDEX.md is the navigation, grouped into guides / contracts / design / community
+├── docs/                # documentation: Chinese in guides / contracts / design, all English in en/
 └── .github/             # CI workflows and issue / PR templates
 ```
 
-Documents are grouped by topic: `docs/guides/` (installation and usage), `docs/contracts/` (contracts and technical references), `docs/design/` (product and design materials), `docs/community/` (English variants of root files). For full navigation see the [documentation index](../INDEX.en.md).
+Documents are split by language: Chinese lives in `docs/guides/` (installation and usage), `docs/contracts/` (contracts and technical references), and `docs/design/` (product and design materials); all English content lives in `docs/en/` (bilingual variants and English-main documents, grouped the same way). For full navigation see the [documentation index](INDEX.md).
 
 ## CLI error codes and exit codes
 
 Exit codes: `0` success; `1` runtime error (including an invalid `--mode` value); `2` usage error (unknown flag, missing argument, or analyze-only flags used without the analyze command).
 
-For the full meaning of `CONFIG_MISSING`, `INPUT_SIZE_LIMIT`, `SETUP_*`, and all other codes see the [CLI error codes reference](../guides/CLI-ERRORS.en.md).
+For the full meaning of `CONFIG_MISSING`, `INPUT_SIZE_LIMIT`, `SETUP_*`, and all other codes see the [CLI error codes reference](guides/CLI-ERRORS.md).
 
 ## Development verification
 
@@ -130,15 +130,15 @@ After contract changes run `npm run skill:schema` and inspect the diff. `npm run
 
 ## Support
 
-For usage questions, start with this README and the [documentation index](../INDEX.en.md); if that doesn't help, open an issue with the [bug template](../../.github/ISSUE_TEMPLATE/bug.yml) (feature suggestions use the [feature template](../../.github/ISSUE_TEMPLATE/feature.yml)). This project is maintained by an individual in their spare time; there is no live chat or email support channel, and reports must honor the privacy red line — no real meeting content.
+For usage questions, start with this README and the [documentation index](INDEX.md); if that doesn't help, open an issue with the [bug template](../../.github/ISSUE_TEMPLATE/bug.yml) (feature suggestions use the [feature template](../../.github/ISSUE_TEMPLATE/feature.yml)). This project is maintained by an individual in their spare time; there is no live chat or email support channel, and reports must honor the privacy red line — no real meeting content.
 
 ## Security
 
-Do **not** open public issues for security vulnerabilities; use the GitHub private vulnerability reporting channel described in the [security policy](SECURITY.en.md).
+Do **not** open public issues for security vulnerabilities; use the GitHub private vulnerability reporting channel described in the [security policy](SECURITY.md).
 
 ## Contributing
 
-Issues and PRs are welcome. For the contribution process, code style, and verification gates see the [contributing guide](CONTRIBUTING.en.md) (condensed rules for AI assistants in [AGENTS.md](../../AGENTS.md)); PRs follow the template's four-part structure (What was done / Changes / Verification / Scope).
+Issues and PRs are welcome. For the contribution process, code style, and verification gates see the [contributing guide](CONTRIBUTING.md) (condensed rules for AI assistants in [AGENTS.md](../../AGENTS.md)); PRs follow the template's four-part structure (What was done / Changes / Verification / Scope).
 
 ## License
 

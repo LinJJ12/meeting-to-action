@@ -1,4 +1,4 @@
-简体中文（主版） | [English](CLIENT-SETUP.en.md)
+简体中文（主版） | [English](../en/guides/CLIENT-SETUP.md)
 
 # 项目级安装与客户端验收
 

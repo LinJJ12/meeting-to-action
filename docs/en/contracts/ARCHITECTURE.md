@@ -43,4 +43,4 @@ CLI handles local file input/output. MCP accepts inline JSON and returns data; t
 
 Treat transcripts and retrieved content as untrusted data. Contract and quote checks establish traceability, not semantic truth or speaker identity. Raw transcript processing in Core is local; optional providers and host models may send content remotely. See [security](SECURITY.md) and [data contracts](DATA-SCHEMA.md).
 
-GitHub search/write adapters, historical persistence, document integrations and new report reading modes are future work. They are not current MCP tools or packages. See [roadmap](../design/ROADMAP.md).
+GitHub search/write adapters, historical persistence, document integrations and new report reading modes are future work. They are not current MCP tools or packages. See [roadmap](../../design/ROADMAP.md).

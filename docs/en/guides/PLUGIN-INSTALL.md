@@ -1,4 +1,4 @@
-[简体中文（主版）](PLUGIN-INSTALL.md) | English
+[简体中文（主版）](../../guides/PLUGIN-INSTALL.md) | English
 
 # Local plugin installation and usage
 
@@ -36,7 +36,7 @@ Two things to know:
 - The build **empties** the output directory first, so leftovers from a previous round never mix into the new artifacts.
 - In the generated `mcp.json`, `command` stays a bare `node`, resolved by the client from its PATH. This is **not** an omission — it is a compatibility requirement: the Codex app-server will not start a command using an absolute path (drive letter or path separators); in testing that led to a successfully installed plugin whose five MCP tools were invisible. The runtime environment must therefore be able to resolve `node`.
 
-The registration and installation commands modify the current user's client configuration and plugin cache; run them under the account where you intend to use the plugin. If your CLI does not support these subcommands, use the client's local plugin installation entry, or choose [project-level Skill + MCP installation](CLIENT-SETUP.en.md). Do not treat missing subcommands as a build failure.
+The registration and installation commands modify the current user's client configuration and plugin cache; run them under the account where you intend to use the plugin. If your CLI does not support these subcommands, use the client's local plugin installation entry, or choose [project-level Skill + MCP installation](CLIENT-SETUP.md). Do not treat missing subcommands as a build failure.
 
 ## Confirm the client loaded it
 
@@ -61,7 +61,7 @@ Validate evidence via the plugin's MCP tools and generate a Markdown report save
 Keep owners and dates unknown when uncertain, preserve contradictions. Do not create GitHub issues.
 ```
 
-The result should contain minutes organized by topic, a consolidated to-do list, and a trace appendix. The import task remains unclaimed, Jo's deadline stays `next Friday`, the launch dispute can be traced back to the original text, and the instruction at the end of the transcript is treated as data. Compare with the [generated sample minutes](../../examples/agent-workflow/minutes.md). Tool discovery, programmatic validation, and model interpretation quality must each be verified separately.
+The result should contain minutes organized by topic, a consolidated to-do list, and a trace appendix. The import task remains unclaimed, Jo's deadline stays `next Friday`, the launch dispute can be traced back to the original text, and the instruction at the end of the transcript is treated as data. Compare with the [generated sample minutes](../../../examples/agent-workflow/minutes.md). Tool discovery, programmatic validation, and model interpretation quality must each be verified separately.
 
 ## Updates and cleanup
 

@@ -36,8 +36,8 @@ Private vulnerability reporting is available for **public repositories** only: o
 ## Response expectations
 
 - This project is maintained by an individual maintainer in their spare time. We aim to acknowledge reports and give an initial assessment within 7 days, but a 24/7 response cannot be promised.
-- Confirmed issues are scheduled for fixes by severity; fixes are recorded in the [CHANGELOG](CHANGELOG.en.md), with credit to the reporter if they agree.
+- Confirmed issues are scheduled for fixes by severity; fixes are recorded in the [CHANGELOG](CHANGELOG.md), with credit to the reporter if they agree.
 
 ## Security design baseline
 
-The product's security and privacy design principles (local stdio, no network listeners, no persistence, no raw transcript text in logs by default) are documented in [docs/SECURITY.md](../contracts/SECURITY.md); the authoritative description of tool boundaries is [docs/MCP.en.md](../guides/MCP.en.md). Those principles are design commitments, not vulnerabilities; suggestions about them belong in ordinary issues as feature discussions.
+The product's security and privacy design principles (local stdio, no network listeners, no persistence, no raw transcript text in logs by default) are documented in [docs/en/contracts/SECURITY.md](contracts/SECURITY.md); the authoritative description of tool boundaries is [docs/en/guides/MCP.md](guides/MCP.md). Those principles are design commitments, not vulnerabilities; suggestions about them belong in ordinary issues as feature discussions.

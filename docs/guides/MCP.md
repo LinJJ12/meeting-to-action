@@ -1,4 +1,4 @@
-简体中文（主版） | [English](MCP.en.md)
+简体中文（主版） | [English](../en/guides/MCP.md)
 
 # 本地 stdio MCP
 

@@ -1,4 +1,4 @@
-简体中文（主版） | [English](PLUGIN-INSTALL.en.md)
+简体中文（主版） | [English](../en/guides/PLUGIN-INSTALL.md)
 
 # 本地插件安装与使用
 

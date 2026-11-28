@@ -1,8 +1,8 @@
-[简体中文（主版）](CLI-ERRORS.md) | English
+[简体中文（主版）](../../guides/CLI-ERRORS.md) | English
 
 # CLI error codes and exit codes reference
 
-Applies to the CLI commands `analyze` / `inspect` / `report` and the `setup:client` installer. For MCP-side tool boundaries, limits, and the Known codes list see the [MCP documentation](MCP.en.md); for minutes error-code validation rules see the [minutes display contract](../contracts/MINUTES-CONTRACT.md); for `analyze` retry and input-limit semantics see [analysis engine](ANALYSIS-ENGINE.md).
+Applies to the CLI commands `analyze` / `inspect` / `report` and the `setup:client` installer. For MCP-side tool boundaries, limits, and the Known codes list see the [MCP documentation](MCP.md); for minutes error-code validation rules see the [minutes display contract](../../contracts/MINUTES-CONTRACT.md); for `analyze` retry and input-limit semantics see [analysis engine](ANALYSIS-ENGINE.md).
 
 ## Exit codes
 
@@ -24,7 +24,7 @@ Applies to the CLI commands `analyze` / `inspect` / `report` and the `setup:clie
 | `INPUT_SCHEMA_INVALID` | normalized JSON fails schema validation (report input) |
 | `ANALYSIS_MEETING_MISMATCH` / `ANALYSIS_DUPLICATE_ID` / `ANALYSIS_EVIDENCE_INVALID` | analysis does not match the input meeting / duplicate entry IDs / evidence validation failed |
 | `ANALYSIS_INVALID_JSON` / `ANALYSIS_SCHEMA_INVALID` | model output not parseable as JSON / valid JSON that fails the schema (after retries exhausted) |
-| `MINUTES_MISSING` / `MINUTES_*` / `RENDER_MODE_INVALID` | minutes contract and render mode errors (see the [display contract](../contracts/MINUTES-CONTRACT.md)) |
+| `MINUTES_MISSING` / `MINUTES_*` / `RENDER_MODE_INVALID` | minutes contract and render mode errors (see the [display contract](../../contracts/MINUTES-CONTRACT.md)) |
 | `HTTP_ERROR` / `REQUEST_FAILED` / `REQUEST_TIMEOUT` / `REQUEST_ABORTED` | provider returned non-2xx / network failure / timeout / external abort |
 | `RESPONSE_TOO_LARGE` / `BODY_READ_FAILED` / `INVALID_JSON` / `EMPTY_COMPLETION` / `PROVIDER_RESPONSE_INVALID` | provider response body over limit / read failed / not JSON / empty completion / invalid shape |
 | `SETUP_*` | `setup:client` installer errors (path forms, traversal, conflicts, missing build artifacts, etc.) |

@@ -1,4 +1,4 @@
-简体中文（主版） | [English](docs/community/CODE_OF_CONDUCT.en.md)
+简体中文（主版） | [English](docs/en/CODE_OF_CONDUCT.md)
 
 # 贡献者公约行为准则
 

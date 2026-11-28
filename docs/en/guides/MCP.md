@@ -1,4 +1,4 @@
-[简体中文（主版）](MCP.md) | English
+[简体中文（主版）](../../guides/MCP.md) | English
 
 # Local stdio MCP
 
@@ -42,7 +42,7 @@ Cursor project `.cursor/mcp.json` entry:
 }
 ```
 
-Merge entries with existing configuration rather than replace it. Follow the current [Codex MCP documentation](https://developers.openai.com/codex/mcp) and [Cursor MCP documentation](https://cursor.com/docs/mcp) for your installed client. Record client/version and confirm five discovered tools before claiming client compatibility. These manual examples do not themselves change user-wide settings. Plugin registration is a separate installation method described in [PLUGIN-INSTALL.en.md](PLUGIN-INSTALL.en.md).
+Merge entries with existing configuration rather than replace it. Follow the current [Codex MCP documentation](https://developers.openai.com/codex/mcp) and [Cursor MCP documentation](https://cursor.com/docs/mcp) for your installed client. Record client/version and confirm five discovered tools before claiming client compatibility. These manual examples do not themselves change user-wide settings. Plugin registration is a separate installation method described in [PLUGIN-INSTALL.md](PLUGIN-INSTALL.md).
 
 ## Tools and flow
 
@@ -59,7 +59,7 @@ All arguments are inline JSON, not filesystem paths. Objects reject unknown fiel
 1. The host reads the user-selected file and calls prepare_meeting with its text and a supported TXT/Markdown filename.
 2. Get the contract; the host model authors full analysis JSON using the returned IDs. No second model invocation occurs in MCP.
 3. For long content, split_transcript returns line-preserving fragments. Every fragment retains the original sourceId and segmentId; do not normalize chunks separately or invent new IDs. maxChars counts UTF-16 characters including a newline separator between fragments. A single line exceeding that budget is rejected. The full original input is still needed for validation.
-4. Call validate_analysis or render_report with original input and analysis. The latter validates independently, so rendering cannot bypass validation. A result with isError is a failure, not a report. `render_report` accepts an optional `minutes` argument as a JSON-encoded minutes-contract document (see [the minutes contract](../contracts/MINUTES-CONTRACT.md)); `mode` defaults to "minutes" when minutes are supplied and to "evidence" otherwise, and `appendix: false` omits the trace appendix. Supplying `mode: "minutes"` or `"actions"` without `minutes` is rejected with MINUTES_MISSING, and any supplied minutes document is validated even in evidence mode.
+4. Call validate_analysis or render_report with original input and analysis. The latter validates independently, so rendering cannot bypass validation. A result with isError is a failure, not a report. `render_report` accepts an optional `minutes` argument as a JSON-encoded minutes-contract document (see [the minutes contract](../../contracts/MINUTES-CONTRACT.md)); `mode` defaults to "minutes" when minutes are supplied and to "evidence" otherwise, and `appendix: false` omits the trace appendix. Supplying `mode: "minutes"` or `"actions"` without `minutes` is rejected with MINUTES_MISSING, and any supplied minutes document is validated even in evidence mode.
 5. The host saves Markdown only at the user's selected destination. This MCP has no write tool.
 
 For a briefing with no decisions, actions, risks, open questions, or conflicts, pass a minutes draft with `sections: []`. The renderer uses the analysis topics or summary for the body. Claim IDs must be unique across the document. Empty sections with referable facts and duplicate claim IDs return `MINUTES_SCHEMA_INVALID`. The minutes appendix includes topic evidence and analysis facts left out of the editorial body.
@@ -83,4 +83,4 @@ No default persistence, arbitrary disk reads/writes, GitHub access, model calls 
 
 ## Verification status
 
-Local SDK source/compiled subprocess tests are passing. Actual Codex CLI/App Server Skill and five-tool discovery has also passed; [acceptance details and project setup](CLIENT-SETUP.en.md) distinguish invocation overrides from trusted project config loading. Cursor UI verification is deferred by the 2026-11-27 phase-1 scope decision (Codex only); model-level behavior remains a separate release check. The server and local plugin bundle are implemented. Public package distribution and full client/model acceptance remain pending.
+Local SDK source/compiled subprocess tests are passing. Actual Codex CLI/App Server Skill and five-tool discovery has also passed; [acceptance details and project setup](CLIENT-SETUP.md) distinguish invocation overrides from trusted project config loading. Cursor UI verification is deferred by the 2026-11-27 phase-1 scope decision (Codex only); model-level behavior remains a separate release check. The server and local plugin bundle are implemented. Public package distribution and full client/model acceptance remain pending.
